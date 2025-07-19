@@ -1,10 +1,10 @@
 """
 Authentication routes for CamRent Backend API.
-Handles user registration, login, profile management, and logout.
+Handles user registration, login, profile management, and token refresh.
 """
 
 from flask import Blueprint, request
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 
 from app.models import User
 from app.extensions import db
@@ -89,15 +89,9 @@ def signup():
         user.set_password(password)
         user.save()
         
-        # Create access token
-        access_token = create_access_token(identity=str(user.id))
-        
         return success_response(
             message="User created successfully",
-            data={
-                'user': user.to_dict(),
-                'access_token': access_token
-            },
+            data={'user': user.to_dict()},
             status_code=201
         )
         
@@ -141,14 +135,16 @@ def login():
         if not user.is_active:
             return unauthorized_response("Account is deactivated")
         
-        # Create access token
+        # Create access and refresh tokens
         access_token = create_access_token(identity=str(user.id))
+        refresh_token = create_refresh_token(identity=str(user.id))
         
         return success_response(
             message="Login successful",
             data={
                 'user': user.to_dict(),
-                'access_token': access_token
+                'access_token': access_token,
+                'refresh_token': refresh_token
             }
         )
         
@@ -252,19 +248,34 @@ def update_profile():
         return internal_error_response()
 
 
-@auth_bp.route('/logout', methods=['POST'])
-@jwt_required()
-def logout():
+@auth_bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
     """
-    User logout endpoint.
-    Requires valid JWT token in Authorization header.
+    Refresh access token endpoint.
+    Requires valid refresh token in Authorization header.
     
-    Note: In a production app, you would want to blacklist the token.
-    For now, we just return a success message.
+    Returns a new access token while keeping the same refresh token.
     """
     try:
-        # In the future, implement token blacklisting here
-        return success_response("Logout successful")
+        current_user_id = int(get_jwt_identity())
+        user = User.find_by_id(current_user_id)
         
+        if not user:
+            return not_found_response("User")
+        
+        if not user.is_active:
+            return unauthorized_response("Account is deactivated")
+        
+        # Create new access token
+        access_token = create_access_token(identity=str(user.id))
+        
+        return success_response(
+            message="Access token refreshed successfully",
+            data={'access_token': access_token}
+        )
+        
+    except ValueError:
+        return error_response("Invalid user ID in token", 400)
     except Exception as e:
         return internal_error_response()

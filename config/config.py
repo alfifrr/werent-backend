@@ -19,7 +19,8 @@ class Config:
     
     # JWT Configuration
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-change-in-production'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)  # Short-lived access tokens
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)    # Long-lived refresh tokens
     JWT_ALGORITHM = 'HS256'
     
     # Security Settings
