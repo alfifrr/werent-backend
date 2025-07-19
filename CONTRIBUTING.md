@@ -271,6 +271,77 @@ if not is_valid:
 - [ ] Update API_DOCUMENTATION.md
 - [ ] Manual testing completed
 
+## 🌳 Git Workflow & Branching Strategy
+
+### Branch Structure
+- **`main`** – Production-ready code, protected branch
+- **`development`** – Default active branch for all features and integration
+- **`feature/<name>`** – Feature branches created from `development`
+
+### Branching Rules
+- ❌ **Do not push directly to `main`**
+- ✅ All work must be merged into `development` first
+- ✅ Only the Project Manager (PM) may approve and merge changes into `main`
+- ✅ Create feature branches from `development`
+- ✅ Use descriptive feature branch names (e.g., `feature/gear-management`, `feature/user-authentication`)
+
+### Development Workflow
+```bash
+# 1. Start new feature
+git checkout development
+git pull origin development
+git checkout -b feature/your-feature-name
+
+# 2. Work on your feature
+# Make changes, add tests, update documentation
+
+# 3. Commit your changes
+git add .
+git commit -m "feat: add gear management endpoints"
+
+# 4. Push feature branch
+git push origin feature/your-feature-name
+
+# 5. Create Pull Request
+# - Target: development branch
+# - Include description of changes
+# - Link to related issues
+# - Request code review
+
+# 6. After approval and merge to development
+git checkout development
+git pull origin development
+git branch -d feature/your-feature-name
+```
+
+### Commit Message Convention
+Use conventional commits for clear history:
+```
+feat: add new feature
+fix: bug fix
+docs: documentation changes
+style: formatting changes
+refactor: code refactoring
+test: adding tests
+chore: maintenance tasks
+```
+
+### Pull Request Guidelines
+- **Target Branch:** Always target `development` for feature PRs
+- **Title:** Use clear, descriptive titles
+- **Description:** Explain what changes were made and why
+- **Testing:** Ensure all tests pass
+- **Documentation:** Update relevant documentation
+- **Review:** Request review from team members
+
+### Code Review Process
+1. **Developer** creates PR to `development`
+2. **Team members** review code
+3. **Tests** must pass
+4. **Documentation** must be updated
+5. **Approval** required before merge
+6. **PM approval** required for `development` → `main` merges
+
 ## 🐛 Bug Reports and Issues
 
 ### Reporting Bugs

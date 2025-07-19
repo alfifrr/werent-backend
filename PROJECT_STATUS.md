@@ -211,6 +211,35 @@ cart_items (id, user_id, gear_id, start_date, end_date, quantity, created_at)
 
 ---
 
+## 🌳 Git Workflow & Branch Management
+
+### Repository Structure
+- **`main`** – Production-ready, protected branch ⚠️
+- **`development`** – Active development branch (default) 🚀
+- **`feature/<name>`** – Feature branches from development 🔨
+
+### Branch Protection Rules
+- ❌ **Direct pushes to `main` are prohibited**
+- ✅ All features must merge to `development` first
+- ✅ Only PM can approve `development` → `main` merges
+- ✅ Pull requests required for all merges
+- ✅ Code review mandatory before merging
+
+### Development Process
+1. **Create feature branch** from `development`
+2. **Develop and test** your feature
+3. **Create PR** targeting `development`
+4. **Code review** and testing
+5. **Merge to development** after approval
+6. **PM reviews and merges** to `main` when ready for production
+
+### Current Active Work
+- **Development branch** contains latest integrated features
+- **Feature branches** for individual developers working on specific features
+- **Main branch** represents stable, production-ready releases
+
+---
+
 ## 🔧 Development Setup
 
 ### Prerequisites
@@ -513,10 +542,39 @@ cart_items (id, user_id, gear_id, start_date, end_date, quantity, created_at)
 
 ---
 
+## 🌳 Git Workflow & Branch Management
+
+### Repository Structure
+- **`main`** – Production-ready, protected branch ⚠️
+- **`development`** – Active development branch (default) 🚀
+- **`feature/<name>`** – Feature branches from development 🔨
+
+### Branch Protection Rules
+- ❌ **Direct pushes to `main` are prohibited**
+- ✅ All features must merge to `development` first
+- ✅ Only PM can approve `development` → `main` merges
+- ✅ Pull requests required for all merges
+- ✅ Code review mandatory before merging
+
+### Development Process
+1. **Create feature branch** from `development`
+2. **Develop and test** your feature
+3. **Create PR** targeting `development`
+4. **Code review** and testing
+5. **Merge to development** after approval
+6. **PM reviews and merges** to `main` when ready for production
+
+### Current Active Work
+- **Development branch** contains latest integrated features
+- **Feature branches** for individual developers working on specific features
+- **Main branch** represents stable, production-ready releases
+
+---
+
 ## 🔧 Development Setup
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.9+
 - UV package manager
 - SQLite (development)
 
@@ -528,11 +586,32 @@ cd /home/alfi/Projects/werent-backend
 # Activate virtual environment
 source .venv/bin/activate
 
-# Sync dependencies
+# Sync dependencies (includes dev tools)
 uv sync
 
 # Run development server
 python main.py
+
+# Initialize database (if needed)
+flask init-db
+
+# Create admin user (optional)
+flask create-admin
+```
+
+### Development Tools
+```bash
+# Code formatting
+black app/ tests/
+
+# Code linting
+flake8 app/ tests/
+
+# Run tests
+pytest
+
+# Run tests with coverage
+pytest --cov=app
 ```
 
 ### Environment Configuration
@@ -557,12 +636,23 @@ All protected endpoints require JWT token in header:
 Authorization: Bearer <access_token>
 ```
 
-### Response Format
+### Standardized Response Format
+**Success Response:**
 ```json
 {
+  "success": true,
   "message": "Success message",
-  "data": {...},
-  "error": "Error message (if applicable)"
+  "data": {...}
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "Error message",
+  "error_code": "ERROR_CODE",
+  "details": {...}
 }
 ```
 
@@ -570,15 +660,32 @@ Authorization: Bearer <access_token>
 
 ## 🧪 Testing
 
+### Current Testing Status
+- [x] Test configuration setup (pytest + Flask-Testing)
+- [x] Basic authentication endpoint tests
+- [x] Test database with in-memory SQLite
+- [ ] Complete test coverage for all endpoints
+- [ ] Integration tests
+- [ ] Performance testing
+
 ### Manual Testing
 All authentication endpoints tested with curl commands.
 Examples available in `API_DOCUMENTATION.md`
 
-### Automated Testing (TODO)
-- [ ] Unit tests for models
-- [ ] Integration tests for API endpoints  
-- [ ] Authentication flow testing
-- [ ] Database operation testing
+### Automated Testing Commands
+```bash
+# Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run specific test file
+pytest tests/test_auth.py
+
+# Run with coverage report
+pytest --cov=app --cov-report=html
+```
 
 ---
 
@@ -588,15 +695,17 @@ Examples available in `API_DOCUMENTATION.md`
 - ✅ SQLite database
 - ✅ Debug mode enabled
 - ✅ Local development server
+- ✅ Hot reloading
 
 ### Production (TODO)
 - [ ] PostgreSQL database migration
 - [ ] Environment variable configuration
-- [ ] WSGI server setup (Gunicorn)
+- [ ] WSGI server setup (Gunicorn included)
 - [ ] Docker containerization
 - [ ] SSL/HTTPS configuration
 - [ ] Rate limiting implementation
 - [ ] Error logging and monitoring
+- [ ] Database connection pooling
 
 ---
 
@@ -605,34 +714,46 @@ Examples available in `API_DOCUMENTATION.md`
 ### For New Developers
 1. Read this file completely for project context
 2. Check `API_DOCUMENTATION.md` for endpoint details
-3. Review the current `main.py` for code structure
+3. Review the `app/` directory structure for code organization
 4. Follow existing naming conventions and patterns
-5. Test all changes with curl or Postman
+5. Test all changes with pytest and manual testing
 6. Update this file when completing features
 
 ### For AI Agents
 1. **Context:** This is a Flask-based camera rental platform backend
-2. **Current State:** Authentication system is complete and working
+2. **Current State:** Authentication system complete + proper code architecture
 3. **Next Priority:** Gear management system (Phase 2)
-4. **Database:** SQLite for development, models use SQLAlchemy ORM
-5. **Auth:** JWT-based authentication already implemented
-6. **Testing:** Manual testing with curl, automated testing needed
+4. **Database:** SQLite for development, SQLAlchemy ORM with models in `app/models/`
+5. **Auth:** JWT-based authentication with standardized responses
+6. **Testing:** Pytest setup ready, tests in `tests/` directory
+7. **Structure:** Follow blueprint pattern, use application factory
 
 ### Code Standards
 - Follow PEP 8 Python style guidelines
 - Use meaningful variable and function names
 - Add docstrings for new functions and classes
-- Handle errors gracefully with proper HTTP status codes
-- Validate all user inputs
+- Handle errors gracefully with standardized response helpers
+- Validate all user inputs using utility functions
 - Use SQLAlchemy ORM for database operations
+- Write tests for new functionality
+- Use type hints where appropriate
+
+### Adding New Features
+1. Create models in `app/models/`
+2. Add routes in `app/routes/` as blueprints
+3. Use utility functions from `app/utils/`
+4. Write tests in `tests/`
+5. Update this PROJECT_STATUS.md
+6. Update API_DOCUMENTATION.md
 
 ---
 
 ## 📞 Support & Contact
 
-**Project Structure Questions:** Check existing code patterns in `main.py`  
+**Project Structure Questions:** Check `app/` directory structure  
 **API Questions:** See `API_DOCUMENTATION.md`  
-**Database Questions:** Review SQLAlchemy models in `main.py`
+**Database Questions:** Review SQLAlchemy models in `app/models/`  
+**Testing Questions:** Check `tests/` directory and `conftest.py`
 
 ---
 

@@ -200,6 +200,7 @@ SMTP_PASSWORD=your-app-password
 - **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete API reference with examples
 - **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current status, roadmap, and development progress
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development guidelines and code standards
+- **[GIT_WORKFLOW.md](GIT_WORKFLOW.md)** - Branching strategy and collaboration guidelines
 
 ## 🧪 Testing
 
@@ -255,6 +256,35 @@ pytest tests/test_auth.py::TestAuth::test_signup_success
 - Advanced reporting
 
 > **📋 Detailed roadmap:** See [PROJECT_STATUS.md](PROJECT_STATUS.md)
+
+## 🌳 Branching Strategy
+
+- `main` – production-ready, protected
+- `development` – default active branch for all features
+- `feature/<name>` – create branches from `development` for each feature
+
+### Rules:
+- Do not push directly to `main`
+- All work must be merged into `development` first
+- Only the PM may approve and merge changes into `main`
+
+### Workflow:
+```bash
+# Create feature branch from development
+git checkout development
+git pull origin development
+git checkout -b feature/gear-management
+
+# Work on your feature
+git add .
+git commit -m "Add gear management endpoints"
+
+# Push feature branch
+git push origin feature/gear-management
+
+# Create pull request to development branch
+# After review and approval, merge to development
+```
 
 ## 🤝 Contributing
 
