@@ -1,14 +1,15 @@
 # CamRent Backend - Project Status
 
 **Last Updated:** July 19, 2025  
-**Project Phase:** Initial Development - Authentication Complete + Code Refactoring Complete  
-**Flask App Status:** ✅ Running on http://localhost:5000
+**Project Phase:** Initial Development - Authentication Complete + Code Refactoring Complete + Swagger Documentation Complete  
+**Flask App Status:** ✅ Running on http://localhost:5000  
+**Documentation Status:** ✅ Interactive API docs available at /docs/
 
 ---
 
 ## 📋 Project Overview
 
-**CamRent** is a camera and photography equipment rental platform backend built with Flask. The project follows RESTful API design principles, uses JWT authentication for secure user management, and implements Flask best practices with a modular architecture.
+**CamRent** is a camera and photography equipment rental platform backend built with Flask. The project follows RESTful API design principles, uses JWT authentication for secure user management, and implements Flask best practices with a modular architecture. Features comprehensive interactive API documentation with OpenAPI 3.0.
 
 ### Tech Stack
 - **Framework:** Flask (Python)
@@ -16,6 +17,7 @@
 - **Authentication:** JWT with Flask-JWT-Extended
 - **Password Security:** Flask-Bcrypt
 - **Database ORM:** SQLAlchemy with Flask-Migrate
+- **API Documentation:** OpenAPI 3.0 with Swagger UI, ReDoc
 - **Package Management:** UV
 - **Environment:** Python Virtual Environment (.venv)
 - **Testing:** Pytest with Flask-Testing
@@ -26,12 +28,13 @@
 ## ✅ Completed Features
 
 ### 🔐 Authentication System (COMPLETE)
-- [x] User Registration/Signup with validation
-- [x] User Login/Authentication  
-- [x] JWT Token Generation & Validation
+- [x] User Registration/Signup with validation (no JWT session created)
+- [x] User Login/Authentication with dual-token system
+- [x] JWT Access Token Generation (15-minute expiry)
+- [x] JWT Refresh Token Generation (30-day expiry)
+- [x] Token Refresh Endpoint for seamless authentication
 - [x] Protected Route Middleware
 - [x] User Profile Management (GET/PUT)
-- [x] User Logout
 - [x] Password Hashing & Security
 - [x] Email & Password Validation
 - [x] Enhanced Error Handling & Response Formatting
@@ -39,11 +42,35 @@
 
 **API Endpoints Ready:**
 ```
-POST /api/auth/signup     - User registration
-POST /api/auth/login      - User authentication  
+POST /api/auth/signup     - User registration (no JWT created)
+POST /api/auth/login      - User authentication (returns access + refresh tokens)
+POST /api/auth/refresh    - Refresh access token using refresh token
 GET  /api/auth/profile    - Get user profile (Protected)
 PUT  /api/auth/profile    - Update user profile (Protected)
-POST /api/auth/logout     - User logout (Protected)
+```
+
+**JWT Token System:**
+- **Access Token**: 15-minute expiry for API requests
+- **Refresh Token**: 30-day expiry for token renewal
+- **Secure Flow**: Signup → Login → Access/Refresh tokens → API calls → Token refresh
+
+### 📚 API Documentation System (COMPLETE)
+- [x] **OpenAPI 3.0 Specification** - Comprehensive API schema
+- [x] **Swagger UI Interface** - Interactive documentation at `/docs/`
+- [x] **ReDoc Interface** - Clean documentation view at `/docs/redoc`
+- [x] **JSON API Spec** - Machine-readable spec at `/docs/openapi.json`
+- [x] **Postman Collection** - Auto-generated collection at `/docs/postman`
+- [x] **Authentication Testing** - Live JWT testing in Swagger UI
+- [x] **Future Endpoint Placeholders** - Documentation for planned features
+- [x] **Custom Styling** - CamRent-branded documentation interface
+- [x] **Multiple Export Formats** - JSON, Postman, visual interfaces
+
+**Documentation Access Points:**
+```
+GET  /docs/              - Swagger UI (Interactive)
+GET  /docs/redoc         - ReDoc (Clean reading)
+GET  /docs/openapi.json  - OpenAPI 3.0 JSON spec
+GET  /docs/postman       - Postman collection
 ```
 
 ### 🏗️ Code Architecture & Structure (COMPLETE)
@@ -56,6 +83,7 @@ POST /api/auth/logout     - User logout (Protected)
 - [x] **Error Handling** - Standardized error responses
 - [x] **Testing Structure** - Pytest configuration and basic tests
 - [x] **CLI Commands** - Database initialization and admin creation
+- [x] **Swagger Integration** - Documentation system architecture
 
 **Project Structure:**
 ```
@@ -70,6 +98,12 @@ POST /api/auth/logout     - User logout (Protected)
 │   │   ├── __init__.py
 │   │   ├── main.py              # General routes
 │   │   └── auth.py              # Authentication routes
+│   ├── swagger/                  # API documentation system
+│   │   ├── __init__.py          # Flask-RESTX config (optional)
+│   │   ├── swagger_ui.py        # OpenAPI 3.0 & Swagger UI
+│   │   ├── models.py            # Documentation models (future)
+│   │   ├── auth_routes.py       # Auth endpoint docs (future)
+│   │   └── future_routes.py     # Placeholder docs (future)
 │   └── utils/                    # Utility functions
 │       ├── __init__.py
 │       ├── validators.py         # Input validation functions
@@ -84,6 +118,7 @@ POST /api/auth/logout     - User logout (Protected)
 ├── main.py                      # Application entry point
 ├── pyproject.toml               # Dependencies and project config
 ├── API_DOCUMENTATION.md         # Complete API docs
+├── SWAGGER_DOCUMENTATION.md     # Swagger system documentation
 ├── PROJECT_STATUS.md            # This file
 └── .env.template               # Environment variables template
 ```
