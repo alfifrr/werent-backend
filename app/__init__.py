@@ -8,6 +8,7 @@ from flask import Flask
 from config import get_config
 from app.extensions import init_extensions, db
 from app.routes import register_blueprints
+from app.utils.cors import setup_cors
 
 
 def create_app(config_name=None):
@@ -31,6 +32,9 @@ def create_app(config_name=None):
     
     # Initialize extensions
     init_extensions(app)
+    
+    # Setup CORS
+    setup_cors(app)
     
     # Register blueprints
     register_blueprints(app)
