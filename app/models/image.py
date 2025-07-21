@@ -1,8 +1,9 @@
 """
-Image model for CamRent Backend API.
-Handles item images.
+Image model for WeRent Backend API.
+Handles images associated with items.
 """
 
+from datetime import datetime
 from app.extensions import db
 
 
@@ -12,8 +13,8 @@ class Image(db.Model):
     __tablename__ = 'images'
 
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String(255), nullable=False)
-    order = db.Column(db.Integer, nullable=False, default=0)
+    url = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
     # Foreign key
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
@@ -23,13 +24,33 @@ class Image(db.Model):
 
     def __repr__(self):
         """String representation of Image object."""
-        return f'<Image {self.url}>'
+        return f'<Image {self.id} for Item {self.item_id}>'
 
     def to_dict(self):
         """Convert image object to dictionary for JSON serialization."""
         return {
             'id': self.id,
             'url': self.url,
-            'order': self.order,
-            'item_id': self.item_id
+            'item_id': self.item_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+    @classmethod
+    def find_by_id(cls, image_id):
+        """Find image by ID."""
+        return cls.query.get(image_id)
+
+    @classmethod
+    def find_by_item_id(cls, item_id):
+        """Find all images for an item."""
+        return cls.query.filter_by(item_id=item_id).all()
+
+    def save(self):
+        """Save image to database."""
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        """Delete image from database."""
+        db.session.delete(self)
+        db.session.commit()
