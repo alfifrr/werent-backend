@@ -1,5 +1,5 @@
 """
-Swagger/OpenAPI models for CamRent Backend API.
+Swagger/OpenAPI models for WeRent Backend API.
 Defines request/response models for API documentation.
 """
 
@@ -121,7 +121,7 @@ def create_swagger_models(api):
         'email': fields.String(
             required=True,
             description='Valid email address',
-            example='john.doe@camrent.com',
+            example='john.doe@werent.com',
             pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         ),
         'password': fields.String(
@@ -236,31 +236,54 @@ def create_swagger_models(api):
         )
     })
     
-    # Future models (placeholders for gear, rentals, etc.)
-    gear_model = api.model('Gear', {
-        'id': fields.Integer(description='Gear ID', example=1),
-        'name': fields.String(description='Gear name', example='Canon EOS R5'),
-        'category': fields.String(description='Gear category', example='Camera'),
-        'daily_rate': fields.Float(description='Daily rental rate', example=150.00),
-        'status': fields.String(description='Availability status', example='available')
+    # Outfit models
+    outfit_model = api.model('Outfit', {
+        'id': fields.Integer(description='Outfit ID', example=1),
+        'name': fields.String(required=True, description='Name of the outfit', example='Summer Floral Dress'),
+        'type': fields.String(required=True, description='Type of outfit', enum=['Dress', 'Top', 'Bottom', 'Outerwear', 'Shoes', 'Accessory', 'Jewelry', 'Bag', 'Formal Wear', 'Costume', 'Other'], example='Dress'),
+        'size': fields.String(required=True, description='Size of the outfit', enum=['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'One Size'], example='M'),
+        'gender': fields.String(required=True, description='Gender category', enum=["Men's", "Women's", 'Unisex', 'Kids'], example="Women's"),
+        'brand': fields.String(description='Brand name', example='Zara'),
+        'color': fields.String(description='Color of the outfit', example='Floral'),
+        'material': fields.String(description='Material composition', example='Cotton 70%, Polyester 30%'),
+        'condition': fields.String(description='Condition of the outfit', example='Like New'),
+        'quantity': fields.Integer(description='Available quantity', example=1),
+        'product_code': fields.String(required=True, description='Unique product code', example='OF-12345'),
+        'description': fields.String(required=True, description='Detailed description', example='Beautiful summer dress with floral pattern, perfect for outdoor events.'),
+        'price_per_day': fields.Float(required=True, description='Daily rental price', example=25.99),
+        'dry_cleaning_fee': fields.Float(description='Additional cleaning fee', example=5.00),
+        'deposit_amount': fields.Float(description='Security deposit amount', example=50.00),
+        'rating': fields.Float(description='Average rating (1-5)', example=4.8),
+        'is_available': fields.Boolean(description='Availability status', example=True),
+        'created_at': fields.DateTime(description='Creation timestamp'),
+        'user_id': fields.Integer(description='Owner user ID')
     })
     
-    rental_model = api.model('Rental', {
-        'id': fields.Integer(description='Rental ID', example=1),
-        'user_id': fields.Integer(description='User ID', example=1),
-        'gear_id': fields.Integer(description='Gear ID', example=1),
-        'start_date': fields.DateTime(description='Rental start date'),
-        'end_date': fields.DateTime(description='Rental end date'),
-        'total_cost': fields.Float(description='Total rental cost', example=300.00),
-        'status': fields.String(description='Rental status', example='active')
+    booking_model = api.model('Booking', {
+        'id': fields.Integer(description='Booking ID', example=1),
+        'user_id': fields.Integer(description='Renter user ID', example=2),
+        'item_id': fields.Integer(description='Outfit ID', example=1),
+        'start_date': fields.Date(required=True, description='Rental start date (YYYY-MM-DD)'),
+        'end_date': fields.Date(required=True, description='Rental end date (YYYY-MM-DD)'),
+        'total_price': fields.Float(description='Total booking cost', example=129.95),
+        'status': fields.String(description='Booking status', enum=['PENDING', 'PAID', 'CANCELLED', 'PASTDUE', 'RETURNED'], example='PENDING'),
+        'is_paid': fields.Boolean(description='Payment status', example=False),
+        'created_at': fields.DateTime(description='Booking creation timestamp')
     })
     
     review_model = api.model('Review', {
         'id': fields.Integer(description='Review ID', example=1),
-        'user_id': fields.Integer(description='User ID', example=1),
-        'gear_id': fields.Integer(description='Gear ID', example=1),
-        'rating': fields.Integer(description='Rating (1-5)', example=5),
-        'comment': fields.String(description='Review comment', example='Excellent camera!')
+        'user_id': fields.Integer(description='Reviewer user ID', example=2),
+        'item_id': fields.Integer(description='Outfit ID', example=1),
+        'rating': fields.Integer(required=True, description='Rating (1-5)', example=5, min=1, max=5),
+        'comment': fields.String(description='Review comment', example='Beautiful dress, perfect fit!'),
+        'created_at': fields.DateTime(description='Review timestamp')
+    })
+    
+    image_model = api.model('Image', {
+        'id': fields.Integer(description='Image ID', example=1),
+        'url': fields.String(description='Image URL', example='https://example.com/images/dress-1.jpg'),
+        'is_primary': fields.Boolean(description='If this is the primary image', example=True)
     })
     
     return {
@@ -274,7 +297,8 @@ def create_swagger_models(api):
         'auth_success_response': auth_success_response,
         'profile_response': profile_response,
         'logout_response': logout_response,
-        'gear_model': gear_model,
-        'rental_model': rental_model,
-        'review_model': review_model
+        'outfit_model': outfit_model,
+        'booking_model': booking_model,
+        'review_model': review_model,
+        'image_model': image_model
     }

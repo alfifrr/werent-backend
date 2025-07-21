@@ -1,6 +1,6 @@
 """
-Response utilities for CamRent Backend API.
-Standardizes API response formats and error handling.
+Response utilities for WeRent Backend API.
+Provides standardized response formats for the API.
 """
 
 from flask import jsonify

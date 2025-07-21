@@ -1,5 +1,5 @@
 """
-Routes package for CamRent Backend API.
+Routes package for WeRent Backend API.
 Contains all application route blueprints.
 """
 

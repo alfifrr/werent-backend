@@ -1,5 +1,5 @@
 """
-CORS (Cross-Origin Resource Sharing) configuration for CamRent Backend API.
+CORS (Cross-Origin Resource Sharing) configuration for WeRent Backend API.
 Handles cross-origin requests between frontend and backend applications.
 """
 

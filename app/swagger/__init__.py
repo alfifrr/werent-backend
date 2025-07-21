@@ -1,5 +1,5 @@
 """
-Swagger/OpenAPI 3.0 configuration for CamRent Backend API.
+Swagger/OpenAPI 3.0 configuration for WeRent Backend API.
 Provides interactive API documentation with Flask-RESTX.
 """
 
@@ -13,18 +13,18 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 api = Api(
     api_bp,
     version='1.0.0',
-    title='CamRent Backend API',
+    title='WeRent Backend API',
     description='''
-    **CamRent Backend API Documentation**
+    **WeRent Backend API Documentation**
     
-    A comprehensive camera and photography equipment rental platform backend service.
+    A comprehensive outfit rental platform backend service.
     
     ## Features
     - **Authentication**: JWT-based user authentication and authorization
     - **User Management**: User registration, login, and profile management
-    - **Gear Management**: Camera equipment catalog and inventory (Coming Soon)
-    - **Rental System**: Equipment booking and rental management (Coming Soon)
-    - **Review System**: User reviews and ratings (Coming Soon)
+    - **Outfit Management**: Outfit catalog and inventory management
+    - **Rental System**: Outfit booking and rental management
+    - **Review System**: User reviews and ratings
     
     ## Authentication
     Most endpoints require authentication. Use the `/api/auth/login` endpoint to obtain a JWT token,

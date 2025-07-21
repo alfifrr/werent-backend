@@ -1,8 +1,8 @@
-# CamRent Backend API
+# WeRent Backend API
 
-> **Camera Equipment Rental Platform Backend Service**
+> **Outfit Rental Platform Backend Service**
 
-A modern, secure, and scalable Flask-based backend API for camera and photography equipment rental platform. Built with best practices, modular architecture, and comprehensive authentication system.
+A modern, secure, and scalable Flask-based backend API for an outfit rental platform. Built with best practices, modular architecture, and comprehensive authentication system.
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.1+-green.svg)](https://flask.palletsprojects.com)

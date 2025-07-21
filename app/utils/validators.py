@@ -1,6 +1,6 @@
 """
-Validation utilities for CamRent Backend API.
-Contains functions for validating user input and data formats.
+Input validation utilities for WeRent Backend API.
+Provides functions to validate and sanitize various types of input data.
 """
 
 import re

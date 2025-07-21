@@ -1,5 +1,5 @@
 """
-Authentication route tests for CamRent Backend API.
+Authentication route tests for WeRent Backend API.
 """
 
 import json
@@ -27,7 +27,7 @@ class TestAuth:
         json_data = response.get_json()
         assert json_data['success'] is True
         assert 'access_token' in json_data['data']
-        assert json_data['data']['user']['email'] == 'test@camrent.com'
+        assert json_data['data']['user']['email'] == 'test@werent.com'
     
     def test_signup_missing_fields(self, client):
         """Test signup with missing required fields."""
@@ -66,7 +66,7 @@ class TestAuth:
         """Test successful user login."""
         # First create a user
         user = User(
-            email='test@camrent.com',
+            email='test@werent.com',
             first_name='John',
             last_name='Doe'
         )
@@ -91,7 +91,7 @@ class TestAuth:
     def test_login_invalid_credentials(self, client):
         """Test login with invalid credentials."""
         data = {
-            'email': 'nonexistent@camrent.com',
+            'email': 'nonexistent@werent.com',
             'password': 'WrongPass123'
         }
         

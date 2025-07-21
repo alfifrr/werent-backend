@@ -1,6 +1,6 @@
 """
-Utilities package for CamRent Backend API.
-Contains helper functions, validators, and response utilities.
+Utilities package for WeRent Backend API.
+Contains helper functions and utilities used across the application.
 """
 
 from .validators import validate_email, validate_password, validate_phone, validate_name, sanitize_string

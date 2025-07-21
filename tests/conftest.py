@@ -1,5 +1,6 @@
 """
-Test configuration for CamRent Backend API.
+Test configuration for WeRent Backend API.
+Provides fixtures and setup for testing the Flask application.
 """
 
 import pytest
@@ -11,7 +12,7 @@ from config.config import TestingConfig
 @pytest.fixture
 def app():
     """Create and configure a test app instance."""
-    app = create_app('testing')
+    app = create_app(config_name='testing')
     
     with app.app_context():
         db.create_all()
