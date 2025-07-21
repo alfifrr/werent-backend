@@ -3,7 +3,16 @@ WeRent Backend API Application Factory.
 Creates and configures the Flask application instance.
 """
 
+import os
 from flask import Flask
+
+# Load environment variables from .env file in development
+if os.environ.get('FLASK_ENV') != 'production':
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass  # python-dotenv not installed, skip
 
 from config import get_config
 from app.extensions import init_extensions, db
