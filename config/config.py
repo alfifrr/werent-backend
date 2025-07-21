@@ -7,6 +7,16 @@ import os
 from datetime import timedelta
 
 
+def fix_database_url(url):
+    """
+    Fix database URL format for SQLAlchemy compatibility.
+    Supabase and some services use 'postgres://' but SQLAlchemy requires 'postgresql://'
+    """
+    if url and url.startswith('postgres://'):
+        return url.replace('postgres://', 'postgresql://', 1)
+    return url
+
+
 class Config:
     """Base configuration class with default values."""
     
@@ -14,8 +24,16 @@ class Config:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'your-secret-key-change-in-production'
     
     # Database Configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///werent.db'
+    database_url = os.environ.get('DATABASE_URL') or 'sqlite:///werent.db'
+    SQLALCHEMY_DATABASE_URI = fix_database_url(database_url)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'connect_args': {
+            'connect_timeout': 60,
+        } if 'postgresql' in database_url else {}
+    }
     
     # JWT Configuration
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-change-in-production'
@@ -71,13 +89,27 @@ class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
     
-    # Production database (PostgreSQL recommended)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://user:pass@localhost/werent'
+    # Production database (PostgreSQL from Supabase)
+    database_url = os.environ.get('DATABASE_URL') or 'postgresql://user:pass@localhost/werent'
+    SQLALCHEMY_DATABASE_URI = fix_database_url(database_url)
     
     # Enhanced security for production
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    # Production-specific settings
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 10,
+        'pool_timeout': 20,
+        'pool_recycle': -1,
+        'max_overflow': 0,
+        'pool_pre_ping': True,
+        'connect_args': {
+            'connect_timeout': 60,
+            'sslmode': 'require'
+        }
+    }
 
 
 # Configuration mapping

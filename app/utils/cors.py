@@ -3,6 +3,7 @@ CORS (Cross-Origin Resource Sharing) configuration for WeRent Backend API.
 Handles cross-origin requests between frontend and backend applications.
 """
 
+import os
 from flask import request
 
 
@@ -24,9 +25,22 @@ def setup_cors(app):
         "http://127.0.0.1:3000",    # Alternative localhost
         "http://localhost:3001",    # Alternative React/Next.js port
         "http://127.0.0.1:3001",    # Alternative localhost
-        # Add your production frontend URL here when deployed
-        # "https://your-frontend-domain.com",
     ]
+    
+    # Add production frontend URL from environment variable
+    frontend_url = os.environ.get('FRONTEND_URL')
+    if frontend_url:
+        ALLOWED_ORIGINS.append(frontend_url)
+    
+    # Add common production patterns
+    if app.config.get('FLASK_ENV') == 'production':
+        # Add your production frontend domains here
+        production_origins = [
+            "https://werent-frontend.vercel.app",
+            "https://werent.com",
+            "https://www.werent.com",
+        ]
+        ALLOWED_ORIGINS.extend(production_origins)
     
     @app.after_request
     def add_cors_headers(response):
