@@ -1,7 +1,7 @@
-# CamRent API Documentation System
+# WeRent API Documentation System
 
 ## Overview
-The CamRent backend features a comprehensive API documentation system built with OpenAPI 3.0 specification and multiple viewing interfaces for different developer needs.
+The WeRent backend features a comprehensive API documentation system built with OpenAPI 3.0 specification and multiple viewing interfaces for different developer needs.
 
 ## Documentation Access Points
 
@@ -22,11 +22,11 @@ The CamRent backend features a comprehensive API documentation system built with
 - OpenAPI Spec: http://localhost:5000/docs/openapi.json
 - Postman: http://localhost:5000/docs/postman
 
-**Production Server (when deployed):**
-- Swagger UI: https://api.camrent.com/docs/
-- ReDoc: https://api.camrent.com/docs/redoc
-- OpenAPI Spec: https://api.camrent.com/docs/openapi.json
-- Postman: https://api.camrent.com/docs/postman
+**Production Server:**
+- Swagger UI: https://api.werent.com/docs/
+- ReDoc: https://api.werent.com/docs/redoc
+- OpenAPI Spec: https://api.werent.com/docs/openapi.json
+- Postman: https://api.werent.com/docs/postman
 
 ## Features
 
@@ -170,7 +170,7 @@ When implementing new features:
 ```
 
 ### Styling Customization
-The Swagger UI includes custom CSS for CamRent branding:
+The Swagger UI includes custom CSS for WeRent branding:
 - Custom color scheme with brand colors
 - Enhanced topbar with application name
 - Responsive design for mobile viewing
@@ -260,6 +260,6 @@ curl http://localhost:5000/docs/openapi.json | grep -A 10 "/api/auth/login"
 
 ## Conclusion
 
-The CamRent API documentation system provides a comprehensive, professional, and developer-friendly way to explore, test, and integrate with the API. With multiple interfaces, live testing capabilities, and extensive customization options, it serves both current development needs and future growth requirements.
+The WeRent API documentation system provides a comprehensive, professional, and developer-friendly way to explore, test, and integrate with the API. With multiple interfaces, live testing capabilities, and extensive customization options, it serves both current development needs and future growth requirements.
 
 For questions or improvements to the documentation system, please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) file or contact the development team.

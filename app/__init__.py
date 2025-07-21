@@ -1,5 +1,5 @@
 """
-CamRent Backend API Application Factory.
+WeRent Backend API Application Factory.
 Creates and configures the Flask application instance.
 """
 

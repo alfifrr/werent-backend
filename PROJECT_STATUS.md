@@ -1,6 +1,6 @@
-# CamRent Backend - Project Status
+# WeRent Backend - Project Status
 
-**Last Updated:** July 19, 2025  
+**Last Updated:** July 22, 2025  
 **Project Phase:** Initial Development - Authentication Complete + Code Refactoring Complete + Swagger Documentation Complete  
 **Flask App Status:** ✅ Running on http://localhost:5000  
 **Documentation Status:** ✅ Interactive API docs available at /docs/
@@ -9,7 +9,7 @@
 
 ## 📋 Project Overview
 
-**CamRent** is a camera and photography equipment rental platform backend built with Flask. The project follows RESTful API design principles, uses JWT authentication for secure user management, and implements Flask best practices with a modular architecture. Features comprehensive interactive API documentation with OpenAPI 3.0.
+**WeRent** is an outfit rental platform backend built with Flask. The project follows RESTful API design principles, uses JWT authentication for secure user management, and implements Flask best practices with a modular architecture. Features comprehensive interactive API documentation with OpenAPI 3.0.
 
 ### Tech Stack
 - **Framework:** Flask (Python)

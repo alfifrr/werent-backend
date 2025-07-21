@@ -15,10 +15,10 @@ def get_openapi_spec():
     return {
         "openapi": "3.0.0",
         "info": {
-            "title": "CamRent Backend API",
+            "title": "WeRent Backend API",
             "version": "1.0.0",
             "description": """
-# CamRent Backend API Documentation
+# WeRent Backend API Documentation
 
 A comprehensive camera and photography equipment rental platform backend service.
 
@@ -78,8 +78,8 @@ All API responses follow a standardized format:
 For the latest development status, see the PROJECT_STATUS.md file.
             """,
             "contact": {
-                "name": "CamRent Development Team",
-                "email": "dev@camrent.com"
+                "name": "WeRent Development Team",
+                "email": "dev@werent.com"
             },
             "license": {
                 "name": "MIT",
@@ -92,7 +92,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                 "description": "Development server"
             },
             {
-                "url": "https://api.camrent.com",
+                "url": "https://api.werent.com",
                 "description": "Production server (when deployed)"
             }
         ],
@@ -128,7 +128,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "email": {
                             "type": "string",
                             "format": "email",
-                            "example": "john.doe@camrent.com",
+                            "example": "john.doe@werent.com",
                             "description": "Valid email address"
                         },
                         "password": {
@@ -730,7 +730,7 @@ def swagger_ui():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CamRent API Documentation</title>
+        <title>WeRent API Documentation</title>
         <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.0.0/swagger-ui.css" />
         <style>
             html {
@@ -753,7 +753,7 @@ def swagger_ui():
                 content: '';
             }
             .swagger-ui .topbar .topbar-wrapper .link:after {
-                content: 'CamRent API Documentation';
+                content: 'WeRent API Documentation';
                 color: #ffffff;
                 font-size: 18px;
                 font-weight: bold;
@@ -836,7 +836,7 @@ def redoc():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>CamRent API Documentation - ReDoc</title>
+        <title>WeRent API Documentation - ReDoc</title>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
@@ -867,7 +867,7 @@ def postman_collection():
     
     collection = {
         "info": {
-            "name": "CamRent Backend API",
+            "name": "WeRent Backend API",
             "description": spec["info"]["description"],
             "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
         },
@@ -905,7 +905,7 @@ def postman_collection():
                             "body": {
                                 "mode": "raw",
                                 "raw": json.dumps({
-                                    "email": "test@camrent.com",
+                                    "email": "test@werent.com",
                                     "password": "SecurePass123",
                                     "first_name": "Test",
                                     "last_name": "User",
@@ -932,7 +932,7 @@ def postman_collection():
                             "body": {
                                 "mode": "raw",
                                 "raw": json.dumps({
-                                    "email": "test@camrent.com",
+                                    "email": "test@werent.com",
                                     "password": "SecurePass123"
                                 }, indent=2)
                             },

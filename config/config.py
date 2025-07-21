@@ -1,5 +1,5 @@
 """
-Configuration module for CamRent Backend API.
+Configuration module for WeRent Backend API.
 Handles environment-specific settings and security configurations.
 """
 
@@ -14,7 +14,7 @@ class Config:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'your-secret-key-change-in-production'
     
     # Database Configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///camrent.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///werent.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # JWT Configuration
@@ -46,7 +46,7 @@ class DevelopmentConfig(Config):
     TESTING = False
     
     # Override for development
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or 'sqlite:///camrent-dev.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or 'sqlite:///werent-dev.db'
 
 
 class TestingConfig(Config):
@@ -72,7 +72,7 @@ class ProductionConfig(Config):
     TESTING = False
     
     # Production database (PostgreSQL recommended)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://user:pass@localhost/camrent'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://user:pass@localhost/werent'
     
     # Enhanced security for production
     SESSION_COOKIE_SECURE = True

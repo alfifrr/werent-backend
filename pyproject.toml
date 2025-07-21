@@ -1,7 +1,7 @@
 [project]
-name = "camrent-backend"
+name = "werent-backend"
 version = "1.0.0"
-description = "CamRent Backend API - Camera equipment rental platform backend service"
+description = "WeRent Backend API - Outfit rental platform backend service"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [

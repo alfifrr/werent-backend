@@ -1,6 +1,6 @@
-# Contributing to CamRent Backend
+# Contributing to WeRent Backend
 
-Thank you for your interest in contributing to CamRent Backend! This document provides guidelines and instructions for developers working on this project.
+Thank you for your interest in contributing to WeRent Backend! This document provides guidelines and instructions for developers working on this project.
 
 ## 🏗️ Project Architecture
 
