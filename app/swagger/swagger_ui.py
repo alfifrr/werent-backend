@@ -1,13 +1,43 @@
 """
-Enhanced Swagger UI integration for CamRent Backend API.
+Enhanced Swagger UI integration for WeRent Backend API.
 Provides comprehensive interactive API documentation using OpenAPI 3.0 specification.
 """
 
-from flask import Blueprint, render_template_string, jsonify, url_for
+import os
+from flask import Blueprint, render_template_string, jsonify, url_for, request
 import json
 
 # Create Swagger blueprint
 swagger_bp = Blueprint('swagger', __name__, url_prefix='/docs')
+
+def get_server_urls():
+    """
+    Get server URLs based on environment and request context.
+    Returns appropriate server URLs for Swagger documentation.
+    
+    These URLs represent the base API endpoints, not the documentation URLs.
+    Users can switch between development and production APIs in the Swagger UI.
+    """
+    servers = []
+    
+    # Development server (localhost)
+    servers.append({
+        "url": "http://localhost:5000",
+        "description": "Development server (localhost)"
+    })
+    
+    # Production server (Render deployment)
+    production_url = "https://werent-backend-api.onrender.com"
+    servers.append({
+        "url": production_url,
+        "description": "Production server (Render deployment)"
+    })
+    
+    # If running in production, put production server first in dropdown
+    if os.environ.get('FLASK_ENV') == 'production':
+        servers.reverse()
+    
+    return servers
 
 # OpenAPI 3.0 specification
 def get_openapi_spec():
@@ -86,16 +116,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                 "url": "https://opensource.org/licenses/MIT"
             }
         },
-        "servers": [
-            {
-                "url": "http://localhost:5000",
-                "description": "Development server"
-            },
-            {
-                "url": "https://api.werent.com",
-                "description": "Production server (when deployed)"
-            }
-        ],
+        "servers": get_server_urls(),
         "components": {
             "securitySchemes": {
                 "BearerAuth": {
@@ -874,7 +895,7 @@ def postman_collection():
         "variable": [
             {
                 "key": "baseUrl",
-                "value": "http://localhost:5000",
+                "value": "https://werent-backend-api.onrender.com" if os.environ.get('FLASK_ENV') == 'production' else "http://localhost:5000",
                 "type": "string"
             },
             {
