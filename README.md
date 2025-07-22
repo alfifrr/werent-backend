@@ -4,6 +4,15 @@
 
 A modern, secure, and scalable Flask-based backend API for an equipment rental platform. Built with best practices, modular architecture, comprehensive authentication system, and interactive API documentation.
 
+### Architecture Pattern
+This project follows the MVC (Model-View-Controller) pattern:
+- **Models**: Database models (SQLAlchemy)
+- **Views (Routes)**: HTTP endpoints/blueprints; handle request/response and delegate to controllers
+- **Controllers**: Business logic; orchestrate between routes, models, and services
+- **Services**: Reusable business logic and data access
+
+Business logic should be implemented in controllers, not directly in route functions.
+
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.1+-green.svg)](https://flask.palletsprojects.com)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-orange.svg)](https://sqlalchemy.org)
@@ -103,7 +112,8 @@ werent-backend/
 │   │   ├── item.py         # Item/Equipment model
 │   │   ├── booking.py      # Rental booking model
 │   │   └── review.py       # Review and rating model
-│   ├── routes/              # Route blueprints
+│   ├── controllers/         # Controller layer (business logic, orchestrates between routes and services)
+│   ├── routes/              # Route blueprints (HTTP request/response, call controllers)
 │   │   ├── __init__.py
 │   │   ├── main.py         # General routes
 │   │   └── auth.py         # Authentication routes

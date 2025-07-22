@@ -95,7 +95,8 @@ GET  /docs/postman       - Postman collection
 │   ├── models/                   # Database models
 │   │   ├── __init__.py
 │   │   └── user.py              # User model with enhanced methods
-│   ├── routes/                   # Route blueprints
+│   ├── controllers/              # Controller layer (business logic, orchestrates between routes and services)
+│   ├── routes/                   # Route blueprints (HTTP request/response, call controllers)
 │   │   ├── __init__.py
 │   │   ├── main.py              # General routes
 │   │   └── auth.py              # Authentication routes
