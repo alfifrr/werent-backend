@@ -5,34 +5,36 @@ Authentication schemas for request/response validation.
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from app.schemas.base_schema import BaseSchema
+from app.schemas.user_schema import UserResponseSchema
 
 
 class LoginSchema(BaseSchema):
-    """Schema for user login."""
+    """Schema for user login, aligned with User model."""
 
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., description="User password")
 
 
+
 class LoginResponseSchema(BaseSchema):
-    """Schema for login response."""
+    """Schema for login response, aligned with User model."""
 
     success: bool
     message: str
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
-    user: Optional[dict] = None
+    user: Optional[UserResponseSchema] = None
     expires_in: Optional[int] = None
 
 
 class RegisterSchema(BaseSchema):
-    """Schema for user registration."""
+    """Schema for user registration, aligned with User model."""
 
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., min_length=8, max_length=128, description="User password")
-    confirm_password: str = Field(..., description="Confirm password")
-    name: str = Field(..., min_length=2, max_length=100, description="User full name")
-    phone: Optional[str] = Field(None, max_length=20, description="User phone number")
+    first_name: str = Field(..., min_length=1, max_length=50, description="User first name")
+    last_name: str = Field(..., min_length=1, max_length=50, description="User last name")
+    phone_number: Optional[str] = Field(None, max_length=20, description="User phone number")
 
     @field_validator('password')
     @classmethod
@@ -48,15 +50,8 @@ class RegisterSchema(BaseSchema):
             raise ValueError('Password must contain at least one lowercase letter')
         return v
 
-    @field_validator('confirm_password')
-    @classmethod
-    def passwords_match(cls, v, values):
-        """Validate that passwords match."""
-        if 'password' in values.data and v != values.data['password']:
-            raise ValueError('Passwords do not match')
-        return v
 
-    @field_validator('phone')
+    @field_validator('phone_number')
     @classmethod
     def validate_phone(cls, v):
         """Validate phone number format."""
@@ -68,11 +63,11 @@ class RegisterSchema(BaseSchema):
 
 
 class RegisterResponseSchema(BaseSchema):
-    """Schema for registration response."""
+    """Schema for registration response, aligned with User model."""
 
     success: bool
     message: str
-    user: Optional[dict] = None
+    user: Optional[UserResponseSchema] = None
 
 
 class TokenRefreshSchema(BaseSchema):
