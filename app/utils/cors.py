@@ -25,6 +25,8 @@ def setup_cors(app):
         "http://127.0.0.1:3000",    # Alternative localhost
         "http://localhost:3001",    # Alternative React/Next.js port
         "http://127.0.0.1:3001",    # Alternative localhost
+        "http://localhost:5000",    # Backend development server
+        "http://127.0.0.1:5000",    # Alternative localhost
     ]
     
     # Add production frontend URL from environment variable
@@ -39,6 +41,7 @@ def setup_cors(app):
             "https://werent-frontend.vercel.app",
             "https://werent.com",
             "https://www.werent.com",
+            "https://werent-backend-api.onrender.com",
         ]
         ALLOWED_ORIGINS.extend(production_origins)
     
