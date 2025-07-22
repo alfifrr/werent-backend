@@ -1,5 +1,5 @@
 """
-Swagger-documented authentication routes for CamRent Backend API.
+Swagger-documented authentication routes for WeRent Backend API.
 Enhanced authentication endpoints with comprehensive OpenAPI documentation.
 """
 
@@ -42,18 +42,26 @@ def register_auth_routes(api):
             - Must be unique (not already registered)
             
             **Name Requirements:**
-            - 1-50 characters
+            - 1-50 characters each (first_name, last_name)
             - Letters, spaces, hyphens, and apostrophes only
             
             **Phone Requirements (Optional):**
             - Valid international phone number format
             - Can include country code
+            - 10-15 digits when cleaned
+            
+            **Possible Validation Errors:**
+            - `email`: "Email is required", "Invalid email format"
+            - `password`: "Password is required", "Password must be at least 8 characters long", "Password must contain at least one digit", "Password must contain at least one uppercase letter", "Password must contain at least one lowercase letter"
+            - `first_name`: "Field required", "String should have at least 1 characters"
+            - `last_name`: "Field required", "String should have at least 1 characters"
+            - `phone`: "Phone number must be between 10-15 digits"
             ''',
             responses={
                 201: ('User created successfully', models['auth_success_response']),
-                400: ('Bad request - missing or invalid data', models['error_response']),
+                400: ('Bad request - missing JSON payload', models['error_response']),
                 409: ('Conflict - email already registered', models['error_response']),
-                422: ('Validation error', models['validation_error_response']),
+                422: ('Validation error - see field_errors for details', models['validation_error_response']),
                 500: ('Internal server error', models['error_response'])
             }
         )
@@ -112,7 +120,7 @@ def register_auth_routes(api):
                     email=email,
                     first_name=first_name,
                     last_name=last_name,
-                    phone=phone
+                    phone_number=phone
                 )
                 user.set_password(password)
                 user.save()
@@ -140,23 +148,86 @@ def register_auth_routes(api):
             description='''
             Authenticate user with email and password.
             
-            Returns a JWT access token that expires in 24 hours.
-            Use this token in the Authorization header for protected endpoints.
+            **Authentication Process:**
+            - Validates email format and required fields
+            - Checks if user exists and password is correct
+            - Verifies account is active (not deactivated)
+            - Returns JWT access token valid for 24 hours
             
             **Usage:**
+            Use the returned access token in the Authorization header for protected endpoints:
             ```
             Authorization: Bearer <access_token>
             ```
             
-            **Account Status:**
-            - Account must be active to login
-            - Deactivated accounts will be rejected
+            **Security Notes:**
+            - Email lookup is case-insensitive
+            - Failed login attempts do not reveal if email exists
+            - Deactivated accounts cannot login
+            - Tokens expire automatically after 24 hours
             ''',
             responses={
-                200: ('Login successful', models['auth_success_response']),
-                400: ('Bad request - missing credentials', models['error_response']),
-                401: ('Unauthorized - invalid credentials or inactive account', models['error_response']),
-                500: ('Internal server error', models['error_response'])
+                200: ('Login successful - returns user data and JWT token', models['auth_success_response']),
+                400: ('Bad request - invalid input format or missing fields', models['error_response'], {
+                    'examples': {
+                        'missing_fields': {
+                            'summary': 'Missing required fields',
+                            'value': {
+                                'success': False,
+                                'message': 'Email and password are required',
+                                'error_code': 'MISSING_CREDENTIALS'
+                            }
+                        },
+                        'invalid_email': {
+                            'summary': 'Invalid email format',
+                            'value': {
+                                'success': False,
+                                'message': 'Invalid email format',
+                                'error_code': 'INVALID_EMAIL'
+                            }
+                        },
+                        'invalid_json': {
+                            'summary': 'Invalid JSON payload',
+                            'value': {
+                                'success': False,
+                                'message': 'JSON payload required',
+                                'error_code': 'INVALID_REQUEST'
+                            }
+                        }
+                    }
+                }),
+                401: ('Unauthorized - invalid credentials or account issues', models['error_response'], {
+                    'examples': {
+                        'invalid_credentials': {
+                            'summary': 'Wrong email or password',
+                            'value': {
+                                'success': False,
+                                'message': 'Invalid email or password',
+                                'error_code': 'INVALID_CREDENTIALS'
+                            }
+                        },
+                        'account_deactivated': {
+                            'summary': 'Account is deactivated',
+                            'value': {
+                                'success': False,
+                                'message': 'Account is deactivated',
+                                'error_code': 'ACCOUNT_INACTIVE'
+                            }
+                        }
+                    }
+                }),
+                500: ('Internal server error - unexpected system failure', models['error_response'], {
+                    'examples': {
+                        'server_error': {
+                            'summary': 'Server-side error',
+                            'value': {
+                                'success': False,
+                                'message': 'An unexpected error occurred. Please try again later.',
+                                'error_code': 'INTERNAL_ERROR'
+                            }
+                        }
+                    }
+                })
             }
         )
         @auth_ns.expect(models['login_request'], validate=True)
@@ -315,7 +386,7 @@ def register_auth_routes(api):
                     if phone and not validate_phone(phone):
                         field_errors['phone'] = 'Invalid phone number format'
                     else:
-                        user.phone = phone
+                        user.phone_number = phone
                 
                 if field_errors:
                     return validation_error_response(field_errors)

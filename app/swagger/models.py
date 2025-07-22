@@ -65,8 +65,11 @@ def create_swagger_models(api):
             'field_errors': fields.Raw(
                 description='Field-specific validation errors',
                 example={
-                    'email': 'Invalid email format',
-                    'password': 'Password must be at least 8 characters'
+                    'email': ['Invalid email format'],
+                    'password': ['Password must be at least 8 characters long'],
+                    'first_name': ['Field required'],
+                    'last_name': ['Field required'],
+                    'phone': ['Phone number must be between 10-15 digits']
                 }
             )
         }))
@@ -82,7 +85,7 @@ def create_swagger_models(api):
         'email': fields.String(
             required=True,
             description='User email address',
-            example='john.doe@camrent.com'
+            example='john.doe@werent.com'
         ),
         'first_name': fields.String(
             required=True,
@@ -94,10 +97,30 @@ def create_swagger_models(api):
             description='User last name',
             example='Doe'
         ),
-        'phone': fields.String(
+        'phone_number': fields.String(
             required=False,
             description='User phone number',
             example='+1234567890'
+        ),
+        'is_admin': fields.Boolean(
+            required=True,
+            description='Admin status',
+            example=False
+        ),
+        'is_verified': fields.Boolean(
+            required=True,
+            description='Verification status',
+            example=False
+        ),
+        'is_active': fields.Boolean(
+            required=True,
+            description='Account status',
+            example=True
+        ),
+        'uuid': fields.String(
+            required=True,
+            description='Unique user UUID',
+            example='550e8400-e29b-41d4-a716-446655440000'
         ),
         'created_at': fields.DateTime(
             required=True,
@@ -108,11 +131,6 @@ def create_swagger_models(api):
             required=True,
             description='Last profile update timestamp',
             example='2025-07-19T10:12:12.908589'
-        ),
-        'is_active': fields.Boolean(
-            required=True,
-            description='Account status',
-            example=True
         )
     })
     
@@ -154,12 +172,12 @@ def create_swagger_models(api):
     login_request = api.model('LoginRequest', {
         'email': fields.String(
             required=True,
-            description='Registered email address',
-            example='john.doe@camrent.com'
+            description='Registered email address (case-insensitive)',
+            example='john.doe@werent.com'
         ),
         'password': fields.String(
             required=True,
-            description='User password',
+            description='User password (minimum 8 characters)',
             example='SecurePass123'
         )
     })
@@ -201,8 +219,8 @@ def create_swagger_models(api):
         'data': fields.Nested(api.model('AuthData', {
             'user': fields.Nested(user_model, description='User information'),
             'access_token': fields.String(
-                description='JWT access token',
-                example='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                description='JWT access token (expires in 24 hours)',
+                example='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY0MjUwMDAwMCwianRpIjoiYWJjZGVmIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEyMzQ1IiwibmJmIjoxNjQyNTAwMDAwLCJleHAiOjE2NDI1ODY0MDB9.example_signature'
             )
         }))
     })

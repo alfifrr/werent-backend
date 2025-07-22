@@ -12,11 +12,11 @@ class TestAuth:
     def test_signup_success(self, client):
         """Test successful user registration."""
         data = {
-            'email': 'test@camrent.com',
+            'email': 'test@werent.com',
             'password': 'TestPass123',
             'first_name': 'John',
             'last_name': 'Doe',
-            'phone': '+1234567890'
+            'phone': '1234567890'
         }
         
         response = client.post('/api/auth/signup', 
@@ -32,7 +32,7 @@ class TestAuth:
     def test_signup_missing_fields(self, client):
         """Test signup with missing required fields."""
         data = {
-            'email': 'test@camrent.com'
+            'email': 'test@werent.com'
             # Missing password, first_name, last_name
         }
         
@@ -75,7 +75,7 @@ class TestAuth:
         
         # Try to login
         data = {
-            'email': 'test@camrent.com',
+            'email': 'test@werent.com',
             'password': 'TestPass123'
         }
         

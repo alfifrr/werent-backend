@@ -132,7 +132,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                     "type": "object",
                     "properties": {
                         "id": {"type": "integer", "example": 1},
-                        "email": {"type": "string", "format": "email", "example": "john.doe@camrent.com"},
+                        "email": {"type": "string", "format": "email", "example": "john.doe@werent.com"},
                         "first_name": {"type": "string", "example": "John"},
                         "last_name": {"type": "string", "example": "Doe"},
                         "phone": {"type": "string", "example": "+1234567890"},
@@ -181,7 +181,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                     "type": "object",
                     "required": ["email", "password"],
                     "properties": {
-                        "email": {"type": "string", "format": "email", "example": "john.doe@camrent.com"},
+                        "email": {"type": "string", "format": "email", "example": "john.doe@werent.com"},
                         "password": {"type": "string", "example": "SecurePass123"}
                     }
                 },

@@ -1,5 +1,5 @@
 """
-Tests package for CamRent Backend API.
+Tests package for WeRent Backend API.
 """
 
 # Test package initialization

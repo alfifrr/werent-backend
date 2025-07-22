@@ -233,7 +233,8 @@ Methods untuk query data dengan berbagai filter dan kondisi bisnis.
 # Membuat user baru
 user = User()
 user.email = "user@example.com"
-user.name = "John Doe"
+user.first_name = "John"
+user.last_name = "Doe"
 user.set_password("password123")
 user.save()
 
