@@ -60,11 +60,11 @@ api = Api(
     
     ## Base URL
     - **Development**: `http://localhost:5000`
-    - **Production**: `https://api.camrent.com` (when deployed)
+    - **Production**: `https://api.werent.com` (when deployed)
     ''',
     doc='/docs/',
-    contact='CamRent Development Team',
-    contact_email='dev@camrent.com',
+    contact='WeRent Development Team',
+    contact_email='dev@werent.com',
     license='MIT',
     license_url='https://opensource.org/licenses/MIT',
     authorizations={

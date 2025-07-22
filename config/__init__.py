@@ -1,5 +1,5 @@
 """
-Configuration package for CamRent Backend.
+Configuration package for WeRent Backend.
 """
 
 from .config import get_config, config

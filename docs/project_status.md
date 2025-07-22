@@ -1,15 +1,15 @@
 # WeRent Backend - Project Status
 
 **Last Updated:** July 22, 2025  
-**Project Phase:** Initial Development - Authentication Complete + Code Refactoring Complete + Swagger Documentation Complete  
+**Project Phase:** Authentication Complete + Enhanced Documentation + Field Alignment Fixed  
 **Flask App Status:** ✅ Running on http://localhost:5000  
-**Documentation Status:** ✅ Interactive API docs available at /docs/
+**Documentation Status:** ✅ Interactive API docs available at /docs/ and /redoc/
 
 ---
 
 ## 📋 Project Overview
 
-**WeRent** is an outfit rental platform backend built with Flask. The project follows RESTful API design principles, uses JWT authentication for secure user management, and implements Flask best practices with a modular architecture. Features comprehensive interactive API documentation with OpenAPI 3.0.
+**WeRent** is an equipment rental platform backend built with Flask. The project follows RESTful API design principles, uses JWT authentication for secure user management, and implements Flask best practices with a modular architecture. Features comprehensive interactive API documentation with OpenAPI 3.0 and enhanced Swagger UI.
 
 ### Tech Stack
 - **Framework:** Flask (Python)
@@ -17,8 +17,9 @@
 - **Authentication:** JWT with Flask-JWT-Extended
 - **Password Security:** Flask-Bcrypt
 - **Database ORM:** SQLAlchemy with Flask-Migrate
+- **Data Validation:** Pydantic v2 with advanced validators
 - **API Documentation:** OpenAPI 3.0 with Swagger UI, ReDoc
-- **Package Management:** UV
+- **Package Management:** UV (modern Python package manager)
 - **Environment:** Python Virtual Environment (.venv)
 - **Testing:** Pytest with Flask-Testing
 - **Code Quality:** Black (formatter), Flake8 (linter)

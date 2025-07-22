@@ -1,13 +1,14 @@
 # WeRent Backend API
 
-> **Outfit Rental Platform Backend Service**
+> **Equipment Rental Platform Backend Service**
 
-A modern, secure, and scalable Flask-based backend API for an outfit rental platform. Built with best practices, modular architecture, and comprehensive authentication system.
+A modern, secure, and scalable Flask-based backend API for an equipment rental platform. Built with best practices, modular architecture, comprehensive authentication system, and interactive API documentation.
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.1+-green.svg)](https://flask.palletsprojects.com)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-orange.svg)](https://sqlalchemy.org)
 [![JWT](https://img.shields.io/badge/JWT-Authentication-red.svg)](https://jwt.io)
+[![Swagger](https://img.shields.io/badge/API-Swagger%20Docs-brightgreen.svg)](http://localhost:5000/docs/)
 
 ## 🚀 Quick Start
 
@@ -28,45 +29,62 @@ source .venv/bin/activate
 # Install dependencies
 uv sync
 
-# Initialize database
-python main.py
-# or
-flask init-db
+# Run the application
+uv run python main.py
 ```
 
 ### Running the Application
 ```bash
-# Development server
+# Development server (preferred)
+uv run python main.py
+
+# Alternative method
+source .venv/bin/activate
 python main.py
 
 # The API will be available at:
-# http://localhost:5000
+# - API: http://localhost:5000
+# - Interactive Docs: http://localhost:5000/docs/
+# - ReDoc: http://localhost:5000/redoc/
 ```
 
 ## 📋 Features
 
 ### ✅ Completed
 - **🔐 Complete Authentication System**
-  - User registration with validation
-  - Secure login with JWT tokens
+  - User registration with comprehensive validation
+  - Secure login with JWT tokens (access + refresh)
   - Protected routes and middleware
-  - User profile management
-  - Password hashing and security
+  - User profile management (GET/PUT)
+  - Password hashing with bcrypt
+  - Field validation (email, password strength, phone)
+  - Error handling with detailed responses
+
+- **📚 Interactive API Documentation**
+  - OpenAPI 3.0 specification
+  - Swagger UI interface at `/docs/`
+  - ReDoc interface at `/redoc/`
+  - Comprehensive error response examples
+  - Request/response schemas with validation
 
 - **🏗️ Modern Architecture**
   - Application factory pattern
   - Blueprint-based modular routing
+  - Pydantic v2 for data validation
   - Standardized API responses
   - Comprehensive input validation
   - Error handling and logging
+  - Database migrations with Alembic
 
 - **🗄️ Database Management**
-  - SQLAlchemy ORM with models
+  - SQLAlchemy ORM with enhanced models
   - Database migrations ready
-  - Enhanced User model with methods
+  - User model with proper field structure
+  - Active/inactive user states
+  - UUID support for users
 
 ### 🚧 In Development
-- Gear/Equipment management system
+- Equipment/Item management system
 - Rental and cart functionality
 - Review and rating system
 - Admin dashboard
@@ -81,11 +99,25 @@ werent-backend/
 │   ├── extensions.py        # Flask extensions
 │   ├── models/              # Database models
 │   │   ├── __init__.py
-│   │   └── user.py         # User model
+│   │   ├── user.py         # User model with auth methods
+│   │   ├── item.py         # Item/Equipment model
+│   │   ├── booking.py      # Rental booking model
+│   │   └── review.py       # Review and rating model
 │   ├── routes/              # Route blueprints
 │   │   ├── __init__.py
 │   │   ├── main.py         # General routes
 │   │   └── auth.py         # Authentication routes
+│   ├── schemas/             # Pydantic validation schemas
+│   │   ├── __init__.py
+│   │   ├── user_schema.py  # User validation schemas
+│   │   └── base_schema.py  # Base validation classes
+│   ├── services/            # Business logic layer
+│   │   ├── __init__.py
+│   │   └── user_service.py # User business logic
+│   ├── swagger/             # API documentation
+│   │   ├── __init__.py
+│   │   ├── models.py       # Swagger response models
+│   │   └── auth_routes.py  # Auth endpoint documentation
 │   └── utils/               # Utility functions
 │       ├── __init__.py
 │       ├── validators.py    # Input validation
@@ -93,15 +125,21 @@ werent-backend/
 ├── config/                  # Configuration management
 │   ├── __init__.py
 │   └── config.py           # Environment configurations
+├── docs/                    # Documentation directory
+│   ├── dev_notes.md        # Development notes and updates
+│   ├── api_documentation.md # Complete API reference
+│   ├── project_status.md   # Project status and roadmap
+│   └── deployment.md       # Deployment guides
 ├── tests/                   # Test suite
 │   ├── __init__.py
 │   ├── conftest.py         # Test configuration
 │   └── test_auth.py        # Authentication tests
+├── migrations/              # Database migrations
+│   ├── versions/           # Migration files
+│   └── env.py             # Migration environment
 ├── main.py                 # Application entry point
 ├── pyproject.toml          # Dependencies and project config
-├── API_DOCUMENTATION.md    # Complete API documentation
-├── PROJECT_STATUS.md       # Project status and roadmap
-└── CONTRIBUTING.md         # Development guidelines
+└── README.md              # This file
 ```
 
 ## 🔌 API Endpoints
@@ -113,16 +151,16 @@ werent-backend/
 | `POST` | `/api/auth/login` | User authentication | ❌ |
 | `GET` | `/api/auth/profile` | Get user profile | ✅ |
 | `PUT` | `/api/auth/profile` | Update user profile | ✅ |
-| `POST` | `/api/auth/logout` | User logout | ✅ |
 
 ### General
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/` | API information |
 | `GET` | `/health` | Health check |
-| `GET` | `/api` | API documentation info |
+| `GET` | `/docs/` | Interactive API documentation (Swagger UI) |
+| `GET` | `/redoc/` | Alternative API documentation (ReDoc) |
 
-> **📚 Complete API documentation:** See [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+> **📚 Complete API documentation:** Visit [http://localhost:5000/docs/](http://localhost:5000/docs/) when running the server
 
 ## 🛠️ Development
 
@@ -143,14 +181,14 @@ pytest --cov=app --cov-report=html
 
 ### Database Commands
 ```bash
-# Initialize database
-flask init-db
+# Initialize database (automatic on first run)
+uv run python main.py
 
-# Create admin user
-flask create-admin
+# Run database migrations
+uv run flask db upgrade
 
-# Reset database (development)
-flask reset-db
+# Create new migration
+uv run flask db migrate -m "Description of changes"
 ```
 
 ### Testing
@@ -182,7 +220,7 @@ FLASK_ENV=development
 JWT_SECRET_KEY=your-jwt-secret-key
 
 # Database Configuration
-DATABASE_URL=sqlite:///camrent.db
+DATABASE_URL=sqlite:///werent.db
 
 # Email Configuration (future)
 SMTP_SERVER=smtp.gmail.com
@@ -197,10 +235,12 @@ SMTP_PASSWORD=your-app-password
 
 ## 📖 Documentation
 
-- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete API reference with examples
-- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current status, roadmap, and development progress
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development guidelines and code standards
-- **[GIT_WORKFLOW.md](GIT_WORKFLOW.md)** - Branching strategy and collaboration guidelines
+- **[Interactive API Docs](http://localhost:5000/docs/)** - Swagger UI with live testing capability
+- **[Alternative API Docs](http://localhost:5000/redoc/)** - ReDoc interface for API reference
+- **[docs/api_documentation.md](docs/api_documentation.md)** - Complete API reference with examples
+- **[docs/project_status.md](docs/project_status.md)** - Current status, roadmap, and development progress
+- **[docs/deployment.md](docs/deployment.md)** - Deployment guides for various platforms
+- **[docs/dev_notes.md](docs/dev_notes.md)** - Development notes and recent updates
 
 ## 🧪 Testing
 
@@ -237,8 +277,8 @@ pytest tests/test_auth.py::TestAuth::test_signup_success
 
 ## 🗺️ Roadmap
 
-### Phase 2: Gear Management (Next)
-- Gear catalog with categories
+### Phase 2: Equipment Management (Next)
+- Equipment catalog with categories
 - Inventory management
 - Search and filtering
 - Image upload handling
@@ -255,7 +295,7 @@ pytest tests/test_auth.py::TestAuth::test_signup_success
 - Email notifications
 - Advanced reporting
 
-> **📋 Detailed roadmap:** See [PROJECT_STATUS.md](PROJECT_STATUS.md)
+> **📋 Detailed roadmap:** See [docs/project_status.md](docs/project_status.md)
 
 ## 🌳 Branching Strategy
 
@@ -288,26 +328,39 @@ git push origin feature/gear-management
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+We welcome contributions! Please see our documentation for guidelines:
 
-- Development setup
-- Code style guidelines
-- Testing requirements
-- Pull request process
+- **Development setup:** See [Quick Start](#-quick-start) section above
+- **Code style guidelines:** Follow existing patterns and use provided tools
+- **Testing requirements:** Add tests for new features
+- **Documentation:** Update relevant docs when making changes
 
 ### Quick Contribution Steps
 1. Fork the repository
-2. Create a feature branch
-3. Follow code style guidelines
+2. Create a feature branch from `development`
+3. Follow code style guidelines (Black formatting)
 4. Add tests for new features
-5. Update documentation
-6. Submit a pull request
+5. Update documentation as needed
+6. Submit a pull request to `development` branch
+
+### Code Quality Tools
+```bash
+# Format code
+black app/ tests/
+
+# Check style
+flake8 app/ tests/
+
+# Run tests with coverage
+pytest --cov=app
+```
 
 ## 📞 Support
 
-- **Documentation:** Check `API_DOCUMENTATION.md` and `PROJECT_STATUS.md`
-- **Code Examples:** See existing implementations in `app/` directory
-- **Development Help:** Review `CONTRIBUTING.md`
+- **Interactive Documentation:** [http://localhost:5000/docs/](http://localhost:5000/docs/) (when server is running)
+- **API Reference:** Check `docs/api_documentation.md`
+- **Development Notes:** See `docs/dev_notes.md` for recent updates
+- **Project Status:** Review `docs/project_status.md` for current roadmap
 
 ## 📄 License
 
@@ -319,7 +372,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - SQLAlchemy for excellent ORM capabilities
 - Flask-JWT-Extended for robust JWT implementation
 - UV for modern Python package management
+- Pydantic for data validation
+- OpenAPI/Swagger for API documentation
 
 ---
 
-**CamRent Backend API** - Built with ❤️ for the photography community
+**WeRent Backend API** - Built with ❤️ for the equipment rental community

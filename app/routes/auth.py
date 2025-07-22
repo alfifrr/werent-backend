@@ -65,7 +65,8 @@ def signup():
         user = user_service.create_user(
             email=user_data.email,
             password=user_data.password,
-            name=user_data.name,
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
             phone=user_data.phone
         )
 
@@ -199,7 +200,7 @@ def update_profile():
             return validation_error_response(field_errors)
 
         # Update user using service
-        updated_user = user_service.update_user(
+        updated_user = user_service.update_profile(
             user_id=current_user_id,
             **update_data.model_dump(exclude_unset=True)
         )
