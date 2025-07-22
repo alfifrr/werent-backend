@@ -94,8 +94,11 @@ app/swagger/
 
 #### 2. Authentication Testing
 1. Use `/api/auth/signup` to create a test account
-2. Use `/api/auth/login` to get a JWT token
-3. Click "Authorize" in Swagger UI and enter: `Bearer <your-token>`
+2. Use `/api/auth/login` to obtain both an access token and a refresh token.
+   - The login response includes a `user` object and both `access_token` and `refresh_token` fields.
+   - The `access_token` is used for authenticating API requests and expires in 15 minutes.
+   - The `refresh_token` can be used to obtain a new access token and expires in 30 days.
+3. Click "Authorize" in Swagger UI and enter: `Bearer <access_token>`
 4. Test protected endpoints like `/api/auth/profile`
 
 #### 3. Using Postman
@@ -115,19 +118,33 @@ app/swagger/
 #### 2. Authentication Flow
 ```bash
 # 1. Register a new user
-curl -X POST http://localhost:5000/api/auth/signup \\
-  -H "Content-Type: application/json" \\
+curl -X POST http://localhost:5000/api/auth/signup \
+  -H "Content-Type: application/json" \
   -d '{"email": "user@example.com", "password": "SecurePass123", "first_name": "John", "last_name": "Doe"}'
 
-# 2. Login to get token
-curl -X POST http://localhost:5000/api/auth/login \\
-  -H "Content-Type: application/json" \\
+# 2. Login to get access and refresh tokens
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
   -d '{"email": "user@example.com", "password": "SecurePass123"}'
 
-# 3. Use token for protected endpoints
-curl -X GET http://localhost:5000/api/auth/profile \\
-  -H "Authorization: Bearer <your-jwt-token>"
+# The response includes both access_token and refresh_token
+# Use access_token for protected endpoints:
+curl -X GET http://localhost:5000/api/auth/profile \
+  -H "Authorization: Bearer <access_token>"
+# Use refresh_token to obtain a new access token if expired:
+curl -X POST http://localhost:5000/api/auth/refresh \
+  -H "Authorization: Bearer <refresh_token>"
 ```
+
+**Error Handling:**
+- `400` - Missing or invalid fields
+- `401` - Invalid credentials or deactivated account
+- `500` - Unexpected error
+
+**Notes:**
+- The `user` object fields match the User model and all other user-related endpoints.
+- The `access_token` and `refresh_token` are JWTs for authentication and session refresh.
+- Example values are for documentation; actual tokens will differ.
 
 ## Customization and Extension
 
