@@ -10,7 +10,8 @@ app/
 ├── __init__.py           # Application factory
 ├── extensions.py         # Flask extensions initialization
 ├── models/              # Database models (SQLAlchemy)
-├── routes/              # Route blueprints
+├── controllers/         # Controller layer (business logic, orchestrates between routes and services)
+├── routes/              # Route blueprints (HTTP request/response, call controllers)
 ├── utils/               # Utility functions and helpers
 config/                  # Configuration management
 tests/                   # Test suites
@@ -204,9 +205,10 @@ pytest tests/test_auth.py::TestAuth::test_signup_success
 ### 2. Creating New Routes
 1. Create blueprint file in `app/routes/`
 2. Register blueprint in `app/routes/__init__.py`
-3. Use standardized response utilities
-4. Add proper error handling
-5. Validate all inputs
+3. Implement business logic in a controller function in `app/controllers/`, and call it from the route function
+4. Use standardized response utilities
+5. Add proper error handling
+6. Validate all inputs
 
 ### 3. Example New Route Blueprint
 ```python
