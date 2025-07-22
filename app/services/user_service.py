@@ -16,12 +16,13 @@ class UserService(BaseService):
         """Initialize UserService."""
         super().__init__(User)
 
-    def create_user(self, email, password, name, phone=None):
+    def create_user(self, email, password, first_name, last_name, phone=None):
         """Create a new user with hashed password."""
         user = User()
         user.email = email.lower().strip()
-        user.name = name
-        user.phone = phone
+        user.first_name = first_name.strip()
+        user.last_name = last_name.strip()
+        user.phone_number = phone.strip() if phone else None
         user.set_password(password)
         return self.save(user)
 
@@ -65,8 +66,15 @@ class UserService(BaseService):
         user = self.get_by_id(user_id)
         if user:
             # Only allow certain fields to be updated
-            allowed_fields = ['name', 'phone']
-            update_data = {k: v for k, v in kwargs.items() if k in allowed_fields}
+            allowed_fields = ['first_name', 'last_name', 'phone']
+            update_data = {}
+            for k, v in kwargs.items():
+                if k in allowed_fields:
+                    # Map phone to phone_number for the model
+                    if k == 'phone':
+                        update_data['phone_number'] = v
+                    else:
+                        update_data[k] = v
             return self.update(user, **update_data)
         return None
 
@@ -112,7 +120,8 @@ class UserService(BaseService):
     def search_users(self, query):
         """Search users by name or email."""
         return User.query.filter(
-            (User.name.ilike(f'%{query}%')) |
+            (User.first_name.ilike(f'%{query}%')) |
+            (User.last_name.ilike(f'%{query}%')) |
             (User.email.ilike(f'%{query}%'))
         ).all()
 

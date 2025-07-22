@@ -1,5 +1,5 @@
 """
-Main routes for CamRent Backend API.
+Main routes for WeRent Backend API.
 Contains general application routes and health checks.
 """
 
@@ -13,10 +13,10 @@ main_bp = Blueprint('main', __name__)
 def index():
     """API root endpoint with basic information."""
     return {
-        'name': 'CamRent Backend API',
+        'name': 'WeRent Backend API',
         'version': '1.0.0',
         'status': 'running',
-        'message': 'Welcome to CamRent - Camera Equipment Rental Platform'
+        'message': 'Welcome to WeRent - Equipment Rental Platform'
     }
 
 
@@ -33,12 +33,12 @@ def health_check():
 def api_info():
     """API information endpoint."""
     return {
-        'api_name': 'CamRent Backend API',
+        'api_name': 'WeRent Backend API',
         'version': '1.0.0',
-        'documentation': '/api/docs',
+        'documentation': '/docs/',
         'endpoints': {
             'authentication': '/api/auth/*',
-            'gear': '/api/gear/* (coming soon)',
+            'equipment': '/api/equipment/* (coming soon)',
             'rentals': '/api/rentals/* (coming soon)',
             'reviews': '/api/reviews/* (coming soon)'
         }

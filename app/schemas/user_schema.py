@@ -13,7 +13,8 @@ class UserCreateSchema(BaseSchema):
 
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., min_length=8, max_length=128, description="User password")
-    name: str = Field(..., min_length=2, max_length=100, description="User full name")
+    first_name: str = Field(..., min_length=1, max_length=50, description="User first name")
+    last_name: str = Field(..., min_length=1, max_length=50, description="User last name")
     phone: Optional[str] = Field(None, max_length=20, description="User phone number")
 
     @field_validator('password')
@@ -50,7 +51,8 @@ class UserLoginSchema(BaseSchema):
 class UserUpdateSchema(BaseSchema):
     """Schema for updating user profile."""
 
-    name: Optional[str] = Field(None, min_length=2, max_length=100, description="User full name")
+    first_name: Optional[str] = Field(None, min_length=1, max_length=50, description="User first name")
+    last_name: Optional[str] = Field(None, min_length=1, max_length=50, description="User last name")
     phone: Optional[str] = Field(None, max_length=20, description="User phone number")
 
     @field_validator('phone')
@@ -97,10 +99,13 @@ class UserResponseSchema(BaseSchema, TimestampMixin):
 
     id: int
     email: EmailStr
-    name: str
-    phone: Optional[str]
+    first_name: str
+    last_name: str
+    phone_number: Optional[str] = None
     is_verified: bool
-    avg_rating: float
+    is_admin: bool
+    is_active: bool
+    uuid: str
 
 
 class UserProfileResponseSchema(UserResponseSchema):

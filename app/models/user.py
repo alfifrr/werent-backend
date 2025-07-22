@@ -21,6 +21,7 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), nullable=True)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     is_verified = db.Column(db.Boolean, default=False, nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
     uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid_lib.uuid4()))
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
@@ -59,6 +60,7 @@ class User(db.Model):
             'phone_number': self.phone_number,
             'is_admin': self.is_admin,
             'is_verified': self.is_verified,
+            'is_active': self.is_active,
             'uuid': self.uuid,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None

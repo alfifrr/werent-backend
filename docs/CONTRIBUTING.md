@@ -163,7 +163,7 @@ class TestAuth:
     def test_signup_success(self, client):
         """Test successful user registration."""
         data = {
-            'email': 'test@camrent.com',
+            'email': 'test@werent.com',
             'password': 'TestPass123',
             'first_name': 'John',
             'last_name': 'Doe'

@@ -1,13 +1,17 @@
-# CamRent Backend API Documentation
+# WeRent Backend API Documentation
 
 ## Base URL
 ```
 http://localhost:5000
 ```
 
+## Interactive Documentation
+- **Swagger UI:** [http://localhost:5000/docs/](http://localhost:5000/docs/)
+- **ReDoc:** [http://localhost:5000/redoc/](http://localhost:5000/redoc/)
+
 ## Authentication System
 
-CamRent uses JWT-based authentication with a dual-token system:
+WeRent uses JWT-based authentication with a dual-token system:
 - **Access Token**: Short-lived (15 minutes) for API requests
 - **Refresh Token**: Long-lived (30 days) for obtaining new access tokens
 
@@ -27,11 +31,11 @@ Creates a new user account. **Does not create JWT session** - user must login se
 **Request Body:**
 ```json
 {
-  "email": "user@example.com",
+  "email": "user@werent.com",
   "password": "SecurePass123",
   "first_name": "John",
   "last_name": "Doe",
-  "phone": "+1234567890" // optional
+  "phone": "1234567890"
 }
 ```
 
@@ -52,10 +56,13 @@ Creates a new user account. **Does not create JWT session** - user must login se
       "email": "user@example.com",
       "first_name": "John",
       "last_name": "Doe",
-      "phone": "+1234567890",
+      "phone_number": "+1234567890",
+      "is_admin": false,
+      "is_verified": false,
+      "is_active": true,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
       "created_at": "2025-07-19T10:12:12.908589",
-      "updated_at": "2025-07-19T10:12:12.908589",
-      "is_active": true
+      "updated_at": "2025-07-19T10:12:12.908589"
     }
   }
 }
@@ -90,10 +97,13 @@ Authenticates a user and returns both access and refresh tokens.
       "email": "user@example.com",
       "first_name": "John",
       "last_name": "Doe",
-      "phone": "+1234567890",
+      "phone_number": "+1234567890",
+      "is_admin": false,
+      "is_verified": false,
+      "is_active": true,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
       "created_at": "2025-07-19T10:12:12.908589",
-      "updated_at": "2025-07-19T10:12:12.908589",
-      "is_active": true
+      "updated_at": "2025-07-19T10:12:12.908589"
     },
     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -155,10 +165,13 @@ Authorization: Bearer <access_token>
       "email": "user@example.com",
       "first_name": "John",
       "last_name": "Doe",
-      "phone": "+1234567890",
+      "phone_number": "+1234567890",
+      "is_admin": false,
+      "is_verified": false,
+      "is_active": true,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
       "created_at": "2025-07-19T10:12:12.908589",
-      "updated_at": "2025-07-19T10:12:12.908589",
-      "is_active": true
+      "updated_at": "2025-07-19T10:12:12.908589"
     }
   }
 }
@@ -197,10 +210,13 @@ Authorization: Bearer <access_token>
       "email": "user@example.com",
       "first_name": "Jane",
       "last_name": "Smith",
-      "phone": "+0987654321",
+      "phone_number": "+0987654321",
+      "is_admin": false,
+      "is_verified": false,
+      "is_active": true,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
       "created_at": "2025-07-19T10:12:12.908589",
-      "updated_at": "2025-07-19T10:15:42.123456",
-      "is_active": true
+      "updated_at": "2025-07-19T10:15:42.123456"
     }
   }
 }
