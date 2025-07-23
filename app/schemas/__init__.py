@@ -79,22 +79,6 @@ from .booking_schema import (
     BookingRevenueResponseSchema
 )
 
-# Message schemas
-from .message_schema import (
-    MessageCreateSchema,
-    MessageUpdateSchema,
-    MessageResponseSchema,
-    MessageDetailResponseSchema,
-    MessageListResponseSchema,
-    ConversationSchema,
-    ConversationResponseSchema,
-    ConversationListResponseSchema,
-    MessageSearchSchema,
-    MessageStatsSchema,
-    UnreadMessageCountSchema,
-    MessageMarkReadSchema
-)
-
 # Review schemas
 from .review_schema import (
     ReviewCreateSchema,
@@ -116,6 +100,16 @@ from .image_schema import (
     ItemImagesResponseSchema,
     ImageUploadSchema,
     ImageUploadResponseSchema
+)
+
+# Ticketing schemas
+from .ticketing_schema import (
+    CreateTicketRequest,
+    AddMessageRequest,
+    TicketResponse,
+    TicketListResponse,
+    TicketIdRequest,
+    UserIdRequest
 )
 
 # Error schemas
@@ -224,6 +218,14 @@ __all__ = [
     'ReviewSearchSchema',
     'ReviewStatsSchema',
     'ReviewRatingDistributionSchema',
+
+    # Ticketing
+    'CreateTicketRequest',
+    'AddMessageRequest',
+    'TicketResponse',
+    'TicketListResponse',
+    'TicketIdRequest',
+    'UserIdRequest',
 
     # Image
     'ImageCreateSchema',

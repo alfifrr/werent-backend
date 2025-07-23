@@ -9,6 +9,7 @@ from .item_service import ItemService
 from .booking_service import BookingService
 from .review_service import ReviewService
 from .image_service import ImageService
+from .ticketing_service import TicketingService
 
 __all__ = [
     'BaseService',
@@ -16,5 +17,6 @@ __all__ = [
     'ItemService',
     'BookingService',
     'ReviewService',
-    'ImageService'
+    'ImageService',
+    'TicketingService'
 ]
