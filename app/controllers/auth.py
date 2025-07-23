@@ -9,6 +9,7 @@ from app.utils import (
     success_response, error_response, validation_error_response,
     not_found_response, unauthorized_response, internal_error_response
 )
+from app.utils.image_utils import ImageValidator
 
 def _format_validation_errors(e: ValidationError):
     """Helper to format Pydantic validation errors for consistent API response."""
@@ -133,9 +134,28 @@ def update_profile_controller(current_user_id, data):
         except ValidationError as e:
             return _format_validation_errors(e)
 
-        # Update user using service
-        # Convert update_data to dict and ensure phone_number is used
+        # Convert to dict for processing
         update_dict = update_data.model_dump(exclude_unset=True)
+        
+        # Handle profile image validation and compression if provided
+        if 'profile_image' in update_dict:
+            profile_image = update_dict['profile_image']
+            
+            if profile_image:  # If image is provided
+                # Validate the Base64 image
+                validation_result = ImageValidator.validate_base64_image(profile_image)
+                
+                if not validation_result['success']:
+                    return error_response(validation_result['message'], 400)
+                
+                # Compress the image for storage efficiency
+                compressed_image = ImageValidator.compress_image(profile_image)
+                update_dict['profile_image'] = compressed_image
+            
+            else:  # If empty string is provided, remove image
+                update_dict['profile_image'] = None
+
+        # Update user using service
         updated_user = user_service.update_profile(
             user_id=current_user_id,
             **update_dict

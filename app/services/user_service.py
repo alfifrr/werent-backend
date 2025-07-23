@@ -16,13 +16,13 @@ class UserService(BaseService):
         """Initialize UserService."""
         super().__init__(User)
 
-    def create_user(self, email, password, first_name, last_name, phone=None):
+    def create_user(self, email, password, first_name, last_name, phone_number=None):
         """Create a new user with hashed password."""
         user = User()
         user.email = email.lower().strip()
         user.first_name = first_name.strip()
         user.last_name = last_name.strip()
-        user.phone_number = phone.strip() if phone else None
+        user.phone_number = phone_number.strip() if phone_number else None
         user.set_password(password)
         return self.save(user)
 
@@ -66,7 +66,7 @@ class UserService(BaseService):
         user = self.get_by_id(user_id)
         if user:
             # Only allow certain fields to be updated
-            allowed_fields = ['first_name', 'last_name', 'phone']
+            allowed_fields = ['first_name', 'last_name', 'phone', 'profile_image']
             update_data = {}
             for k, v in kwargs.items():
                 if k in allowed_fields:
