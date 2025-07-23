@@ -11,6 +11,29 @@ from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
 class ItemCreateSchema(BaseSchema):
     """Schema for creating a new item."""
 
+    @field_validator('type')
+    @classmethod
+    def uppercase_type(cls, v):
+        if v is not None:
+            return v.upper()
+        return v
+
+    @field_validator('size')
+    @classmethod
+    def uppercase_size(cls, v):
+        if v is not None:
+            return v.upper()
+        return v
+
+    @field_validator('gender')
+    @classmethod
+    def uppercase_gender(cls, v):
+        if v is not None:
+            return v.upper()
+        return v
+
+    """Schema for creating a new item."""
+
     name: str = Field(..., min_length=3, max_length=100, description="Item name")
     type: str = Field(..., min_length=2, max_length=50, description="Item type (category)")
     size: str = Field(..., min_length=1, max_length=20, description="Item size")
@@ -34,6 +57,29 @@ class ItemCreateSchema(BaseSchema):
 
 
 class ItemUpdateSchema(BaseSchema):
+    """Schema for updating an item."""
+
+    @field_validator('type')
+    @classmethod
+    def uppercase_type(cls, v):
+        if v is not None:
+            return v.upper()
+        return v
+
+    @field_validator('size')
+    @classmethod
+    def uppercase_size(cls, v):
+        if v is not None:
+            return v.upper()
+        return v
+
+    @field_validator('gender')
+    @classmethod
+    def uppercase_gender(cls, v):
+        if v is not None:
+            return v.upper()
+        return v
+
     """Schema for updating an item."""
 
     name: Optional[str] = Field(None, min_length=3, max_length=100, description="Item name")
