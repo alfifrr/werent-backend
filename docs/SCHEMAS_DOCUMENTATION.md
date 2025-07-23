@@ -2,7 +2,7 @@
 
 ## Overview
 
-Schemas menggunakan Pydantic untuk validasi input/output data di API. Semua schemas menyediakan automatic validation, serialization, dan documentation untuk endpoints.
+Schemas use Pydantic for input/output data validation in the API. All schemas provide automatic validation, serialization, and documentation for endpoints.
 
 ## Schema Structure
 
@@ -10,35 +10,35 @@ Schemas menggunakan Pydantic untuk validasi input/output data di API. Semua sche
 
 #### `BaseSchema`
 
-Base class untuk semua schemas dengan configuration yang konsisten:
+Base class for all schemas with consistent configuration:
 
-- `from_attributes=True`: Enable ORM mode untuk konversi dari SQLAlchemy models
-- `validate_assignment=True`: Validate assignments setelah object creation
-- `str_strip_whitespace=True`: Automatically strip whitespace dari strings
+- `from_attributes=True`: Enable ORM mode for conversion from SQLAlchemy models
+- `validate_assignment=True`: Validate assignments after object creation
+- `str_strip_whitespace=True`: Automatically strip whitespace from strings
 
 #### `TimestampMixin`
 
-Mixin untuk fields timestamp yang umum digunakan:
+Mixin for commonly used timestamp fields:
 
 - `created_at: datetime`
 
 #### `ResponseSchema`
 
-Base response schema dengan fields:
+Base response schema with fields:
 
 - `success: bool = True`
 - `message: Optional[str] = None`
 
 #### `PaginationSchema`
 
-Schema untuk pagination parameters:
+Schema for pagination parameters:
 
 - `page: int = 1` (ge=1)
 - `limit: int = 20` (ge=1)
 
 #### `PaginatedResponseSchema`
 
-Response schema untuk paginated data:
+Response schema for paginated data:
 
 - `page`, `limit`, `total`, `total_pages`, `has_next`, `has_prev`
 
@@ -48,15 +48,15 @@ Response schema untuk paginated data:
 
 #### Request Schemas:
 
-- **`UserCreateSchema`**: Membuat user baru
+- **`UserCreateSchema`**: Create new user
 
-  - Email validation dengan EmailStr
+  - Email validation using EmailStr
   - Password strength validation (min 8 chars, digit, uppercase)
   - Phone number format validation
 
-- **`UserUpdateSchema`**: Update profile user
+- **`UserUpdateSchema`**: Update user profile
 
-  - Optional fields untuk partial updates
+  - Optional fields for partial updates
 
 - **`UserPasswordUpdateSchema`**: Change password
   - Current password validation
@@ -66,8 +66,8 @@ Response schema untuk paginated data:
 #### Response Schemas:
 
 - **`UserResponseSchema`**: Basic user data
-- **`UserProfileResponseSchema`**: Extended user profile dengan stats
-- **`UserListResponseSchema`**: List users dengan pagination
+- **`UserProfileResponseSchema`**: Extended user profile with stats
+- **`UserListResponseSchema`**: List users with pagination
 
 #### Validation Features:
 
@@ -87,13 +87,13 @@ def validate_password(cls, v):
 
 #### Request Schemas:
 
-- **`ItemCreateSchema`**: Create item baru
+- **`ItemCreateSchema`**: Create new item
 
   - Title length validation (3-100 chars)
   - Description length validation (10-1000 chars)
   - Price validation (> 0, max 10,000)
 
-- **`ItemSearchSchema`**: Search dan filter items
+- **`ItemSearchSchema`**: Search and filter items
   - Price range validation
   - Status validation
   - Category filtering
@@ -101,7 +101,7 @@ def validate_password(cls, v):
 #### Response Schemas:
 
 - **`ItemResponseSchema`**: Basic item data
-- **`ItemDetailResponseSchema`**: Extended dengan owner, images, reviews
+- **`ItemDetailResponseSchema`**: Extended with owner, images, reviews
 - **`ItemAvailabilityResponseSchema`**: Availability check results
 
 #### Advanced Features:
@@ -119,7 +119,7 @@ def validate_price_range(cls, v, values):
 
 #### Request Schemas:
 
-- **`BookingCreateSchema`**: Create booking baru
+- **`BookingCreateSchema`**: Create new booking
 
   - Date validation (start date not in past)
   - End date after start date
@@ -132,7 +132,7 @@ def validate_price_range(cls, v, values):
 #### Response Schemas:
 
 - **`BookingResponseSchema`**: Basic booking data
-- **`BookingDetailResponseSchema`**: Extended dengan item dan user data
+- **`BookingDetailResponseSchema`**: Extended with item and user data
 - **`BookingStatsSchema`**: Booking statistics
 
 #### Date Validation:
@@ -166,7 +166,7 @@ def validate_end_date(cls, v, values):
 #### Response Schemas:
 
 - **`MessageResponseSchema`**: Basic message data
-- **`ConversationResponseSchema`**: Conversation dengan unread count
+- **`ConversationResponseSchema`**: Conversation with unread count
 - **`MessageStatsSchema`**: Message statistics
 
 ### 5. Review Schemas (`app/schemas/review.py`)
@@ -185,7 +185,7 @@ def validate_end_date(cls, v, values):
 #### Response Schemas:
 
 - **`ReviewResponseSchema`**: Basic review data
-- **`ReviewStatsSchema`**: Review statistics dengan rating distribution
+- **`ReviewStatsSchema`**: Review statistics with rating distribution
 - **`ReviewRatingDistributionSchema`**: Detailed rating breakdown
 
 #### Rating Validation:
@@ -202,9 +202,9 @@ def validate_rating(cls, v):
 
 #### Request Schemas:
 
-- **`ImageCreateSchema`**: Add image ke item
+- **`ImageCreateSchema`**: Add image to item
 
-  - URL validation dengan HttpUrl
+  - URL validation using HttpUrl
   - Image extension validation
 
 - **`ImageUploadSchema`**: File upload validation
@@ -215,7 +215,7 @@ def validate_rating(cls, v):
 #### Response Schemas:
 
 - **`ImageResponseSchema`**: Basic image data
-- **`ItemImagesResponseSchema`**: All images untuk item
+- **`ItemImagesResponseSchema`**: All images for item
 - **`ImageUploadResponseSchema`**: Upload result
 
 #### URL Validation:
@@ -235,14 +235,14 @@ def validate_image_url(cls, v):
 #### Request Schemas:
 
 - **`LoginSchema`**: User login
-- **`RegisterSchema`**: User registration dengan password confirmation
-- **`PasswordResetSchema`**: Password reset dengan token
+- **`RegisterSchema`**: User registration with password confirmation
+- **`PasswordResetSchema`**: Password reset with token
 
 #### Response Schemas:
 
-- **`LoginResponseSchema`**: Login result dengan tokens
+- **`LoginResponseSchema`**: Login result with tokens
 - **`TokenResponseSchema`**: Token data
-- **`AuthStatusSchema`**: Authentication status
+- **`AuthStatusSchema`**: Authentication (removed; see model alignment note)
 
 ### 8. Error Schemas (`app/schemas/error.py`)
 
@@ -280,7 +280,7 @@ async def create_user(user_data: UserCreateSchema):
         return UserResponseSchema.from_orm(user)
     except ValueError as e:
         raise HTTPException(
-            status_code=400,
+            (removed; see model alignment note)_code=400,
             detail=ErrorSchema(
                 error="validation_error",
                 message=str(e)
@@ -294,8 +294,8 @@ async def create_user(user_data: UserCreateSchema):
 from app.schemas import BookingCreateSchema
 
 def create_booking_endpoint(booking_data: BookingCreateSchema):
-    # Data sudah tervalidasi oleh Pydantic
-    # Bisa langsung gunakan booking_data.item_id, etc.
+    # Data has already been validated by Pydantic
+    # You can directly use booking_data.item_id, etc.
     pass
 ```
 
@@ -341,7 +341,7 @@ def get_item_detail(item_id: int):
 ### 3. **ORM Integration**
 
 ```python
-# Automatic conversion dari SQLAlchemy model
+# Automatic conversion from SQLAlchemy model
 user_response = UserResponseSchema.from_orm(user_model)
 ```
 
@@ -351,7 +351,7 @@ user_response = UserResponseSchema.from_orm(user_model)
 class BookingCreateSchema(BaseSchema):
     @validator('end_date')
     def validate_end_date(cls, v, values):
-        # Access other fields untuk cross-field validation
+        # Access other fields for cross-field validation
         if 'start_date' in values and v <= values['start_date']:
             raise ValueError('End date must be after start date')
         return v
@@ -371,20 +371,20 @@ def validate_phone(cls, v):
 
 ## Benefits
 
-1. **Type Safety**: Automatic type checking dan conversion
-2. **Documentation**: Schemas serve sebagai API documentation
+1. **Type Safety**: Automatic type checking and conversion
+2. **Documentation**: Schemas serve as API documentation
 3. **Validation**: Comprehensive input validation
 4. **Consistency**: Consistent response formats
-5. **Developer Experience**: Clear error messages dan auto-completion
-6. **Testing**: Easy to test dengan well-defined schemas
+5. **Developer Experience**: Clear error messages and auto-completion
+6. **Testing**: Easy to test with well-defined schemas
 
-## Integration dengan FastAPI
+## Integration with FastAPI
 
-Schemas integrate seamlessly dengan FastAPI untuk:
+Schemas integrate seamlessly with FastAPI for:
 
 - Automatic request validation
 - Response serialization
 - API documentation generation
-- Type hints untuk better IDE support
+- Type hints for better IDE support
 
-Dengan struktur schemas ini, API menjadi lebih robust, well-documented, dan maintainable.
+With this schema structure, the API becomes more robust, well-documented, and maintainable.

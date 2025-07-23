@@ -26,9 +26,15 @@ The Swagger UI now includes both development and production server URLs in the s
 - Postman collection automatically uses the appropriate base URL
 - Development: `http://localhost:5000`
 - Production: `https://werent-backend-api.onrender.com`
+- **Note:** The `/api/auth/login` endpoint returns both an `access_token` (for API requests, expires in 15 minutes) and a `refresh_token` (for session refresh, expires in 30 days). Use the `access_token` for authenticated requests and the `refresh_token` to obtain a new access token when needed.
 
 ### 🛠 **Easy Configuration**
 Server URLs are centrally managed in `app/swagger/swagger_ui.py`:
+
+#### **Authentication Usage**
+- After logging in via `/api/auth/login`, copy the `access_token` from the response and use it in the `Authorization: Bearer <access_token>` header for all protected API endpoints.
+- When the `access_token` expires, use the `refresh_token` with the `/api/auth/refresh` endpoint to get a new access token.
+- This flow is supported in both Swagger UI and Postman collections, matching the main API documentation.
 
 ```python
 def get_server_urls():

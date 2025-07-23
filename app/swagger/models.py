@@ -162,11 +162,12 @@ def create_swagger_models(api):
             min_length=1,
             max_length=50
         ),
-        'phone': fields.String(
+        'phone_number': fields.String(
             required=False,
-            description='Phone number (optional)',
+            description='User phone number (optional)',
             example='+1234567890'
-        )
+        ),
+        
     })
     
     login_request = api.model('LoginRequest', {
@@ -197,9 +198,9 @@ def create_swagger_models(api):
             min_length=1,
             max_length=50
         ),
-        'phone': fields.String(
+        'phone_number': fields.String(
             required=False,
-            description='Updated phone number',
+            description='Updated user phone number',
             example='+1234567890'
         )
     })
@@ -217,7 +218,19 @@ def create_swagger_models(api):
             example='Login successful'
         ),
         'data': fields.Nested(api.model('AuthData', {
-            'user': fields.Nested(user_model, description='User information'),
+            'user': fields.Nested(user_model, description='User information', example={
+    'id': 1,
+    'email': 'john.doe@werent.com',
+    'first_name': 'John',
+    'last_name': 'Doe',
+    'phone_number': '+1234567890',
+    'is_verified': False,
+    'is_admin': False,
+    'is_active': True,
+    'uuid': '550e8400-e29b-41d4-a716-446655440000',
+    'created_at': '2025-07-19T10:12:12.908589',
+    'updated_at': '2025-07-19T10:12:12.908589'
+}),
             'access_token': fields.String(
                 description='JWT access token (expires in 24 hours)',
                 example='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY0MjUwMDAwMCwianRpIjoiYWJjZGVmIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEyMzQ1IiwibmJmIjoxNjQyNTAwMDAwLCJleHAiOjE2NDI1ODY0MDB9.example_signature'

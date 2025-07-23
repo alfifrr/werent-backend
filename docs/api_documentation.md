@@ -76,17 +76,17 @@ Creates a new user account. **Does not create JWT session** - user must login se
 ### 2. User Login
 **POST** `/api/auth/login`
 
-Authenticates a user and returns both access and refresh tokens.
+Authenticate a user and return user info with JWT tokens.
 
 **Request Body:**
 ```json
 {
-  "email": "user@example.com",
+  "email": "john.doe@werent.com",
   "password": "SecurePass123"
 }
 ```
 
-**Response (200 - Success):**
+**Success Response**
 ```json
 {
   "success": true,
@@ -94,19 +94,19 @@ Authenticates a user and returns both access and refresh tokens.
   "data": {
     "user": {
       "id": 1,
-      "email": "user@example.com",
+      "email": "john.doe@werent.com",
       "first_name": "John",
       "last_name": "Doe",
       "phone_number": "+1234567890",
-      "is_admin": false,
       "is_verified": false,
+      "is_admin": false,
       "is_active": true,
       "uuid": "550e8400-e29b-41d4-a716-446655440000",
       "created_at": "2025-07-19T10:12:12.908589",
       "updated_at": "2025-07-19T10:12:12.908589"
     },
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "access_token": "<JWT access token>",
+    "refresh_token": "<JWT refresh token>"
   }
 }
 ```
@@ -116,8 +116,14 @@ Authenticates a user and returns both access and refresh tokens.
 - **Refresh Token**: Expires in 30 days, use to get new access tokens
 
 **Error Responses:**
-- `400` - Missing email or password
+- `400` - Missing or invalid fields
 - `401` - Invalid credentials or account deactivated
+- `500` - Unexpected error
+
+**Notes:**
+- The `user` object fields match the User model and all other user-related endpoints.
+- The `access_token` and `refresh_token` are JWTs for authentication and session refresh.
+- Example values are for documentation; actual tokens will differ.
 
 ### 3. Refresh Access Token
 **POST** `/api/auth/refresh`

@@ -9,13 +9,13 @@ from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
 
 
 class UserCreateSchema(BaseSchema):
-    """Schema for creating a new user."""
+    """Schema for creating a new user, aligned with User model."""
 
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., min_length=8, max_length=128, description="User password")
     first_name: str = Field(..., min_length=1, max_length=50, description="User first name")
     last_name: str = Field(..., min_length=1, max_length=50, description="User last name")
-    phone: Optional[str] = Field(None, max_length=20, description="User phone number")
+    phone_number: Optional[str] = Field(None, max_length=20, description="User phone number")
 
     @field_validator('password')
     @classmethod
@@ -29,12 +29,11 @@ class UserCreateSchema(BaseSchema):
             raise ValueError('Password must contain at least one uppercase letter')
         return v
 
-    @field_validator('phone')
+    @field_validator('phone_number')
     @classmethod
     def validate_phone(cls, v):
         """Validate phone number format."""
         if v is not None:
-            # Remove spaces and special characters
             cleaned = ''.join(filter(str.isdigit, v))
             if len(cleaned) < 10 or len(cleaned) > 15:
                 raise ValueError('Phone number must be between 10-15 digits')
@@ -49,13 +48,13 @@ class UserLoginSchema(BaseSchema):
 
 
 class UserUpdateSchema(BaseSchema):
-    """Schema for updating user profile."""
+    """Schema for updating user profile, aligned with User model."""
 
     first_name: Optional[str] = Field(None, min_length=1, max_length=50, description="User first name")
     last_name: Optional[str] = Field(None, min_length=1, max_length=50, description="User last name")
-    phone: Optional[str] = Field(None, max_length=20, description="User phone number")
+    phone_number: Optional[str] = Field(None, max_length=20, description="User phone number")
 
-    @field_validator('phone')
+    @field_validator('phone_number')
     @classmethod
     def validate_phone(cls, v):
         """Validate phone number format."""
@@ -95,7 +94,7 @@ class UserPasswordUpdateSchema(BaseSchema):
 
 
 class UserResponseSchema(BaseSchema, TimestampMixin):
-    """Schema for user response."""
+    """Schema for user response, aligned with User model."""
 
     id: int
     email: EmailStr
@@ -106,6 +105,8 @@ class UserResponseSchema(BaseSchema, TimestampMixin):
     is_admin: bool
     is_active: bool
     uuid: str
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
 
 
 class UserProfileResponseSchema(UserResponseSchema):

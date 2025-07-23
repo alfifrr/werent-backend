@@ -2,15 +2,15 @@
 
 ## Overview
 
-Schemas telah diupdate menggunakan Pydantic v2 dengan `@field_validator` untuk validasi input/output data di API. Semua schemas menyediakan automatic validation, serialization, dan documentation untuk endpoints.
+Schemas have been updated using Pydantic v2 with `@field_validator` for input/output data validation in the API. All schemas provide automatic validation, serialization, and documentation for endpoints.
 
 ## Key Updates
 
 ### File Naming Convention
 
-Semua schema files sekarang menggunakan suffix `_schema`:
+All schema files now use the `_schema` suffix:
 
-- `base_schema.py` - Base schemas dan mixins
+- `base_schema.py` - Base schemas and mixins
 - `user_schema.py` - User-related schemas
 - `auth_schema.py` - Authentication schemas
 - `item_schema.py` - Item management schemas
