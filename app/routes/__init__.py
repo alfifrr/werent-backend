@@ -6,6 +6,7 @@ Contains all application route blueprints.
 from .main import main_bp
 from .auth import auth_bp
 from .health import health_bp
+from .item import item_bp
 from ..swagger.swagger_ui import swagger_bp
 
 # Import future route blueprints here
@@ -19,6 +20,7 @@ def register_blueprints(app):
     app.register_blueprint(auth_bp)
     app.register_blueprint(health_bp, url_prefix='/api')
     app.register_blueprint(swagger_bp)
+    app.register_blueprint(item_bp)
     
     # Register future blueprints here
     # app.register_blueprint(gear_bp)

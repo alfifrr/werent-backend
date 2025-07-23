@@ -11,10 +11,16 @@ from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
 class ItemCreateSchema(BaseSchema):
     """Schema for creating a new item."""
 
-    title: str = Field(..., min_length=3, max_length=100, description="Item title")
+    name: str = Field(..., min_length=3, max_length=100, description="Item name")
+    type: str = Field(..., min_length=2, max_length=50, description="Item type (category)")
+    size: str = Field(..., min_length=1, max_length=20, description="Item size")
+    gender: str = Field(..., min_length=1, max_length=20, description="Item gender")
+    brand: Optional[str] = Field(None, max_length=100, description="Item brand")
+    color: Optional[str] = Field(None, max_length=50, description="Item color")
+    quantity: int = Field(1, gt=0, description="Quantity available")
+    product_code: str = Field(..., min_length=1, max_length=50, description="Unique product code")
     description: str = Field(..., min_length=10, max_length=1000, description="Item description")
     price_per_day: float = Field(..., gt=0, description="Price per day in currency")
-    category: str = Field(..., min_length=2, max_length=50, description="Item category")
 
     @field_validator('price_per_day')
     @classmethod
@@ -30,10 +36,16 @@ class ItemCreateSchema(BaseSchema):
 class ItemUpdateSchema(BaseSchema):
     """Schema for updating an item."""
 
-    title: Optional[str] = Field(None, min_length=3, max_length=100, description="Item title")
+    name: Optional[str] = Field(None, min_length=3, max_length=100, description="Item name")
+    type: Optional[str] = Field(None, min_length=2, max_length=50, description="Item type (category)")
+    size: Optional[str] = Field(None, min_length=1, max_length=20, description="Item size")
+    gender: Optional[str] = Field(None, min_length=1, max_length=20, description="Item gender")
+    brand: Optional[str] = Field(None, max_length=100, description="Item brand")
+    color: Optional[str] = Field(None, max_length=50, description="Item color")
+    quantity: Optional[int] = Field(None, gt=0, description="Quantity available")
+    product_code: Optional[str] = Field(None, min_length=1, max_length=50, description="Unique product code")
     description: Optional[str] = Field(None, min_length=10, max_length=1000, description="Item description")
     price_per_day: Optional[float] = Field(None, gt=0, description="Price per day in currency")
-    category: Optional[str] = Field(None, min_length=2, max_length=50, description="Item category")
 
     @field_validator('price_per_day')
     @classmethod
@@ -48,38 +60,31 @@ class ItemUpdateSchema(BaseSchema):
         return v
 
 
-class ItemStatusUpdateSchema(BaseSchema):
-    """Schema for updating item status."""
-
-    status: str = Field(..., description="Item status")
-
-    @field_validator('status')
-    @classmethod
-    def validate_status(cls, v):
-        """Validate status value."""
-        valid_statuses = ['available', 'rented', 'maintenance']
-        if v not in valid_statuses:
-            raise ValueError(f'Status must be one of: {valid_statuses}')
-        return v
-
-
 class ItemResponseSchema(BaseSchema, TimestampMixin):
     """Schema for item response."""
 
     id: int
-    title: str
+    name: str
+    type: str
+    size: str
+    gender: str
+    brand: Optional[str] = None
+    color: Optional[str] = None
+    quantity: int
+    product_code: str
     description: str
     price_per_day: float
-    status: str
-    category: str
-    owner_id: int
+    rating: float
+    created_at: str
+    updated_at: str
+    user_id: int
+    images: Optional[List[dict]] = None
 
 
 class ItemDetailResponseSchema(ItemResponseSchema):
     """Extended item response with related data."""
 
     owner: Optional[dict] = None
-    images: Optional[List[dict]] = None
     reviews_count: Optional[int] = None
     avg_rating: Optional[float] = None
     total_bookings: Optional[int] = None
@@ -99,7 +104,6 @@ class ItemSearchSchema(BaseSchema):
     category: Optional[str] = Field(None, description="Filter by category")
     min_price: Optional[float] = Field(None, ge=0, description="Minimum price per day")
     max_price: Optional[float] = Field(None, ge=0, description="Maximum price per day")
-    status: Optional[str] = Field('available', description="Item status")
 
     @field_validator('max_price')
     @classmethod
@@ -110,15 +114,6 @@ class ItemSearchSchema(BaseSchema):
                 raise ValueError('Maximum price must be greater than minimum price')
         return v
 
-    @field_validator('status')
-    @classmethod
-    def validate_status(cls, v):
-        """Validate status value."""
-        if v is not None:
-            valid_statuses = ['available', 'rented', 'maintenance', 'all']
-            if v not in valid_statuses:
-                raise ValueError(f'Status must be one of: {valid_statuses}')
-        return v
 
 
 class ItemFilterSchema(BaseSchema):
@@ -138,7 +133,6 @@ class ItemStatsSchema(BaseSchema):
     total_reviews: int
     average_rating: float
     total_images: int
-    status: str
     created_at: str
 
 

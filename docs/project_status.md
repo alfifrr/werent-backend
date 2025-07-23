@@ -1,7 +1,7 @@
 # WeRent Backend - Project Status
 
 **Last Updated:** July 22, 2025  
-**Project Phase:** Authentication Complete + Enhanced Documentation + Field Alignment Fixed  
+**Project Phase:** Authentication Complete + Enhanced Documentation + Field Alignment Fixed (Item 'status' field fully removed and schemas aligned)  
 **Flask App Status:** ✅ Running on http://localhost:5000  
 **Documentation Status:** ✅ Interactive API docs available at /docs/ and /redoc/
 
@@ -17,7 +17,7 @@
 - **Authentication:** JWT with Flask-JWT-Extended
 - **Password Security:** Flask-Bcrypt
 - **Database ORM:** SQLAlchemy with Flask-Migrate
-- **Data Validation:** Pydantic v2 with advanced validators
+- **Data Validation:** Pydantic v2 with advanced validators (schemas now match models; no unused fields like 'status')
 - **API Documentation:** OpenAPI 3.0 with Swagger UI, ReDoc
 - **Package Management:** UV (modern Python package manager)
 - **Environment:** Python Virtual Environment (.venv)
@@ -442,6 +442,7 @@ pytest --cov=app --cov-report=html
 - Validate all user inputs using utility functions
 - Use SQLAlchemy ORM for database operations
 - Write tests for new functionality
+- All item endpoints and docs updated to remove 'status' field references and match the Item model.
 - Use type hints where appropriate
 
 ### Adding New Features
@@ -773,6 +774,7 @@ pytest --cov=app --cov-report=html
 - Validate all user inputs using utility functions
 - Use SQLAlchemy ORM for database operations
 - Write tests for new functionality
+- All item endpoints and docs updated to remove 'status' field references and match the Item model.
 - Use type hints where appropriate
 
 ### Adding New Features

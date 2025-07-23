@@ -242,7 +242,7 @@ def validate_image_url(cls, v):
 
 - **`LoginResponseSchema`**: Login result with tokens
 - **`TokenResponseSchema`**: Token data
-- **`AuthStatusSchema`**: Authentication status
+- **`AuthStatusSchema`**: Authentication (removed; see model alignment note)
 
 ### 8. Error Schemas (`app/schemas/error.py`)
 
@@ -280,7 +280,7 @@ async def create_user(user_data: UserCreateSchema):
         return UserResponseSchema.from_orm(user)
     except ValueError as e:
         raise HTTPException(
-            status_code=400,
+            (removed; see model alignment note)_code=400,
             detail=ErrorSchema(
                 error="validation_error",
                 message=str(e)
