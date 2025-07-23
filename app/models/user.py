@@ -27,11 +27,11 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
     # Relationships
-    items = db.relationship('Item', foreign_keys='Item.user_id', back_populates='user')
-    bookings = db.relationship('Booking', foreign_keys='Booking.user_id', back_populates='user')
-    payments = db.relationship('Payment', foreign_keys='Payment.user_id', back_populates='user')
-    tickets = db.relationship('Ticketing', foreign_keys='Ticketing.user_id', back_populates='user')
-    reviews = db.relationship('Review', foreign_keys='Review.user_id', back_populates='user')
+    items = db.relationship('Item', foreign_keys='Item.user_id', back_populates='users')
+    bookings = db.relationship('Booking', foreign_keys='Booking.user_id', back_populates='users')
+    payments = db.relationship('Payment', foreign_keys='Payment.user_id', back_populates='users')
+    tickets = db.relationship('Ticketing', foreign_keys='Ticketing.user_id', back_populates='users')
+    reviews = db.relationship('Review', foreign_keys='Review.user_id', back_populates='users')
 
     def __repr__(self):
         """String representation of User object."""
@@ -65,10 +65,10 @@ class User(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
-        
+
         if include_sensitive:
             data['password_hash'] = self.password_hash
-            
+
         return data
 
     @classmethod
