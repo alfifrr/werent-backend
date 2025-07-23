@@ -53,6 +53,7 @@ class UserUpdateSchema(BaseSchema):
     first_name: Optional[str] = Field(None, min_length=1, max_length=50, description="User first name")
     last_name: Optional[str] = Field(None, min_length=1, max_length=50, description="User last name")
     phone_number: Optional[str] = Field(None, max_length=20, description="User phone number")
+    profile_image: Optional[str] = Field(None, description="Base64 encoded profile image")
 
     @field_validator('phone_number')
     @classmethod
@@ -101,12 +102,12 @@ class UserResponseSchema(BaseSchema, TimestampMixin):
     first_name: str
     last_name: str
     phone_number: Optional[str] = None
+    profile_image: Optional[str] = None  # Base64 encoded image
     is_verified: bool
     is_admin: bool
     is_active: bool
     uuid: str
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    updated_at: Optional[datetime] = None
 
 
 class UserProfileResponseSchema(UserResponseSchema):

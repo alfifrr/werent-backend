@@ -19,6 +19,7 @@ class User(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     phone_number = db.Column(db.String(20), nullable=True)
+    profile_image = db.Column(db.Text, nullable=True)  # Base64 encoded image
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     is_verified = db.Column(db.Boolean, default=False, nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
@@ -58,6 +59,7 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'phone_number': self.phone_number,
+            'profile_image': self.profile_image,  # Add profile image
             'is_admin': self.is_admin,
             'is_verified': self.is_verified,
             'is_active': self.is_active,
