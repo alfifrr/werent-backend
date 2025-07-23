@@ -127,6 +127,59 @@ For the latest development status, see the PROJECT_STATUS.md file.
                 }
             },
             "schemas": {
+                # Item Models
+                "Item": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer", "example": 1},
+                        "name": {"type": "string", "example": "Summer Dress"},
+                        "type": {"type": "string", "example": "Dress"},
+                        "size": {"type": "string", "example": "M"},
+                        "gender": {"type": "string", "example": "Women's"},
+                        "brand": {"type": "string", "example": "Zara"},
+                        "color": {"type": "string", "example": "Red"},
+                        "quantity": {"type": "integer", "example": 3},
+                        "product_code": {"type": "string", "example": "SKU12345"},
+                        "description": {"type": "string", "example": "Lightweight summer dress."},
+                        "price_per_day": {"type": "number", "example": 15.0},
+                        "rating": {"type": "number", "example": 4.7},
+                        "created_at": {"type": "string", "format": "date-time"},
+                        "updated_at": {"type": "string", "format": "date-time"},
+                        "user_id": {"type": "integer", "example": 2},
+                        "images": {"type": "array", "items": {"type": "string"}, "example": ["https://.../image1.jpg"]}
+                    }
+                },
+                "ItemCreateRequest": {
+                    "type": "object",
+                    "required": ["name", "type", "size", "gender", "product_code", "description", "price_per_day", "quantity"],
+                    "properties": {
+                        "name": {"type": "string"},
+                        "type": {"type": "string"},
+                        "size": {"type": "string"},
+                        "gender": {"type": "string"},
+                        "brand": {"type": "string"},
+                        "color": {"type": "string"},
+                        "quantity": {"type": "integer"},
+                        "product_code": {"type": "string"},
+                        "description": {"type": "string"},
+                        "price_per_day": {"type": "number"}
+                    }
+                },
+                "ItemUpdateRequest": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "type": {"type": "string"},
+                        "size": {"type": "string"},
+                        "gender": {"type": "string"},
+                        "brand": {"type": "string"},
+                        "color": {"type": "string"},
+                        "quantity": {"type": "integer"},
+                        "product_code": {"type": "string"},
+                        "description": {"type": "string"},
+                        "price_per_day": {"type": "number"}
+                    }
+                },
                 # Authentication Models
                 "User": {
                     "type": "object",
@@ -239,7 +292,6 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "end_date": {"type": "string", "format": "date", "example": "2024-01-20"},
                         "total_cost": {"type": "number", "example": 425.00},
                         "deposit_paid": {"type": "number", "example": 1000.00},
-                        "status": {"type": "string", "example": "active", "enum": ["pending", "confirmed", "active", "returned", "cancelled"]},
                         "created_at": {"type": "string", "format": "date-time"},
                         "updated_at": {"type": "string", "format": "date-time"}
                     }
@@ -365,6 +417,121 @@ For the latest development status, see the PROJECT_STATUS.md file.
             }
         },
         "paths": {
+            "/items": {
+                "get": {
+                    "tags": ["Item"],
+                    "summary": "List all available items",
+                    "security": [{"BearerAuth": []}],
+                    "responses": {
+                        "200": {
+                            "description": "List of items",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "array",
+                                        "items": {"$ref": "#/components/schemas/Item"}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "post": {
+                    "tags": ["Item"],
+                    "summary": "Create a new item (admin only)",
+                    "security": [{"BearerAuth": []}],
+                    "requestBody": {
+                        "required": True,
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ItemCreateRequest"}
+                            }
+                        }
+                    },
+                    "responses": {
+                        "201": {
+                            "description": "Item created successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/Item"}
+                                }
+                            }
+                        },
+                        "403": {"description": "Admin access required"}
+                    }
+                }
+            },
+            "/items/{item_id}": {
+                "get": {
+                    "tags": ["Item"],
+                    "summary": "Get item details",
+                    "security": [{"BearerAuth": []}],
+                    "parameters": [{
+                        "name": "item_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"}
+                    }],
+                    "responses": {
+                        "200": {
+                            "description": "Item details",
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/Item"}
+                                }
+                            }
+                        },
+                        "404": {"description": "Item not found"}
+                    }
+                },
+                "put": {
+                    "tags": ["Item"],
+                    "summary": "Update item (admin only)",
+                    "security": [{"BearerAuth": []}],
+                    "parameters": [{
+                        "name": "item_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"}
+                    }],
+                    "requestBody": {
+                        "required": True,
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ItemUpdateRequest"}
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Item updated successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/Item"}
+                                }
+                            }
+                        },
+                        "403": {"description": "Admin access required"},
+                        "404": {"description": "Item not found"}
+                    }
+                },
+                "delete": {
+                    "tags": ["Item"],
+                    "summary": "Delete item (admin only)",
+                    "security": [{"BearerAuth": []}],
+                    "parameters": [{
+                        "name": "item_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"}
+                    }],
+                    "responses": {
+                        "204": {"description": "Item deleted successfully"},
+                        "403": {"description": "Admin access required"},
+                        "404": {"description": "Item not found"}
+                    }
+                }
+            },
             # Authentication Endpoints
             "/api/auth/signup": {
                 "post": {

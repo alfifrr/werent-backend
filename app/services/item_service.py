@@ -15,20 +15,27 @@ class ItemService(BaseService):
         """Initialize ItemService."""
         super().__init__(Item)
 
-    def create_item(self, title, description, price_per_day, category, owner_id):
-        """Create a new item."""
-        item = Item()
-        item.title = title
-        item.description = description
-        item.price_per_day = price_per_day
-        item.category = category
-        item.owner_id = owner_id
-        item.status = 'available'
-        return self.save(item)
+    def create_item(self, name, type, size, gender, brand, color, quantity, product_code, description, price_per_day, user_id):
+        """Create a new item with all required model fields."""
+        item = Item(
+            name=name,
+            type=type,
+            size=size,
+            gender=gender,
+            brand=brand,
+            color=color,
+            quantity=quantity,
+            product_code=product_code,
+            description=description,
+            price_per_day=price_per_day,
+            user_id=user_id
+        )
+        self.save(item)
+        return item
 
     def get_available_items(self):
-        """Get all available items."""
-        return Item.query.filter_by(status='available').all()
+        """Get all items (status filter removed)."""
+        return Item.query.all()
 
     def get_items_by_owner(self, owner_id):
         """Get all items owned by a specific user."""
@@ -45,17 +52,6 @@ class ItemService(BaseService):
             (Item.description.ilike(f'%{query}%'))
         ).all()
 
-    def update_item_status(self, item_id, new_status):
-        """Update item status."""
-        valid_statuses = ['available', 'rented', 'maintenance']
-        if new_status not in valid_statuses:
-            raise ValueError(f"Invalid status. Must be one of: {valid_statuses}")
-
-        item = self.get_by_id(item_id)
-        if item:
-            item.status = new_status
-            return self.save(item)
-        return None
 
     def mark_as_rented(self, item_id):
         """Mark item as rented."""
@@ -124,8 +120,6 @@ class ItemService(BaseService):
         """Filter items by various criteria."""
         query = Item.query
 
-        if status:
-            query = query.filter_by(status=status)
 
         if category:
             query = query.filter_by(category=category)

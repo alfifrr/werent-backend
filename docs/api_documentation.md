@@ -87,7 +87,6 @@ Authenticate a user and return user info with JWT tokens.
 ```
 
 **Success Response**
-**Status:** 200 OK
 ```json
 {
   "success": true,

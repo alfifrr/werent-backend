@@ -49,7 +49,6 @@ from .auth_schema import (
 from .item_schema import (
     ItemCreateSchema,
     ItemUpdateSchema,
-    ItemStatusUpdateSchema,
     ItemResponseSchema,
     ItemDetailResponseSchema,
     ItemListResponseSchema,
