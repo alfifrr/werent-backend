@@ -149,3 +149,37 @@ class UserService(BaseService):
             'recent_bookings': [booking.to_dict() for booking in recent_bookings],
             'recent_reviews': [review.to_dict() for review in recent_reviews]
         }
+
+    def promote_to_admin(self, user_id):
+        """Promote a user to admin status."""
+        user = self.get_by_id(user_id)
+        if not user:
+            return None
+        
+        if user.is_admin:
+            return {"already_admin": True, "user": user}
+        
+        user.is_admin = True
+        saved_user = self.save(user)
+        return {"already_admin": False, "user": saved_user}
+
+    def demote_from_admin(self, user_id):
+        """Demote a user from admin status."""
+        user = self.get_by_id(user_id)
+        if not user:
+            return None
+        
+        if not user.is_admin:
+            return {"already_non_admin": True, "user": user}
+        
+        user.is_admin = False
+        saved_user = self.save(user)
+        return {"already_non_admin": False, "user": saved_user}
+
+    def get_all_admins(self):
+        """Get all admin users."""
+        return User.query.filter_by(is_admin=True, is_active=True).all()
+
+    def get_admin_by_id(self, admin_id):
+        """Get admin user by ID."""
+        return User.query.filter_by(id=admin_id, is_admin=True, is_active=True).first()

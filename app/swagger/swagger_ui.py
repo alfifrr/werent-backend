@@ -1059,6 +1059,169 @@ For the latest development status, see the PROJECT_STATUS.md file.
                     },
                 },
             },
+            # Admin Endpoints
+            "/api/admin/users/promote": {
+                "post": {
+                    "tags": ["Admin"],
+                    "summary": "Promote user to admin",
+                    "description": "Promote a regular user to admin status. Requires admin authentication.",
+                    "security": [{"BearerAuth": []}],
+                    "requestBody": {
+                        "required": True,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "integer",
+                                            "description": "ID of the user to promote",
+                                            "example": 123
+                                        }
+                                    },
+                                    "required": ["user_id"]
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "User promoted successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "success": {"type": "boolean", "example": True},
+                                            "message": {"type": "string", "example": "User promoted to admin successfully"},
+                                            "data": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {"type": "integer", "example": 123},
+                                                            "email": {"type": "string", "example": "user@example.com"},
+                                                            "first_name": {"type": "string", "example": "John"},
+                                                            "last_name": {"type": "string", "example": "Doe"},
+                                                            "is_admin": {"type": "boolean", "example": True}
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "400": {"description": "Invalid request or user already admin"},
+                        "401": {"description": "Authentication required"},
+                        "403": {"description": "Admin access required"},
+                        "404": {"description": "User not found"}
+                    }
+                }
+            },
+            "/api/admin/users": {
+                "get": {
+                    "tags": ["Admin"],
+                    "summary": "List all admin users",
+                    "description": "Retrieve a list of all users with admin privileges. Requires admin authentication.",
+                    "security": [{"BearerAuth": []}],
+                    "responses": {
+                        "200": {
+                            "description": "Admin users retrieved successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "success": {"type": "boolean", "example": True},
+                                            "message": {"type": "string", "example": "Admin users retrieved successfully"},
+                                            "data": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "admins": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {"type": "integer", "example": 1},
+                                                                "email": {"type": "string", "example": "admin@example.com"},
+                                                                "first_name": {"type": "string", "example": "Admin"},
+                                                                "last_name": {"type": "string", "example": "User"},
+                                                                "phone_number": {"type": "string", "example": "+1234567890"},
+                                                                "created_at": {"type": "string", "format": "date-time"},
+                                                                "updated_at": {"type": "string", "format": "date-time"}
+                                                            }
+                                                        }
+                                                    },
+                                                    "total_count": {"type": "integer", "example": 5}
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "401": {"description": "Authentication required"},
+                        "403": {"description": "Admin access required"}
+                    }
+                }
+            },
+            "/api/admin/users/{admin_id}": {
+                "get": {
+                    "tags": ["Admin"],
+                    "summary": "Get admin user details",
+                    "description": "Retrieve detailed information about a specific admin user by ID. Requires admin authentication.",
+                    "security": [{"BearerAuth": []}],
+                    "parameters": [
+                        {
+                            "name": "admin_id",
+                            "in": "path",
+                            "required": True,
+                            "schema": {"type": "integer"},
+                            "description": "ID of the admin user to retrieve",
+                            "example": 1
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Admin user details retrieved successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "success": {"type": "boolean", "example": True},
+                                            "message": {"type": "string", "example": "Admin user retrieved successfully"},
+                                            "data": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "admin": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {"type": "integer", "example": 1},
+                                                            "email": {"type": "string", "example": "admin@example.com"},
+                                                            "first_name": {"type": "string", "example": "Admin"},
+                                                            "last_name": {"type": "string", "example": "User"},
+                                                            "phone_number": {"type": "string", "example": "+1234567890"},
+                                                            "created_at": {"type": "string", "format": "date-time"},
+                                                            "updated_at": {"type": "string", "format": "date-time"}
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "401": {"description": "Authentication required"},
+                        "403": {"description": "Admin access required"},
+                        "404": {"description": "Admin user not found"}
+                    }
+                }
+            },
         },
         "tags": [
             {
@@ -1077,7 +1240,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                 "name": "Review System",
                 "description": "User reviews and ratings (Coming Soon)",
             },
-            {"name": "Admin", "description": "Administrative endpoints (Coming Soon)"},
+            {"name": "Admin", "description": "Administrative endpoints for user management and platform administration"},
         ],
     }
 

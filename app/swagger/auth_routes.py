@@ -440,4 +440,60 @@ def register_auth_routes(api):
             except Exception as e:
                 return internal_error_response()
 
+    @auth_ns.route('/profile/image')
+    class ProfileImageResource(Resource):
+        @auth_ns.doc(
+            'update_profile_image',
+            description='''
+            Update user profile image with Base64 encoded image data.
+            
+            **Authentication Required:**
+            This endpoint requires a valid JWT token in the Authorization header.
+            
+            **Image Requirements:**
+            - **Supported formats**: JPEG, PNG, WebP
+            - **Size limit**: Maximum 10MB (base64 encoded)
+            - **Encoding**: Must be valid Base64 with data URI prefix
+            - **Example format**: `data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA...`
+            
+            **Image Processing:**
+            - Automatic format validation and sanitization
+            - Intelligent compression (typically 40-60% size reduction)
+            - Quality optimization for web display
+            - Dimension preservation with quality enhancement
+            
+            **Response includes:**
+            - Updated user profile information
+            - Image processing statistics (compression ratio, format, dimensions)
+            - Original vs compressed size comparison
+            
+            **Error Scenarios:**
+            - Invalid Base64 format
+            - Unsupported image format
+            - Corrupted image data
+            - File size exceeds limit
+            - Authentication required
+            ''',
+            security='JWT',
+            responses={
+                200: ('Profile image updated successfully', models['profile_image_response']),
+                400: ('Invalid image format or data', models['error_response']),
+                401: ('Authentication required', models['error_response']),
+                422: ('Validation failed', models['validation_error_response']),
+                500: ('Internal server error', models['error_response'])
+            }
+        )
+        @auth_ns.expect(models['profile_image_request'], validate=True)
+        @auth_ns.marshal_with(models['profile_image_response'])
+        @jwt_required()
+        def put(self):
+            """Update user profile image."""
+            try:
+                from app.controllers.auth import update_profile_image_controller
+                data = request.get_json()
+                return update_profile_image_controller(data)
+                
+            except Exception as e:
+                return internal_error_response()
+
     return auth_ns
