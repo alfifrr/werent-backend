@@ -8,36 +8,39 @@ from flask import Blueprint, render_template_string, jsonify, url_for, request
 import json
 
 # Create Swagger blueprint
-swagger_bp = Blueprint('swagger', __name__, url_prefix='/docs')
+swagger_bp = Blueprint("swagger", __name__, url_prefix="/docs")
+
 
 def get_server_urls():
     """
     Get server URLs based on environment and request context.
     Returns appropriate server URLs for Swagger documentation.
-    
+
     These URLs represent the base API endpoints, not the documentation URLs.
     Users can switch between development and production APIs in the Swagger UI.
     """
     servers = []
-    
+
     # Development server (localhost)
-    servers.append({
-        "url": "http://localhost:5000",
-        "description": "Development server (localhost)"
-    })
-    
+    servers.append(
+        {
+            "url": "http://localhost:5000",
+            "description": "Development server (localhost)",
+        }
+    )
+
     # Production server (Render deployment)
     production_url = "https://werent-backend-api.onrender.com"
-    servers.append({
-        "url": production_url,
-        "description": "Production server (Render deployment)"
-    })
-    
+    servers.append(
+        {"url": production_url, "description": "Production server (Render deployment)"}
+    )
+
     # If running in production, put production server first in dropdown
-    if os.environ.get('FLASK_ENV') == 'production':
+    if os.environ.get("FLASK_ENV") == "production":
         servers.reverse()
-    
+
     return servers
+
 
 # OpenAPI 3.0 specification
 def get_openapi_spec():
@@ -107,14 +110,8 @@ All API responses follow a standardized format:
 
 For the latest development status, see the PROJECT_STATUS.md file.
             """,
-            "contact": {
-                "name": "WeRent Development Team",
-                "email": "dev@werent.com"
-            },
-            "license": {
-                "name": "MIT",
-                "url": "https://opensource.org/licenses/MIT"
-            }
+            "contact": {"name": "WeRent Development Team", "email": "dev@werent.com"},
+            "license": {"name": "MIT", "url": "https://opensource.org/licenses/MIT"},
         },
         "servers": get_server_urls(),
         "components": {
@@ -123,7 +120,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                     "type": "http",
                     "scheme": "bearer",
                     "bearerFormat": "JWT",
-                    "description": "Enter JWT token in format: Bearer <token>"
+                    "description": "Enter JWT token in format: Bearer <token>",
                 }
             },
             "schemas": {
@@ -135,7 +132,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "name": {"type": "string", "example": "Summer Dress"},
                         "type": {"type": "string", "example": "Dress"},
                         "size": {"type": "string", "example": "M"},
-                        "gender": {"type": "string", "example": "Women's"},
+                        "gender": {"type": "string", "example": "Womens"},
                         "brand": {"type": "string", "example": "Zara"},
                         "color": {"type": "string", "example": "Red"},
                         "quantity": {"type": "integer", "example": 3},
@@ -146,12 +143,20 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "created_at": {"type": "string", "format": "date-time"},
                         "updated_at": {"type": "string", "format": "date-time"},
                         "user_id": {"type": "integer", "example": 2},
-                        "images": {"type": "array", "items": {"type": "string"}, "example": ["https://.../image1.jpg"]}
-                    }
+                    },
                 },
                 "ItemCreateRequest": {
                     "type": "object",
-                    "required": ["name", "type", "size", "gender", "product_code", "description", "price_per_day", "quantity"],
+                    "required": [
+                        "name",
+                        "type",
+                        "size",
+                        "gender",
+                        "product_code",
+                        "description",
+                        "price_per_day",
+                        "quantity",
+                    ],
                     "properties": {
                         "name": {"type": "string"},
                         "type": {"type": "string"},
@@ -162,8 +167,20 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "quantity": {"type": "integer"},
                         "product_code": {"type": "string"},
                         "description": {"type": "string"},
-                        "price_per_day": {"type": "number"}
-                    }
+                        "price_per_day": {"type": "number"},
+                    },
+                    "example": {
+                        "name": "Summer Dress",
+                        "type": "Dress",
+                        "size": "M",
+                        "gender": "Womens",
+                        "brand": "Zara",
+                        "color": "Red",
+                        "quantity": 3,
+                        "product_code": "SKU12345",
+                        "description": "Lightweight summer dress.",
+                        "price_per_day": 15.0,
+                    },
                 },
                 "ItemUpdateRequest": {
                     "type": "object",
@@ -177,23 +194,39 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "quantity": {"type": "integer"},
                         "product_code": {"type": "string"},
                         "description": {"type": "string"},
-                        "price_per_day": {"type": "number"}
-                    }
+                        "price_per_day": {"type": "number"},
+                    },
+                    "example": {
+                        "name": "Summer Dress Updated",
+                        "type": "Dress",
+                        "size": "L",
+                        "gender": "Womens",
+                        "brand": "Zara",
+                        "color": "Blue",
+                        "quantity": 5,
+                        "product_code": "SKU12345",
+                        "description": "Updated description for summer dress.",
+                        "price_per_day": 18.0,
+                    },
                 },
                 # Authentication Models
                 "User": {
                     "type": "object",
                     "properties": {
                         "id": {"type": "integer", "example": 1},
-                        "email": {"type": "string", "format": "email", "example": "john.doe@werent.com"},
+                        "email": {
+                            "type": "string",
+                            "format": "email",
+                            "example": "john.doe@werent.com",
+                        },
                         "first_name": {"type": "string", "example": "John"},
                         "last_name": {"type": "string", "example": "Doe"},
                         "phone": {"type": "string", "example": "+1234567890"},
                         "created_at": {"type": "string", "format": "date-time"},
                         "updated_at": {"type": "string", "format": "date-time"},
                         "is_active": {"type": "boolean", "example": True},
-                        "is_admin": {"type": "boolean", "example": False}
-                    }
+                        "is_admin": {"type": "boolean", "example": False},
+                    },
                 },
                 "SignupRequest": {
                     "type": "object",
@@ -203,84 +236,123 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "type": "string",
                             "format": "email",
                             "example": "john.doe@werent.com",
-                            "description": "Valid email address"
+                            "description": "Valid email address",
                         },
                         "password": {
                             "type": "string",
                             "minLength": 8,
                             "example": "SecurePass123",
-                            "description": "Password (min 8 chars, uppercase, lowercase, number)"
+                            "description": "Password (min 8 chars, uppercase, lowercase, number)",
                         },
                         "first_name": {
                             "type": "string",
                             "minLength": 1,
                             "maxLength": 50,
-                            "example": "John"
+                            "example": "John",
                         },
                         "last_name": {
                             "type": "string",
                             "minLength": 1,
                             "maxLength": 50,
-                            "example": "Doe"
+                            "example": "Doe",
                         },
                         "phone": {
                             "type": "string",
                             "example": "+1234567890",
-                            "description": "Phone number (optional)"
-                        }
-                    }
+                            "description": "Phone number (optional)",
+                        },
+                    },
                 },
                 "LoginRequest": {
                     "type": "object",
                     "required": ["email", "password"],
                     "properties": {
-                        "email": {"type": "string", "format": "email", "example": "john.doe@werent.com"},
-                        "password": {"type": "string", "example": "SecurePass123"}
-                    }
+                        "email": {
+                            "type": "string",
+                            "format": "email",
+                            "example": "john.doe@werent.com",
+                        },
+                        "password": {"type": "string", "example": "SecurePass123"},
+                    },
                 },
                 "ProfileUpdateRequest": {
                     "type": "object",
                     "properties": {
-                        "first_name": {"type": "string", "minLength": 1, "maxLength": 50, "example": "John"},
-                        "last_name": {"type": "string", "minLength": 1, "maxLength": 50, "example": "Doe"},
-                        "phone": {"type": "string", "example": "+1234567890"}
-                    }
+                        "first_name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 50,
+                            "example": "John",
+                        },
+                        "last_name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 50,
+                            "example": "Doe",
+                        },
+                        "phone": {"type": "string", "example": "+1234567890"},
+                    },
                 },
-                
                 # Gear Management Models (Future)
                 "GearItem": {
                     "type": "object",
                     "properties": {
                         "id": {"type": "integer", "example": 1},
                         "name": {"type": "string", "example": "Canon EOS R5"},
-                        "category": {"type": "string", "example": "camera", "enum": ["camera", "lens", "lighting", "accessory"]},
+                        "category": {
+                            "type": "string",
+                            "example": "camera",
+                            "enum": ["camera", "lens", "lighting", "accessory"],
+                        },
                         "brand": {"type": "string", "example": "Canon"},
                         "model": {"type": "string", "example": "EOS R5"},
-                        "description": {"type": "string", "example": "Professional mirrorless camera with 45MP sensor"},
+                        "description": {
+                            "type": "string",
+                            "example": "Professional mirrorless camera with 45MP sensor",
+                        },
                         "daily_rate": {"type": "number", "example": 85.00},
                         "weekly_rate": {"type": "number", "example": 500.00},
                         "deposit_amount": {"type": "number", "example": 1000.00},
-                        "availability_status": {"type": "string", "example": "available", "enum": ["available", "rented", "maintenance", "unavailable"]},
-                        "condition": {"type": "string", "example": "excellent", "enum": ["excellent", "good", "fair", "poor"]},
+                        "availability_status": {
+                            "type": "string",
+                            "example": "available",
+                            "enum": [
+                                "available",
+                                "rented",
+                                "maintenance",
+                                "unavailable",
+                            ],
+                        },
+                        "condition": {
+                            "type": "string",
+                            "example": "excellent",
+                            "enum": ["excellent", "good", "fair", "poor"],
+                        },
                         "created_at": {"type": "string", "format": "date-time"},
-                        "updated_at": {"type": "string", "format": "date-time"}
-                    }
+                        "updated_at": {"type": "string", "format": "date-time"},
+                    },
                 },
                 "GearCreateRequest": {
                     "type": "object",
                     "required": ["name", "category", "brand", "daily_rate"],
                     "properties": {
                         "name": {"type": "string", "example": "Canon EOS R5"},
-                        "category": {"type": "string", "example": "camera", "enum": ["camera", "lens", "lighting", "accessory"]},
+                        "category": {
+                            "type": "string",
+                            "example": "camera",
+                            "enum": ["camera", "lens", "lighting", "accessory"],
+                        },
                         "brand": {"type": "string", "example": "Canon"},
                         "model": {"type": "string", "example": "EOS R5"},
-                        "description": {"type": "string", "example": "Professional mirrorless camera"},
+                        "description": {
+                            "type": "string",
+                            "example": "Professional mirrorless camera",
+                        },
                         "daily_rate": {"type": "number", "example": 85.00},
                         "weekly_rate": {"type": "number", "example": 500.00},
-                        "deposit_amount": {"type": "number", "example": 1000.00}
-                    }
+                        "deposit_amount": {"type": "number", "example": 1000.00},
+                    },
                 },
-                
                 # Rental System Models (Future)
                 "Rental": {
                     "type": "object",
@@ -288,25 +360,43 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "id": {"type": "integer", "example": 1},
                         "user_id": {"type": "integer", "example": 1},
                         "gear_item_id": {"type": "integer", "example": 1},
-                        "start_date": {"type": "string", "format": "date", "example": "2024-01-15"},
-                        "end_date": {"type": "string", "format": "date", "example": "2024-01-20"},
+                        "start_date": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-01-15",
+                        },
+                        "end_date": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-01-20",
+                        },
                         "total_cost": {"type": "number", "example": 425.00},
                         "deposit_paid": {"type": "number", "example": 1000.00},
                         "created_at": {"type": "string", "format": "date-time"},
-                        "updated_at": {"type": "string", "format": "date-time"}
-                    }
+                        "updated_at": {"type": "string", "format": "date-time"},
+                    },
                 },
                 "RentalRequest": {
                     "type": "object",
                     "required": ["gear_item_id", "start_date", "end_date"],
                     "properties": {
                         "gear_item_id": {"type": "integer", "example": 1},
-                        "start_date": {"type": "string", "format": "date", "example": "2024-01-15"},
-                        "end_date": {"type": "string", "format": "date", "example": "2024-01-20"},
-                        "notes": {"type": "string", "example": "Needed for wedding photography"}
-                    }
+                        "start_date": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-01-15",
+                        },
+                        "end_date": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-01-20",
+                        },
+                        "notes": {
+                            "type": "string",
+                            "example": "Needed for wedding photography",
+                        },
+                    },
                 },
-                
                 # Review System Models (Future)
                 "Review": {
                     "type": "object",
@@ -315,34 +405,52 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "user_id": {"type": "integer", "example": 1},
                         "gear_item_id": {"type": "integer", "example": 1},
                         "rental_id": {"type": "integer", "example": 1},
-                        "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 5},
-                        "comment": {"type": "string", "example": "Excellent camera, perfect condition!"},
+                        "rating": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5,
+                            "example": 5,
+                        },
+                        "comment": {
+                            "type": "string",
+                            "example": "Excellent camera, perfect condition!",
+                        },
                         "created_at": {"type": "string", "format": "date-time"},
-                        "updated_at": {"type": "string", "format": "date-time"}
-                    }
+                        "updated_at": {"type": "string", "format": "date-time"},
+                    },
                 },
                 "ReviewRequest": {
                     "type": "object",
                     "required": ["rating"],
                     "properties": {
-                        "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 5},
-                        "comment": {"type": "string", "example": "Excellent camera, perfect condition!"}
-                    }
+                        "rating": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5,
+                            "example": 5,
+                        },
+                        "comment": {
+                            "type": "string",
+                            "example": "Excellent camera, perfect condition!",
+                        },
+                    },
                 },
-                
                 # Response Models
                 "SignupSuccessResponse": {
                     "type": "object",
                     "properties": {
                         "success": {"type": "boolean", "example": True},
-                        "message": {"type": "string", "example": "User created successfully"},
+                        "message": {
+                            "type": "string",
+                            "example": "User created successfully",
+                        },
                         "data": {
                             "type": "object",
                             "properties": {
                                 "user": {"$ref": "#/components/schemas/User"}
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 },
                 "LoginSuccessResponse": {
                     "type": "object",
@@ -353,37 +461,55 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "type": "object",
                             "properties": {
                                 "user": {"$ref": "#/components/schemas/User"},
-                                "access_token": {"type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "description": "JWT access token (expires in 15 minutes)"},
-                                "refresh_token": {"type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "description": "JWT refresh token (expires in 30 days)"}
-                            }
-                        }
-                    }
+                                "access_token": {
+                                    "type": "string",
+                                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                                    "description": "JWT access token (expires in 15 minutes)",
+                                },
+                                "refresh_token": {
+                                    "type": "string",
+                                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                                    "description": "JWT refresh token (expires in 30 days)",
+                                },
+                            },
+                        },
+                    },
                 },
                 "RefreshTokenResponse": {
                     "type": "object",
                     "properties": {
                         "success": {"type": "boolean", "example": True},
-                        "message": {"type": "string", "example": "Access token refreshed successfully"},
+                        "message": {
+                            "type": "string",
+                            "example": "Access token refreshed successfully",
+                        },
                         "data": {
                             "type": "object",
                             "properties": {
-                                "access_token": {"type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "description": "New JWT access token (expires in 15 minutes)"}
-                            }
-                        }
-                    }
+                                "access_token": {
+                                    "type": "string",
+                                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                                    "description": "New JWT access token (expires in 15 minutes)",
+                                }
+                            },
+                        },
+                    },
                 },
                 "ProfileResponse": {
                     "type": "object",
                     "properties": {
                         "success": {"type": "boolean", "example": True},
-                        "message": {"type": "string", "example": "Profile retrieved successfully"},
+                        "message": {
+                            "type": "string",
+                            "example": "Profile retrieved successfully",
+                        },
                         "data": {
                             "type": "object",
                             "properties": {
                                 "user": {"$ref": "#/components/schemas/User"}
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 },
                 "ErrorResponse": {
                     "type": "object",
@@ -391,8 +517,8 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "success": {"type": "boolean", "example": False},
                         "error": {"type": "string", "example": "Invalid email format"},
                         "error_code": {"type": "string", "example": "VALIDATION_ERROR"},
-                        "details": {"type": "object"}
-                    }
+                        "details": {"type": "object"},
+                    },
                 },
                 "ValidationErrorResponse": {
                     "type": "object",
@@ -407,14 +533,14 @@ For the latest development status, see the PROJECT_STATUS.md file.
                                     "type": "object",
                                     "example": {
                                         "email": "Invalid email format",
-                                        "password": "Password must be at least 8 characters"
-                                    }
+                                        "password": "Password must be at least 8 characters",
+                                    },
                                 }
-                            }
-                        }
-                    }
-                }
-            }
+                            },
+                        },
+                    },
+                },
+            },
         },
         "paths": {
             "/items": {
@@ -429,12 +555,12 @@ For the latest development status, see the PROJECT_STATUS.md file.
                                 "application/json": {
                                     "schema": {
                                         "type": "array",
-                                        "items": {"$ref": "#/components/schemas/Item"}
+                                        "items": {"$ref": "#/components/schemas/Item"},
                                     }
                                 }
-                            }
+                            },
                         }
-                    }
+                    },
                 },
                 "post": {
                     "tags": ["Item"],
@@ -444,9 +570,11 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "required": True,
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/ItemCreateRequest"}
+                                "schema": {
+                                    "$ref": "#/components/schemas/ItemCreateRequest"
+                                }
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "201": {
@@ -455,23 +583,25 @@ For the latest development status, see the PROJECT_STATUS.md file.
                                 "application/json": {
                                     "schema": {"$ref": "#/components/schemas/Item"}
                                 }
-                            }
+                            },
                         },
-                        "403": {"description": "Admin access required"}
-                    }
-                }
+                        "403": {"description": "Admin access required"},
+                    },
+                },
             },
             "/items/{item_id}": {
                 "get": {
                     "tags": ["Item"],
                     "summary": "Get item details",
                     "security": [{"BearerAuth": []}],
-                    "parameters": [{
-                        "name": "item_id",
-                        "in": "path",
-                        "required": True,
-                        "schema": {"type": "integer"}
-                    }],
+                    "parameters": [
+                        {
+                            "name": "item_id",
+                            "in": "path",
+                            "required": True,
+                            "schema": {"type": "integer"},
+                        }
+                    ],
                     "responses": {
                         "200": {
                             "description": "Item details",
@@ -479,28 +609,32 @@ For the latest development status, see the PROJECT_STATUS.md file.
                                 "application/json": {
                                     "schema": {"$ref": "#/components/schemas/Item"}
                                 }
-                            }
+                            },
                         },
-                        "404": {"description": "Item not found"}
-                    }
+                        "404": {"description": "Item not found"},
+                    },
                 },
                 "put": {
                     "tags": ["Item"],
                     "summary": "Update item (admin only)",
                     "security": [{"BearerAuth": []}],
-                    "parameters": [{
-                        "name": "item_id",
-                        "in": "path",
-                        "required": True,
-                        "schema": {"type": "integer"}
-                    }],
+                    "parameters": [
+                        {
+                            "name": "item_id",
+                            "in": "path",
+                            "required": True,
+                            "schema": {"type": "integer"},
+                        }
+                    ],
                     "requestBody": {
                         "required": True,
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/ItemUpdateRequest"}
+                                "schema": {
+                                    "$ref": "#/components/schemas/ItemUpdateRequest"
+                                }
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "200": {
@@ -509,28 +643,30 @@ For the latest development status, see the PROJECT_STATUS.md file.
                                 "application/json": {
                                     "schema": {"$ref": "#/components/schemas/Item"}
                                 }
-                            }
+                            },
                         },
                         "403": {"description": "Admin access required"},
-                        "404": {"description": "Item not found"}
-                    }
+                        "404": {"description": "Item not found"},
+                    },
                 },
                 "delete": {
                     "tags": ["Item"],
                     "summary": "Delete item (admin only)",
                     "security": [{"BearerAuth": []}],
-                    "parameters": [{
-                        "name": "item_id",
-                        "in": "path",
-                        "required": True,
-                        "schema": {"type": "integer"}
-                    }],
+                    "parameters": [
+                        {
+                            "name": "item_id",
+                            "in": "path",
+                            "required": True,
+                            "schema": {"type": "integer"},
+                        }
+                    ],
                     "responses": {
                         "204": {"description": "Item deleted successfully"},
                         "403": {"description": "Admin access required"},
-                        "404": {"description": "Item not found"}
-                    }
-                }
+                        "404": {"description": "Item not found"},
+                    },
+                },
             },
             # Authentication Endpoints
             "/api/auth/signup": {
@@ -544,42 +680,50 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "application/json": {
                                 "schema": {"$ref": "#/components/schemas/SignupRequest"}
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "201": {
                             "description": "User created successfully",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/SignupSuccessResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/SignupSuccessResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "400": {
                             "description": "Bad request",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "409": {
                             "description": "Email already registered",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "422": {
                             "description": "Validation error",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ValidationErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ValidationErrorResponse"
+                                    }
                                 }
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 }
             },
             "/api/auth/login": {
@@ -593,34 +737,40 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "application/json": {
                                 "schema": {"$ref": "#/components/schemas/LoginRequest"}
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "200": {
                             "description": "Login successful",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/LoginSuccessResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/LoginSuccessResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "400": {
                             "description": "Bad request",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "401": {
                             "description": "Unauthorized",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
                                 }
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 }
             },
             "/api/auth/profile": {
@@ -634,27 +784,33 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "description": "Profile retrieved successfully",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ProfileResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ProfileResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "401": {
                             "description": "Unauthorized",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "404": {
                             "description": "User not found",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
                                 }
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 },
                 "put": {
                     "tags": ["Authentication"],
@@ -665,25 +821,29 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "required": True,
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/ProfileUpdateRequest"}
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfileUpdateRequest"
+                                }
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "200": {
                             "description": "Profile updated successfully",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ProfileResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ProfileResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "400": {"description": "Bad request"},
                         "401": {"description": "Unauthorized"},
                         "404": {"description": "User not found"},
-                        "422": {"description": "Validation error"}
-                    }
-                }
+                        "422": {"description": "Validation error"},
+                    },
+                },
             },
             "/api/auth/refresh": {
                 "post": {
@@ -696,30 +856,35 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "description": "Access token refreshed successfully",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/RefreshTokenResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/RefreshTokenResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "401": {
                             "description": "Unauthorized - Invalid or expired refresh token",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
                                 }
-                            }
+                            },
                         },
                         "404": {
                             "description": "User not found",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
                                 }
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 }
             },
-            
             # Future Gear Management Endpoints (Placeholder)
             "/api/gear": {
                 "get": {
@@ -731,31 +896,42 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "name": "category",
                             "in": "query",
                             "description": "Filter by gear category",
-                            "schema": {"type": "string", "enum": ["camera", "lens", "lighting", "accessory"]}
+                            "schema": {
+                                "type": "string",
+                                "enum": ["camera", "lens", "lighting", "accessory"],
+                            },
                         },
                         {
                             "name": "availability_status",
                             "in": "query",
                             "description": "Filter by availability status",
-                            "schema": {"type": "string", "enum": ["available", "rented", "maintenance"]}
+                            "schema": {
+                                "type": "string",
+                                "enum": ["available", "rented", "maintenance"],
+                            },
                         },
                         {
                             "name": "page",
                             "in": "query",
                             "description": "Page number for pagination",
-                            "schema": {"type": "integer", "minimum": 1, "default": 1}
+                            "schema": {"type": "integer", "minimum": 1, "default": 1},
                         },
                         {
                             "name": "limit",
                             "in": "query",
                             "description": "Number of items per page",
-                            "schema": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20}
-                        }
+                            "schema": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100,
+                                "default": 20,
+                            },
+                        },
                     ],
                     "responses": {
                         "200": {"description": "List of gear items"},
-                        "400": {"description": "Bad request"}
-                    }
+                        "400": {"description": "Bad request"},
+                    },
                 },
                 "post": {
                     "tags": ["Gear Management"],
@@ -766,17 +942,19 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "required": True,
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/GearCreateRequest"}
+                                "schema": {
+                                    "$ref": "#/components/schemas/GearCreateRequest"
+                                }
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "201": {"description": "Gear item created successfully"},
                         "400": {"description": "Bad request"},
                         "401": {"description": "Unauthorized"},
-                        "403": {"description": "Admin access required"}
-                    }
-                }
+                        "403": {"description": "Admin access required"},
+                    },
+                },
             },
             "/api/gear/{gear_id}": {
                 "get": {
@@ -789,16 +967,15 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "in": "path",
                             "required": True,
                             "description": "ID of the gear item",
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "responses": {
                         "200": {"description": "Gear item details"},
-                        "404": {"description": "Gear item not found"}
-                    }
+                        "404": {"description": "Gear item not found"},
+                    },
                 }
             },
-            
             # Future Rental Management Endpoints (Placeholder)
             "/api/rentals": {
                 "get": {
@@ -808,8 +985,8 @@ For the latest development status, see the PROJECT_STATUS.md file.
                     "security": [{"BearerAuth": []}],
                     "responses": {
                         "200": {"description": "List of user rentals"},
-                        "401": {"description": "Unauthorized"}
-                    }
+                        "401": {"description": "Unauthorized"},
+                    },
                 },
                 "post": {
                     "tags": ["Rental System"],
@@ -822,17 +999,16 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "application/json": {
                                 "schema": {"$ref": "#/components/schemas/RentalRequest"}
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "201": {"description": "Rental created successfully"},
                         "400": {"description": "Bad request"},
                         "401": {"description": "Unauthorized"},
-                        "409": {"description": "Gear not available for selected dates"}
-                    }
-                }
+                        "409": {"description": "Gear not available for selected dates"},
+                    },
+                },
             },
-            
             # Future Review System Endpoints (Placeholder)
             "/api/gear/{gear_id}/reviews": {
                 "get": {
@@ -845,13 +1021,13 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "in": "path",
                             "required": True,
                             "description": "ID of the gear item",
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "responses": {
                         "200": {"description": "List of reviews"},
-                        "404": {"description": "Gear item not found"}
-                    }
+                        "404": {"description": "Gear item not found"},
+                    },
                 },
                 "post": {
                     "tags": ["Review System"],
@@ -864,7 +1040,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "in": "path",
                             "required": True,
                             "description": "ID of the gear item",
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "requestBody": {
@@ -873,43 +1049,40 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "application/json": {
                                 "schema": {"$ref": "#/components/schemas/ReviewRequest"}
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "201": {"description": "Review added successfully"},
                         "400": {"description": "Bad request"},
                         "401": {"description": "Unauthorized"},
-                        "403": {"description": "Must complete rental to review"}
-                    }
-                }
-            }
+                        "403": {"description": "Must complete rental to review"},
+                    },
+                },
+            },
         },
         "tags": [
             {
                 "name": "Authentication",
-                "description": "User authentication and account management"
+                "description": "User authentication and account management",
             },
             {
                 "name": "Gear Management",
-                "description": "Camera equipment catalog and inventory (Coming Soon)"
+                "description": "Camera equipment catalog and inventory (Coming Soon)",
             },
             {
                 "name": "Rental System",
-                "description": "Equipment booking and rental management (Coming Soon)"
+                "description": "Equipment booking and rental management (Coming Soon)",
             },
             {
                 "name": "Review System",
-                "description": "User reviews and ratings (Coming Soon)"
+                "description": "User reviews and ratings (Coming Soon)",
             },
-            {
-                "name": "Admin",
-                "description": "Administrative endpoints (Coming Soon)"
-            }
-        ]
+            {"name": "Admin", "description": "Administrative endpoints (Coming Soon)"},
+        ],
     }
 
 
-@swagger_bp.route('/')
+@swagger_bp.route("/")
 def swagger_ui():
     """Render Swagger UI page."""
     swagger_html = """
@@ -1011,13 +1184,13 @@ def swagger_ui():
     return render_template_string(swagger_html)
 
 
-@swagger_bp.route('/openapi.json')
+@swagger_bp.route("/openapi.json")
 def openapi_spec():
     """Return OpenAPI specification as JSON."""
     return jsonify(get_openapi_spec())
 
 
-@swagger_bp.route('/redoc')
+@swagger_bp.route("/redoc")
 def redoc():
     """Render ReDoc documentation page."""
     redoc_html = """
@@ -1048,33 +1221,27 @@ def redoc():
     return render_template_string(redoc_html)
 
 
-@swagger_bp.route('/postman')
+@swagger_bp.route("/postman")
 def postman_collection():
     """Generate Postman collection for API testing."""
     spec = get_openapi_spec()
-    
+
     collection = {
         "info": {
             "name": "WeRent Backend API",
             "description": spec["info"]["description"],
-            "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+            "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         },
         "variable": [
             {
                 "key": "baseUrl",
-                "value": "https://werent-backend-api.onrender.com" if os.environ.get('FLASK_ENV') == 'production' else "http://localhost:5000",
-                "type": "string"
+                "value": "https://werent-backend-api.onrender.com"
+                if os.environ.get("FLASK_ENV") == "production"
+                else "http://localhost:5000",
+                "type": "string",
             },
-            {
-                "key": "accessToken",
-                "value": "",
-                "type": "string"
-            },
-            {
-                "key": "refreshToken",
-                "value": "",
-                "type": "string"
-            }
+            {"key": "accessToken", "value": "", "type": "string"},
+            {"key": "refreshToken", "value": "", "type": "string"},
         ],
         "item": [
             {
@@ -1085,50 +1252,50 @@ def postman_collection():
                         "request": {
                             "method": "POST",
                             "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
+                                {"key": "Content-Type", "value": "application/json"}
                             ],
                             "body": {
                                 "mode": "raw",
-                                "raw": json.dumps({
-                                    "email": "test@werent.com",
-                                    "password": "SecurePass123",
-                                    "first_name": "Test",
-                                    "last_name": "User",
-                                    "phone": "+1234567890"
-                                }, indent=2)
+                                "raw": json.dumps(
+                                    {
+                                        "email": "test@werent.com",
+                                        "password": "SecurePass123",
+                                        "first_name": "Test",
+                                        "last_name": "User",
+                                        "phone": "+1234567890",
+                                    },
+                                    indent=2,
+                                ),
                             },
                             "url": {
                                 "raw": "{{baseUrl}}/api/auth/signup",
                                 "host": ["{{baseUrl}}"],
-                                "path": ["api", "auth", "signup"]
-                            }
-                        }
+                                "path": ["api", "auth", "signup"],
+                            },
+                        },
                     },
                     {
                         "name": "Login User",
                         "request": {
                             "method": "POST",
                             "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
+                                {"key": "Content-Type", "value": "application/json"}
                             ],
                             "body": {
                                 "mode": "raw",
-                                "raw": json.dumps({
-                                    "email": "test@werent.com",
-                                    "password": "SecurePass123"
-                                }, indent=2)
+                                "raw": json.dumps(
+                                    {
+                                        "email": "test@werent.com",
+                                        "password": "SecurePass123",
+                                    },
+                                    indent=2,
+                                ),
                             },
                             "url": {
                                 "raw": "{{baseUrl}}/api/auth/login",
                                 "host": ["{{baseUrl}}"],
-                                "path": ["api", "auth", "login"]
-                            }
+                                "path": ["api", "auth", "login"],
+                            },
                         },
                         "event": [
                             {
@@ -1139,11 +1306,11 @@ def postman_collection():
                                         "    const response = pm.response.json();",
                                         "    pm.collectionVariables.set('accessToken', response.data.access_token);",
                                         "    pm.collectionVariables.set('refreshToken', response.data.refresh_token);",
-                                        "}"
+                                        "}",
                                     ]
-                                }
+                                },
                             }
-                        ]
+                        ],
                     },
                     {
                         "name": "Get Profile",
@@ -1152,15 +1319,15 @@ def postman_collection():
                             "header": [
                                 {
                                     "key": "Authorization",
-                                    "value": "Bearer {{accessToken}}"
+                                    "value": "Bearer {{accessToken}}",
                                 }
                             ],
                             "url": {
                                 "raw": "{{baseUrl}}/api/auth/profile",
                                 "host": ["{{baseUrl}}"],
-                                "path": ["api", "auth", "profile"]
-                            }
-                        }
+                                "path": ["api", "auth", "profile"],
+                            },
+                        },
                     },
                     {
                         "name": "Refresh Access Token",
@@ -1169,14 +1336,14 @@ def postman_collection():
                             "header": [
                                 {
                                     "key": "Authorization",
-                                    "value": "Bearer {{refreshToken}}"
+                                    "value": "Bearer {{refreshToken}}",
                                 }
                             ],
                             "url": {
                                 "raw": "{{baseUrl}}/api/auth/refresh",
                                 "host": ["{{baseUrl}}"],
-                                "path": ["api", "auth", "refresh"]
-                            }
+                                "path": ["api", "auth", "refresh"],
+                            },
                         },
                         "event": [
                             {
@@ -1186,15 +1353,15 @@ def postman_collection():
                                         "if (pm.response.code === 200) {",
                                         "    const response = pm.response.json();",
                                         "    pm.collectionVariables.set('accessToken', response.data.access_token);",
-                                        "}"
+                                        "}",
                                     ]
-                                }
+                                },
                             }
-                        ]
-                    }
-                ]
+                        ],
+                    },
+                ],
             }
-        ]
+        ],
     }
-    
+
     return jsonify(collection)
