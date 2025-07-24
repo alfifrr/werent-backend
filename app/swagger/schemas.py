@@ -180,6 +180,44 @@ def get_auth_schemas():
                 "phone": {"type": "string", "example": "+1234567890"},
             },
         },
+        "EmailRequest": {
+            "type": "object",
+            "required": ["email"],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address to send verification to",
+                    "example": "user@example.com"
+                }
+            }
+        },
+        "EmailVerificationResponse": {
+            "type": "object",
+            "properties": {
+                "success": {"type": "boolean", "example": True},
+                "message": {"type": "string", "example": "Email verified successfully! Welcome to WeRent."},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "verified": {"type": "boolean", "example": True}
+                    }
+                }
+            }
+        },
+        "ResendVerificationResponse": {
+            "type": "object",
+            "properties": {
+                "success": {"type": "boolean", "example": True},
+                "message": {"type": "string", "example": "Verification email sent successfully. Please check your inbox."},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "email_sent": {"type": "boolean", "example": True}
+                    }
+                }
+            }
+        },
     }
 
 

@@ -3,6 +3,7 @@ from pydantic import ValidationError
 from app.models import User
 from app.extensions import db
 from app.services import UserService
+from app.services.email_service import EmailService
 from app.schemas.user_schema import UserUpdateSchema, UserResponseSchema
 from app.schemas.auth_schema import RegisterSchema, LoginSchema
 from app.utils import (
@@ -48,9 +49,24 @@ def signup_controller(data):
             phone_number=user_data.phone_number
         )
 
+        # Send verification email
+        email_service = EmailService()
+        email_sent = email_service.send_verification_email(
+            user_email=user.email,
+            user_name=user.full_name,
+            verification_uuid=user.uuid
+        )
+
+        response_message = "User created successfully. Please check your email to verify your account."
+        if not email_sent:
+            response_message += " (Note: Verification email could not be sent)"
+
         return success_response(
-            message="User created successfully",
-            data={'user': UserResponseSchema.model_validate(user).model_dump()},
+            message=response_message,
+            data={
+                'user': UserResponseSchema.model_validate(user).model_dump(),
+                'verification_email_sent': email_sent
+            },
             status_code=201
         )
 
@@ -80,6 +96,13 @@ def login_controller(data):
 
         if not user.is_active:
             return unauthorized_response("Account is deactivated")
+
+        # Optional: Check if email is verified (uncomment to require email verification for login)
+        # if not user.is_verified:
+        #     return error_response(
+        #         "Please verify your email address before logging in. Check your inbox for a verification link.",
+        #         403
+        #     )
 
         # Create access and refresh tokens
         access_token = create_access_token(identity=str(user.id))
@@ -194,5 +217,92 @@ def refresh_controller(current_user_id):
 
     except ValueError:
         return error_response("Invalid user ID in token", 400)
+    except Exception as e:
+        return internal_error_response()
+
+
+def verify_email_controller(uuid):
+    """Handle email verification using UUID."""
+    try:
+        if not uuid:
+            return error_response("Verification UUID required", 400)
+
+        # Find user by UUID
+        user_service = UserService()
+        user = user_service.find_by_uuid(uuid)
+
+        if not user:
+            return error_response("Invalid or expired verification link", 404)
+
+        if user.is_verified:
+            return success_response(
+                message="Email already verified",
+                data={'verified': True}
+            )
+
+        # Update user verification status
+        user.is_verified = True
+        db.session.commit()
+
+        # Send welcome email
+        email_service = EmailService()
+        email_service.send_welcome_email(
+            user_email=user.email,
+            user_name=user.full_name
+        )
+
+        return success_response(
+            message="Email verified successfully! Welcome to WeRent.",
+            data={'verified': True}
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        return internal_error_response()
+
+
+def resend_verification_controller():
+    """Handle resending verification email for the current logged-in user."""
+    try:
+        # Get current user from JWT token
+        current_user_id = get_jwt_identity()
+        if not current_user_id:
+            return error_response("Authentication required", 401)
+        
+        # Convert to integer if it's a string
+        try:
+            user_id = int(current_user_id)
+        except (ValueError, TypeError):
+            return error_response("Invalid user ID in token", 400)
+        
+        # Find user by ID from token
+        user_service = UserService()
+        user = user_service.get_by_id(user_id)
+
+        if not user:
+            return error_response("User not found", 404)
+
+        if user.is_verified:
+            return error_response("Email already verified", 400)
+
+        if not user.is_active:
+            return error_response("Account is deactivated", 403)
+
+        # Send verification email
+        email_service = EmailService()
+        email_sent = email_service.send_verification_email(
+            user_email=user.email,
+            user_name=user.full_name,
+            verification_uuid=user.uuid
+        )
+
+        if email_sent:
+            return success_response(
+                message="Verification email sent successfully. Please check your inbox.",
+                data={'email_sent': True}
+            )
+        else:
+            return error_response("Failed to send verification email. Please try again later.", 500)
+
     except Exception as e:
         return internal_error_response()

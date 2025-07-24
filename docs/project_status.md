@@ -71,8 +71,13 @@ GET  /api/health               - Basic connectivity and status
 GET  /api/health/detailed      - Comprehensive system information
 ```
 
-### 🔐 Authentication System (COMPLETE)
+### 🔐 Authentication System with Email Verification (COMPLETE)
 - [x] User Registration/Signup with validation (no JWT session created)
+- [x] **Email Verification System** with UUID-based verification links
+- [x] **Professional HTML Email Templates** with WeRent branding
+- [x] **Mailtrap SMTP Integration** for development email testing
+- [x] **Resend Verification Email** functionality for user convenience
+- [x] **Welcome Email** automatically sent after successful verification
 - [x] User Login/Authentication with dual-token system
 - [x] JWT Access Token Generation (15-minute expiry)
 - [x] JWT Refresh Token Generation (30-day expiry)
@@ -86,17 +91,35 @@ GET  /api/health/detailed      - Comprehensive system information
 
 **API Endpoints Ready:**
 ```
-POST /api/auth/signup     - User registration (no JWT created)
-POST /api/auth/login      - User authentication (returns access + refresh tokens)
-POST /api/auth/refresh    - Refresh access token using refresh token
-GET  /api/auth/profile    - Get user profile (Protected)
-PUT  /api/auth/profile    - Update user profile (Protected)
+POST /api/auth/signup                    - User registration with email verification
+POST /api/auth/login                     - User authentication (returns access + refresh tokens)  
+POST /api/auth/refresh                   - Refresh access token using refresh token
+GET  /api/auth/verify-email/{uuid}       - Verify user email using UUID from email
+POST /api/auth/resend-verification       - Resend verification email (JWT Protected)
+GET  /api/auth/profile                   - Get user profile (Protected)
+PUT  /api/auth/profile                   - Update user profile (Protected)
 ```
+
+**Enhanced Registration Flow:**
+1. **Signup** → User registers with email/password
+2. **Email Sent** → Professional verification email with UUID link
+3. **Verification** → User clicks link to verify account
+4. **Welcome Email** → Confirmation email sent after verification
+5. **Login** → User can now login to receive JWT tokens
+6. **Resend Verification** → Authenticated users can resend verification emails
+
+**Email Verification Features:**
+- **UUID-based verification** - Cryptographically secure links
+- **Professional HTML templates** - Branded emails with fallback text
+- **Protected resend functionality** - Only authenticated users can resend for their own account
+- **Welcome emails** - Sent automatically after successful verification
+- **Error handling** - Proper responses for invalid/expired links
+- **Security improvements** - Prevents email enumeration attacks
 
 **JWT Token System:**
 - **Access Token**: 15-minute expiry for API requests
 - **Refresh Token**: 30-day expiry for token renewal
-- **Secure Flow**: Signup → Login → Access/Refresh tokens → API calls → Token refresh
+- **Secure Flow**: Signup → Email Verification → Login → Access/Refresh tokens → API calls → Token refresh
 
 ### 📚 API Documentation System (COMPLETE)
 - [x] **OpenAPI 3.0 Specification** - Comprehensive API schema

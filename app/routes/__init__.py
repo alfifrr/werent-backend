@@ -24,14 +24,6 @@ def register_blueprints(app):
     app.register_blueprint(item_bp)
     app.register_blueprint(admin_bp)
     
-    # Register swagger API routes
-    from ..swagger import api_bp
-    app.register_blueprint(api_bp)
-    
-    # Initialize swagger routes
-    from ..swagger.routes import register_all_swagger_routes
-    register_all_swagger_routes()
-    
     # Register future blueprints here
     # app.register_blueprint(gear_bp)
     # app.register_blueprint(rentals_bp)

@@ -37,6 +37,10 @@ class UserService(BaseService):
         """Find user by email address."""
         return User.query.filter_by(email=email.lower().strip()).first()
 
+    def find_by_uuid(self, uuid):
+        """Find user by UUID."""
+        return User.query.filter_by(uuid=uuid).first()
+
     def verify_user(self, user_id):
         """Verify user account."""
         user = self.get_by_id(user_id)

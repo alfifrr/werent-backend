@@ -142,7 +142,7 @@ def get_auth_paths():
             "post": {
                 "tags": ["Authentication"],
                 "summary": "Register a new user account",
-                "description": "Register a new user account with email and password. Does not create JWT session - use login endpoint to authenticate.",
+                "description": "Register a new user account with email and password. Sends verification email automatically. Account must be verified before login is possible.",
                 "requestBody": {
                     "required": True,
                     "content": {
@@ -299,6 +299,138 @@ def get_auth_paths():
                     "422": {"description": "Validation error"},
                 },
             },
+        },
+        "/api/auth/verify-email/{uuid}": {
+            "get": {
+                "tags": ["Authentication"],
+                "summary": "Verify user email address using UUID",
+                "description": "Verify user email address using UUID from verification email.\n\n**Process:**\n1. User receives verification email after registration\n2. Email contains a unique verification link with UUID\n3. User clicks the link to verify their account\n4. Account is marked as verified in the system\n5. Welcome email is sent upon successful verification\n\n**UUID Requirements:**\n- Must be a valid UUID from the verification email\n- UUID is unique to each user account\n- Links do not expire (but you can implement expiration if needed)\n\n**Success Response:**\n- User account is marked as verified\n- Welcome email is automatically sent\n- Returns verification status and success message\n\n**Error Scenarios:**\n- Invalid or non-existent UUID\n- Account already verified\n- Technical errors during verification\n\n**Security Notes:**\n- UUIDs are cryptographically secure\n- One-time verification (subsequent clicks are harmless)\n- No authentication required for this endpoint",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "required": True,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "Unique verification UUID from email",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmailVerificationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid UUID format",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Invalid or expired verification link",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/resend-verification": {
+            "post": {
+                "tags": ["Authentication"],
+                "summary": "Resend verification email to current user",
+                "description": "Resend email verification link to the authenticated user's email address.\n\n**Authentication Required:**\n- Must be logged in with valid JWT token\n- Only sends verification email to the authenticated user's account\n\n**Use Cases:**\n- User didn't receive original verification email\n- Original verification email was deleted/lost\n- User wants a fresh verification link\n\n**Process:**\n1. Authenticate user with JWT token\n2. Check if current user's account is unverified\n3. Verify account is active (not deactivated)\n4. Send verification email to user's registered email\n5. Return status of email sending operation\n\n**Email Content:**\n- Professional welcome message\n- Clear verification instructions\n- Clickable verification button/link\n- Fallback text link for compatibility\n- Security note about link validity\n\n**Success Response:**\n- Confirmation that email was sent\n- User should check their inbox/spam folder\n\n**Error Scenarios:**\n- User not authenticated (no JWT token)\n- Account already verified\n- Account deactivated\n- Email sending technical failure\n\n**Security Benefits:**\n- Prevents email enumeration attacks\n- Users can only request verification for their own account\n- Rate limiting applies per authenticated user",
+                "security": [{"BearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "Verification email sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResendVerificationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Account already verified",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - no valid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Account deactivated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to send email",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
     }
 

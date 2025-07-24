@@ -96,9 +96,62 @@ def create_auth_models(api, user_model):
         )
     })
     
+    # Email verification models
+    email_request = api.model('EmailRequest', {
+        'email': fields.String(
+            required=True,
+            description='Valid email address for verification',
+            example='john.doe@werent.com',
+            pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        )
+    })
+    
+    email_verification_response = api.model('EmailVerificationResponse', {
+        'success': fields.Boolean(
+            required=True,
+            description='Email verification success status',
+            example=True
+        ),
+        'message': fields.String(
+            required=True,
+            description='Email verification response message',
+            example='Email verified successfully! Welcome to WeRent.'
+        ),
+        'data': fields.Nested(api.model('VerificationData', {
+            'verified': fields.Boolean(
+                required=True,
+                description='User email verification status',
+                example=True
+            )
+        }))
+    })
+    
+    resend_verification_response = api.model('ResendVerificationResponse', {
+        'success': fields.Boolean(
+            required=True,
+            description='Resend verification success status',
+            example=True
+        ),
+        'message': fields.String(
+            required=True,
+            description='Resend verification response message',
+            example='Verification email sent successfully. Please check your inbox.'
+        ),
+        'data': fields.Nested(api.model('ResendData', {
+            'email_sent': fields.Boolean(
+                required=True,
+                description='Whether verification email was sent',
+                example=True
+            )
+        }))
+    })
+    
     return {
         'signup_request': signup_request,
         'login_request': login_request,
         'auth_success_response': auth_success_response,
-        'logout_response': logout_response
+        'logout_response': logout_response,
+        'email_request': email_request,
+        'email_verification_response': email_verification_response,
+        'resend_verification_response': resend_verification_response
     }
