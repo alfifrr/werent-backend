@@ -11,7 +11,6 @@ from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
 class ReviewCreateSchema(BaseSchema):
     """Schema for creating a new review."""
 
-    item_id: int = Field(..., description="ID of the item being reviewed")
     rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5")
     review_message: str = Field(..., min_length=5, max_length=500, description="Review message")
 

@@ -479,25 +479,35 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "type": "string",
                             "minLength": 5,
                             "example": "Great quality, fast delivery!",
+                            "description": "Review message (5-500 characters)"
                         },
                         "rating": {
                             "type": "integer",
                             "minimum": 1,
                             "maximum": 5,
                             "example": 5,
+                            "description": "Rating from 1 to 5"
                         },
                         "images": {
                             "type": "array",
                             "items": {
                                 "type": "string",
-                                "example": "https://cdn.werent.com/reviews/img1.jpg",
+                                "description": "Base64 image string. Accepts either raw base64 or data URL prefixed format (e.g. 'data:image/jpeg;base64,...')",
+                                "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
                             },
-                            "description": "Optional image URLs for the review",
-                        },
+                            "description": "Optional list of base64-encoded images for the review. Accepts both raw base64 and data URL prefixed formats.",
+                            "example": [
+                                "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...",
+                                "/9j/4AAQSkZJRgABAQAAAQABAAD..."
+                            ]
+                        }
                     },
                     "example": {
                         "review_message": "Great quality, fast delivery!",
                         "rating": 5,
+                        "images": [
+                            "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+                        ]
                     },
                 },
                 "ReviewUpdateRequest": {
@@ -507,6 +517,11 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "type": "string",
                             "minLength": 5,
                             "example": "Updated review message.",
+                        },
+                        "item_id": {
+                            "type": "integer",
+                            "example": 10,
+                            "description": "ID of the item being reviewed"
                         },
                         "rating": {
                             "type": "integer",

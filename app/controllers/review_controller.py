@@ -42,8 +42,9 @@ def update_review_controller(review_id, json_data):
         review = Review.query.get(review_id)
         if not review:
             return not_found_response('Review')
-        if review.user_id != user_id:
+        if str(review.user_id) != str(user_id):
             return error_response('You can only update your own reviews', status_code=403)
+
         updated_review = review_service.update_review(
             review_id=review_id,
             user_id=user_id,
@@ -61,7 +62,8 @@ def delete_review_controller(review_id):
         review = Review.query.get(review_id)
         if not review:
             return not_found_response('Review')
-        if review.user_id != user_id:
+        # both in string to compare
+        if str(review.user_id) != str(user_id):
             return error_response('You can only delete your own reviews', status_code=403)
         db.session.delete(review)
         db.session.commit()
