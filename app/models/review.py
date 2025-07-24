@@ -24,6 +24,7 @@ class Review(db.Model):
     # Relationships
     user = db.relationship('User', back_populates='reviews')
     item = db.relationship('Item', back_populates='reviews')
+    images = db.relationship('Image', back_populates='reviews', cascade='all, delete-orphan')
 
     def __repr__(self):
         """String representation of Review object."""
