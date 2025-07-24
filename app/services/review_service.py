@@ -13,6 +13,10 @@ from app.services.user_service import UserService
 class ReviewService(BaseService):
     """Service class for Review model business logic."""
 
+    def get_all_reviews(self):
+        """Get all reviews (testimonials) in the system, ordered by creation date descending."""
+        return Review.query.order_by(Review.created_at.desc()).all()
+
     def __init__(self):
         """Initialize ReviewService."""
         super().__init__(Review)

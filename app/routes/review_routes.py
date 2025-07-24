@@ -4,10 +4,16 @@ from app.controllers.review_controller import (
     list_reviews_controller,
     create_review_controller,
     update_review_controller,
-    delete_review_controller
+    delete_review_controller,
+    list_testimonials_controller
 )
 
 review_bp = Blueprint('review', __name__, url_prefix='')
+
+# GET /testimonial - List all testimonials (all reviews)
+@review_bp.route('/testimonial', methods=['GET'])
+def list_testimonials():
+    return list_testimonials_controller()
 
 # GET /items/<int:item_id>/reviews - List all reviews for an item
 @review_bp.route('/items/<int:item_id>/reviews', methods=['GET'])
