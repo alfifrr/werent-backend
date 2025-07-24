@@ -16,11 +16,13 @@ class Image(db.Model):
     url = db.Column(db.String(500), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
-    # Foreign key
-    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
+    # Foreign keys
+    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=True)
+    review_id = db.Column(db.Integer, db.ForeignKey('reviews.id'), nullable=True)
 
     # Relationships
     item = db.relationship('Item', back_populates='images')
+    review = db.relationship('Review', back_populates='images')
 
     def __repr__(self):
         """String representation of Image object."""

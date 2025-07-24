@@ -171,24 +171,37 @@ def validate_end_date(cls, v, values):
 
 ### 5. Review Schemas (`app/schemas/review.py`)
 
+#### Review Model Fields (SQLAlchemy)
+- `id` (Integer, PK)
+- `review_message` (Text, required)
+- `rating` (Integer, required, 1-5)
+- `created_at` (DateTime, auto)
+- `user_id` (Integer, FK to users, required)
+- `item_id` (Integer, FK to items, required)
+- `images` (List[Image], optional, associated images)
+
 #### Request Schemas:
 
 - **`ReviewCreateSchema`**: Create review
+  - `rating`: int (1-5, required)
+  - `review_message`: str (min 5 chars, required)
 
-  - Rating validation (1-5)
-  - Comment length validation (min 5 chars)
+- **`ReviewUpdateSchema`**: Update review
+  - `rating`: int (1-5, required)
+  - `review_message`: str (min 5 chars, required)
 
 - **`ReviewSearchSchema`**: Search reviews
-  - Rating range validation
-  - Content search
+  - `rating`: int (optional, range 1-5)
+  - `review_message`: str (optional, search)
 
 #### Response Schemas:
 
 - **`ReviewResponseSchema`**: Basic review data
+  - `id`, `user_id`, `item_id`, `review_message`, `rating`, `created_at`, `images`
 - **`ReviewStatsSchema`**: Review statistics with rating distribution
 - **`ReviewRatingDistributionSchema`**: Detailed rating breakdown
 
-#### Rating Validation:
+#### Validation:
 
 ```python
 @validator('rating')
@@ -196,7 +209,42 @@ def validate_rating(cls, v):
     if v < 1 or v > 5:
         raise ValueError('Rating must be between 1 and 5')
     return v
+
+@validator('review_message')
+def validate_review_message(cls, v):
+    if len(v) < 5:
+        raise ValueError('Review message must be at least 5 characters')
+    return v
 ```
+
+### 6. Image Schemas (`app/schemas/image.py`)
+
+#### Image Model Fields (SQLAlchemy)
+- `id` (Integer, PK)
+- `url` (String, required)
+- `created_at` (DateTime, auto)
+- `item_id` (Integer, FK to items, optional)
+- `review_id` (Integer, FK to reviews, optional)
+
+#### Request Schemas:
+- **`ImageCreateSchema`**: Add image to item or review
+  - `url`: str (required, validated as URL)
+  - `item_id`: int (optional)
+  - `review_id`: int (optional)
+
+- **`ImageUploadSchema`**: File upload validation
+  - File size, type, and extension constraints
+
+#### Response Schemas:
+- **`ImageResponseSchema`**: Basic image data
+  - `id`, `url`, `item_id`, `review_id`, `created_at`
+- **`ItemImagesResponseSchema`**: All images for item
+- **`ImageUploadResponseSchema`**: Upload result
+
+#### Validation:
+- URL must be valid (HttpUrl)
+- File uploads: max 5MB, allowed types: jpg, png, etc.
+- If associated with a review, `review_id` must match an existing review
 
 ### 6. Image Schemas (`app/schemas/image.py`)
 

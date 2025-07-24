@@ -111,16 +111,18 @@ Database models untuk platform peer-to-peer rental telah dibuat sesuai dengan sc
 **Fields**:
 
 - `id` (Primary Key)
-- `rating` (1-5)
-- `comment`
-- `created_at`
-- `item_id` (Foreign Key ke items)
-- `user_id` (Foreign Key ke users)
+- `rating` (1-5, required)
+- `review_message` (Text, required)
+- `created_at` (DateTime, required)
+- `item_id` (Foreign Key ke items, required)
+- `user_id` (Foreign Key ke users, required)
 
 **Relationships**:
 
 - `item`: Many-to-One dengan Item
 - `user`: Many-to-One dengan User
+- `images`: One-to-Many dengan Image (setiap review bisa memiliki gambar terkait)
+
 
 ### 7. Category Model (`app/models/category.py`)
 

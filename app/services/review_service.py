@@ -49,7 +49,8 @@ class ReviewService(BaseService):
         review.item_id = item_id
         review.user_id = user_id
         review.rating = rating
-        review.comment = comment.strip() if comment else None
+        review.review_message = comment.strip() if comment else None
+        review.images = []
 
         saved_review = self.save(review)
 

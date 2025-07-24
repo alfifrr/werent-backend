@@ -397,43 +397,49 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         },
                     },
                 },
-                # Review System Models (Future)
+                # Review System Models
                 "Review": {
                     "type": "object",
                     "properties": {
                         "id": {"type": "integer", "example": 1},
-                        "user_id": {"type": "integer", "example": 1},
-                        "gear_item_id": {"type": "integer", "example": 1},
-                        "rental_id": {"type": "integer", "example": 1},
-                        "rating": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 5,
-                            "example": 5,
-                        },
-                        "comment": {
-                            "type": "string",
-                            "example": "Excellent camera, perfect condition!",
-                        },
-                        "created_at": {"type": "string", "format": "date-time"},
-                        "updated_at": {"type": "string", "format": "date-time"},
-                    },
+                        "user_id": {"type": "integer", "example": 2},
+                        "item_id": {"type": "integer", "example": 10},
+                        "review_message": {"type": "string", "example": "Great quality, fast delivery!"},
+                        "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 5},
+                        "created_at": {"type": "string", "format": "date-time", "example": "2025-07-24T15:43:26+07:00"},
+                        "images": {
+                            "type": "array",
+                            "items": {"type": "string", "example": "https://cdn.werent.com/reviews/img1.jpg"}
+                        }
+                    }
                 },
-                "ReviewRequest": {
+                "ReviewCreateRequest": {
                     "type": "object",
-                    "required": ["rating"],
+                    "required": ["review_message", "rating"],
                     "properties": {
-                        "rating": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 5,
-                            "example": 5,
-                        },
-                        "comment": {
-                            "type": "string",
-                            "example": "Excellent camera, perfect condition!",
-                        },
+                        "review_message": {"type": "string", "minLength": 5, "example": "Great quality, fast delivery!"},
+                        "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 5},
+                        "images": {
+                            "type": "array",
+                            "items": {"type": "string", "example": "https://cdn.werent.com/reviews/img1.jpg"},
+                            "description": "Optional image URLs for the review"
+                        }
                     },
+                    "example": {
+                        "review_message": "Great quality, fast delivery!",
+                        "rating": 5
+                    }
+                },
+                "ReviewUpdateRequest": {
+                    "type": "object",
+                    "properties": {
+                        "review_message": {"type": "string", "minLength": 5, "example": "Updated review message."},
+                        "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 4}
+                    },
+                    "example": {
+                        "review_message": "Updated review message.",
+                        "rating": 4,
+                    }
                 },
                 # Response Models
                 "SignupSuccessResponse": {
@@ -1009,55 +1015,153 @@ For the latest development status, see the PROJECT_STATUS.md file.
                     },
                 },
             },
-            # Future Review System Endpoints (Placeholder)
-            "/api/gear/{gear_id}/reviews": {
+            # Review Endpoints
+            "/items/{item_id}/reviews": {
                 "get": {
-                    "tags": ["Review System"],
-                    "summary": "[Coming Soon] Get gear reviews",
-                    "description": "Retrieve reviews for a specific gear item",
+                    "tags": ["Review"],
+                    "summary": "List all reviews for an item",
+                    "description": "Retrieve all reviews for a specific item.",
                     "parameters": [
                         {
-                            "name": "gear_id",
+                            "name": "item_id",
                             "in": "path",
                             "required": True,
-                            "description": "ID of the gear item",
-                            "schema": {"type": "integer"},
+                            "description": "ID of the item",
+                            "schema": {"type": "integer"}
                         }
                     ],
                     "responses": {
-                        "200": {"description": "List of reviews"},
-                        "404": {"description": "Gear item not found"},
-                    },
+                        "200": {
+                            "description": "List of reviews",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "success": {"type": "boolean", "example": True},
+                                            "data": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "reviews": {
+                                                        "type": "array",
+                                                        "items": {"$ref": "#/components/schemas/Review"}
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "404": {"description": "Item not found"}
+                    }
                 },
                 "post": {
-                    "tags": ["Review System"],
-                    "summary": "[Coming Soon] Add review for gear",
-                    "description": "Add a review for gear item (requires completed rental)",
+                    "tags": ["Review"],
+                    "summary": "Create a review for an item",
+                    "description": "Create a new review for an item. Requires authentication.",
                     "security": [{"BearerAuth": []}],
                     "parameters": [
                         {
-                            "name": "gear_id",
+                            "name": "item_id",
                             "in": "path",
                             "required": True,
-                            "description": "ID of the gear item",
-                            "schema": {"type": "integer"},
+                            "description": "ID of the item",
+                            "schema": {"type": "integer"}
                         }
                     ],
                     "requestBody": {
                         "required": True,
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/ReviewRequest"}
+                                "schema": {"$ref": "#/components/schemas/ReviewCreateRequest"},
+                                "example": {
+                                    "review_message": "Great quality, fast delivery!",
+                                    "rating": 5,
+                                }
                             }
-                        },
+                        }
                     },
                     "responses": {
-                        "201": {"description": "Review added successfully"},
+                        "201": {
+                            "description": "Review created successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/Review"}
+                                }
+                            }
+                        },
                         "400": {"description": "Bad request"},
                         "401": {"description": "Unauthorized"},
-                        "403": {"description": "Must complete rental to review"},
+                        "403": {"description": "User already reviewed this item or not allowed"},
+                        "404": {"description": "Item not found"}
+                    }
+                }
+            },
+            "/reviews/{review_id}": {
+                "put": {
+                    "tags": ["Review"],
+                    "summary": "Update a review",
+                    "description": "Update an existing review. Only the review owner can update. Requires authentication.",
+                    "security": [{"BearerAuth": []}],
+                    "parameters": [
+                        {
+                            "name": "review_id",
+                            "in": "path",
+                            "required": True,
+                            "description": "ID of the review to update",
+                            "schema": {"type": "integer"}
+                        }
+                    ],
+                    "requestBody": {
+                        "required": True,
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ReviewUpdateRequest"},
+                                "example": {
+                                    "review_message": "Updated review message.",
+                                    "rating": 4,
+                                    "images": ["https://cdn.werent.com/reviews/img2.jpg"]
+                                }
+                            }
+                        }
                     },
+                    "responses": {
+                        "200": {
+                            "description": "Review updated successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/Review"}
+                                }
+                            }
+                        },
+                        "400": {"description": "Bad request"},
+                        "401": {"description": "Unauthorized"},
+                        "403": {"description": "Forbidden: Not the review owner"},
+                        "404": {"description": "Review not found"}
+                    }
                 },
+                "delete": {
+                    "tags": ["Review"],
+                    "summary": "Delete a review",
+                    "description": "Delete a review. Only the review owner can delete. Requires authentication.",
+                    "security": [{"BearerAuth": []}],
+                    "parameters": [
+                        {
+                            "name": "review_id",
+                            "in": "path",
+                            "required": True,
+                            "description": "ID of the review to delete",
+                            "schema": {"type": "integer"}
+                        }
+                    ],
+                    "responses": {
+                        "204": {"description": "Review deleted successfully"},
+                        "401": {"description": "Unauthorized"},
+                        "403": {"description": "Forbidden: Not the review owner"},
+                        "404": {"description": "Review not found"}
+                    }
+                }
             },
         },
         "tags": [
@@ -1074,8 +1178,8 @@ For the latest development status, see the PROJECT_STATUS.md file.
                 "description": "Equipment booking and rental management (Coming Soon)",
             },
             {
-                "name": "Review System",
-                "description": "User reviews and ratings (Coming Soon)",
+                "name": "Review",
+                "description": "User reviews and ratings for items.",
             },
             {"name": "Admin", "description": "Administrative endpoints (Coming Soon)"},
         ],
