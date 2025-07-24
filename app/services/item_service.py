@@ -37,9 +37,9 @@ class ItemService(BaseService):
         """Get all items (status filter removed)."""
         return Item.query.all()
 
-    def get_items_by_owner(self, owner_id):
+    def get_items_by_owner(self, user_id):
         """Get all items owned by a specific user."""
-        return Item.query.filter_by(owner_id=owner_id).all()
+        return Item.query.filter_by(user_id=user_id).all()
 
     def get_items_by_category(self, category):
         """Get items by category."""

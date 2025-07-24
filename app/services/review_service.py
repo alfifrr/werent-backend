@@ -6,6 +6,8 @@ Handles reviews and ratings for items and users.
 from datetime import datetime
 from app.services.base_service import BaseService
 from app.models.review import Review
+from app.services.item_service import ItemService
+from app.services.user_service import UserService
 
 
 class ReviewService(BaseService):
@@ -27,9 +29,6 @@ class ReviewService(BaseService):
             raise ValueError("You have already reviewed this item")
 
         # Verify item and user exist
-        from app.services.item_service import ItemService
-        from app.services.user_service import UserService
-
         item_service = ItemService()
         user_service = UserService()
 
@@ -42,7 +41,7 @@ class ReviewService(BaseService):
             raise ValueError("User not found")
 
         # Check if user is trying to review their own item
-        if item.owner_id == user_id:
+        if item.user_id == user_id:
             raise ValueError("You cannot review your own item")
 
         review = Review()
@@ -53,25 +52,19 @@ class ReviewService(BaseService):
         review.images = []
 
         saved_review = self.save(review)
-
+        
         # Update item owner's average rating
-        self.update_owner_rating(item.owner_id)
+        self.update_owner_rating(item.user_id)
 
         return saved_review
 
     def update_review(self, review_id, user_id, rating=None, comment=None):
         """Update an existing review."""
         review = self.get_by_id(review_id)
-        if not review:
-            return None
 
-        if review.user_id != user_id:
-            raise ValueError("You can only update your own reviews")
-
-        if rating is not None:
-            if not self.is_valid_rating(rating):
-                raise ValueError("Rating must be between 1 and 5")
-            review.rating = rating
+        if not self.is_valid_rating(rating):
+            raise ValueError("Rating must be between 1 and 5")
+        review.rating = rating
 
         if comment is not None:
             review.comment = comment.strip() if comment else None
@@ -79,7 +72,7 @@ class ReviewService(BaseService):
         saved_review = self.save(review)
 
         # Update item owner's average rating
-        self.update_owner_rating(review.item.owner_id)
+        self.update_owner_rating(review.item.user_id)
 
         return saved_review
 
@@ -92,11 +85,11 @@ class ReviewService(BaseService):
         if review.user_id != user_id:
             raise ValueError("You can only delete your own reviews")
 
-        owner_id = review.item.owner_id
+        user_id_owner = review.item.user_id
         self.delete(review)
 
         # Update item owner's average rating after deletion
-        self.update_owner_rating(owner_id)
+        self.update_owner_rating(user_id_owner)
 
         return True
 
@@ -156,7 +149,7 @@ class ReviewService(BaseService):
 
         # Get average rating from all reviews of items owned by this user
         result = Review.query.join(Item).filter(
-            Item.owner_id == owner_id
+            Item.user_id == owner_id
         ).with_entities(func.avg(Review.rating)).first()
 
         user_service = UserService()
@@ -177,7 +170,7 @@ class ReviewService(BaseService):
         elif user_id:
             # Get stats for all items owned by user
             from app.models.item import Item
-            query = query.join(Item).filter(Item.owner_id == user_id)
+            query = query.join(Item).filter(Item.user_id == user_id)
 
         stats = query.with_entities(
             func.count(Review.id).label('total_reviews'),
@@ -224,16 +217,16 @@ class ReviewService(BaseService):
         # Check if user is not the owner
         item_service = ItemService()
         item = item_service.get_by_id(item_id)
-        if item and item.owner_id == user_id:
+        if item and item.user_id == user_id:
             return False, "You cannot review your own item"
 
         return True, "User can review this item"
 
-    def get_owner_reviews(self, owner_id, limit=None):
+    def get_owner_reviews(self, user_id, limit=None):
         """Get all reviews for items owned by a specific user."""
         from app.models.item import Item
 
-        query = Review.query.join(Item).filter(Item.owner_id == owner_id).order_by(Review.created_at.desc())
+        query = Review.query.join(Item).filter(Item.user_id == user_id).order_by(Review.created_at.desc())
 
         if limit:
             query = query.limit(limit)
