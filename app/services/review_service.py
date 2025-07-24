@@ -8,6 +8,7 @@ from app.services.base_service import BaseService
 from app.models.review import Review
 from app.services.item_service import ItemService
 from app.services.user_service import UserService
+from app.models.image import Image
 
 
 class ReviewService(BaseService):
@@ -21,8 +22,8 @@ class ReviewService(BaseService):
         """Initialize ReviewService."""
         super().__init__(Review)
 
-    def create_review(self, item_id, user_id, rating, comment=None):
-        """Create a new review for an item."""
+    def create_review(self, item_id, user_id, rating, comment=None, images=None):
+        """Create a new review for an item, with optional images."""
         # Validate rating
         if not self.is_valid_rating(rating):
             raise ValueError("Rating must be between 1 and 5")
@@ -38,7 +39,6 @@ class ReviewService(BaseService):
 
         item = item_service.get_by_id(item_id)
         user = user_service.get_by_id(user_id)
-
         if not item:
             raise ValueError("Item not found")
         if not user:
@@ -55,15 +55,24 @@ class ReviewService(BaseService):
         review.review_message = comment.strip() if comment else None
         review.images = []
 
+        # Save review first to get ID
         saved_review = self.save(review)
-        
+
+        # Handle images
+        if images:
+            for img_b64 in images:
+                image = Image(image_base64=img_b64, review_id=saved_review.id)
+                image.save()
+                saved_review.images.append(image)
+            self.save(saved_review)
+
         # Update item owner's average rating
         self.update_owner_rating(item.user_id)
 
         return saved_review
 
-    def update_review(self, review_id, user_id, rating=None, comment=None):
-        """Update an existing review."""
+    def update_review(self, review_id, user_id, rating=None, comment=None, images=None):
+        """Update an existing review, including images if provided."""
         review = self.get_by_id(review_id)
 
         if not self.is_valid_rating(rating):
@@ -71,7 +80,19 @@ class ReviewService(BaseService):
         review.rating = rating
 
         if comment is not None:
-            review.comment = comment.strip() if comment else None
+            review.review_message = comment.strip() if comment else None
+
+        # Handle image update: if images provided, replace all
+        if images is not None:
+            # Delete old images
+            for img in list(review.images):
+                img.delete()
+            review.images = []
+            # Add new images
+            for img_b64 in images:
+                image = Image(image_base64=img_b64, review_id=review.id)
+                image.save()
+                review.images.append(image)
 
         saved_review = self.save(review)
 

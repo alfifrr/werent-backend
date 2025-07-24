@@ -37,7 +37,8 @@ class Review(db.Model):
             'item_id': self.item_id,
             'review_message': self.review_message,
             'rating': self.rating,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'images': [image.to_dict() for image in self.images] if self.images else []
         }
 
     @classmethod
