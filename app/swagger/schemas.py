@@ -108,11 +108,19 @@ def get_auth_schemas():
                 },
                 "first_name": {"type": "string", "example": "John"},
                 "last_name": {"type": "string", "example": "Doe"},
-                "phone": {"type": "string", "example": "+1234567890"},
+                "phone_number": {"type": "string", "example": "+1234567890"},
+                "profile_image": {
+                    "type": "string",
+                    "nullable": True,
+                    "description": "Base64 encoded profile image data",
+                    "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+                },
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
                 "is_active": {"type": "boolean", "example": True},
                 "is_admin": {"type": "boolean", "example": False},
+                "is_verified": {"type": "boolean", "example": False},
+                "uuid": {"type": "string", "example": "bc84edc9-04a2-4a4b-a219-f2b33903562d"},
             },
         },
         "SignupRequest": {
@@ -177,7 +185,12 @@ def get_auth_schemas():
                     "maxLength": 50,
                     "example": "Doe",
                 },
-                "phone": {"type": "string", "example": "+1234567890"},
+                "phone_number": {"type": "string", "example": "+1234567890"},
+                "profile_image": {
+                    "type": "string",
+                    "description": "Base64 encoded image data with data URI prefix (e.g., data:image/jpeg;base64,...)",
+                    "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+                },
             },
         },
         "EmailRequest": {
