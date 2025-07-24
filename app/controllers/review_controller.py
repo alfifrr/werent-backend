@@ -7,6 +7,14 @@ from app import db
 
 review_service = ReviewService()
 
+def list_testimonials_controller():
+    try:
+        reviews = review_service.get_all_reviews()
+        data = [review.to_dict() for review in reviews]
+        return success_response('Testimonials retrieved successfully', data)
+    except Exception as e:
+        return internal_error_response(str(e))
+
 def list_reviews_controller(item_id):
     try:
         reviews = review_service.get_reviews_by_item(item_id)
