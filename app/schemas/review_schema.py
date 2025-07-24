@@ -6,14 +6,22 @@ from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
+from app.utils.validators import validate_base64_image
 
 
 class ReviewCreateSchema(BaseSchema):
     """Schema for creating a new review."""
 
-    item_id: int = Field(..., description="ID of the item being reviewed")
     rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5")
     review_message: str = Field(..., min_length=5, max_length=500, description="Review message")
+    images: Optional[List[str]] = Field(
+        None,
+        description="List of base64-encoded images (raw or data URL prefixed)",
+        example=[
+            "iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # truncated raw base64
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."  # data URL base64
+        ]
+    )
 
     @field_validator('rating')
     @classmethod
@@ -23,12 +31,29 @@ class ReviewCreateSchema(BaseSchema):
             raise ValueError('Rating must be between 1 and 5')
         return v
 
+    @field_validator('images')
+    @classmethod
+    def validate_images(cls, v):
+        if v is not None:
+            for img in v:
+                if not validate_base64_image(img):
+                    raise ValueError('One or more images are not valid base64 images')
+        return v
+
 
 class ReviewUpdateSchema(BaseSchema):
     """Schema for updating a review."""
 
     rating: Optional[int] = Field(None, ge=1, le=5, description="Rating from 1 to 5")
     review_message: Optional[str] = Field(None, min_length=5, max_length=500, description="Review message")
+    images: Optional[List[str]] = Field(
+        None,
+        description="List of base64-encoded images (raw or data URL prefixed)",
+        example=[
+            "iVBORw0KGgoAAAANSUhEUgAAAAUA...",
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."
+        ]
+    )
 
     @field_validator('rating')
     @classmethod
@@ -36,6 +61,15 @@ class ReviewUpdateSchema(BaseSchema):
         """Validate rating value."""
         if v is not None and (v < 1 or v > 5):
             raise ValueError('Rating must be between 1 and 5')
+        return v
+
+    @field_validator('images')
+    @classmethod
+    def validate_images(cls, v):
+        if v is not None:
+            for img in v:
+                if not validate_base64_image(img):
+                    raise ValueError('One or more images are not valid base64 images')
         return v
 
 
@@ -47,6 +81,7 @@ class ReviewResponseSchema(BaseSchema, TimestampMixin):
     review_message: str
     item_id: int
     user_id: int
+    images: Optional[List[dict]] = None  # Each dict contains image info (id, image_base64, etc.)
 
 
 class ReviewDetailResponseSchema(ReviewResponseSchema):
