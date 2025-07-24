@@ -106,7 +106,7 @@ review_ns = Namespace(
 
 admin_ns = Namespace(
     'Admin', 
-    description='Administrative endpoints for platform management (Coming Soon)',
+    description='Administrative endpoints for user management and platform administration',
     path='/admin'
 )
 
