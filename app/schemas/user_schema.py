@@ -121,8 +121,9 @@ class UserResponseSchema(BaseSchema, TimestampMixin):
     is_admin: bool
     is_active: bool
     uuid: str
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
 
 
 class UserProfileResponseSchema(UserResponseSchema):

@@ -88,7 +88,7 @@ def validate_password(cls, v):
 #### Request Schemas:
 
 - **`ItemCreateSchema`**: Create new item
-
+  - `images`: Optional[List[str]] — List of image data as base64 strings or data URLs. These will be converted to image objects on the backend.
   - Title length validation (3-100 chars)
   - Description length validation (10-1000 chars)
   - Price validation (> 0, max 10,000)
@@ -101,7 +101,9 @@ def validate_password(cls, v):
 #### Response Schemas:
 
 - **`ItemResponseSchema`**: Basic item data
-- **`ItemDetailResponseSchema`**: Extended with owner, images, reviews
+  - `images`: Optional[List[dict]] — List of image objects (see `ImageResponseSchema`), not just URLs or base64 strings.
+  - `image_base64`: Optional[str] — For backward compatibility, a single base64 string (deprecated; use `images` instead).
+- **`ItemDetailResponseSchema`**: Extends `ItemResponseSchema` with related fields like `owner`, `reviews`, etc. `images` is always a list of image objects.
 - **`ItemAvailabilityResponseSchema`**: Availability check results
 
 #### Advanced Features:
@@ -357,11 +359,21 @@ def get_item_detail(item_id: int):
     return ItemDetailResponseSchema(
         **item.to_dict(),
         owner=item.owner.to_dict(),
-        images=[img.to_dict() for img in item.images],
+        images=[img.to_dict() for img in item.images],  # Now a list of dicts with id, url, created_at, etc.
         reviews_count=len(item.reviews),
         avg_rating=calculate_rating(item.reviews)
     )
 ```
+
+# Note
+- `images` in responses is now a list of image objects, e.g.:
+```json
+"images": [
+  {"id": 1, "url": "https://...", "created_at": "..."},
+  {"id": 2, "url": "https://...", "created_at": "..."}
+]
+```
+- For legacy clients, `image_base64` may still be present but is deprecated.
 
 ## Key Features
 

@@ -137,12 +137,27 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "color": {"type": "string", "example": "Red"},
                         "quantity": {"type": "integer", "example": 3},
                         "product_code": {"type": "string", "example": "SKU12345"},
-                        "description": {"type": "string", "example": "Lightweight summer dress."},
+                        "description": {
+                            "type": "string",
+                            "example": "Lightweight summer dress.",
+                        },
                         "price_per_day": {"type": "number", "example": 15.0},
                         "rating": {"type": "number", "example": 4.7},
                         "created_at": {"type": "string", "format": "date-time"},
                         "updated_at": {"type": "string", "format": "date-time"},
                         "user_id": {"type": "integer", "example": 2},
+                        "images": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "description": "Base64 image string. Accepts either raw base64 or data URL prefixed format (e.g. 'data:image/jpeg;base64,...')",
+                            },
+                            "description": "List of base64-encoded images associated with the item.",
+                            "example": [
+                                "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...",
+                                "/9j/4AAQSkZJRgABAQAAAQABAAD...",
+                            ],
+                        },
                     },
                 },
                 "ItemCreateRequest": {
@@ -168,6 +183,17 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "product_code": {"type": "string"},
                         "description": {"type": "string"},
                         "price_per_day": {"type": "number"},
+                        "images": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "description": "Base64 image string. Accepts either raw base64 or data URL prefixed format (e.g. 'data:image/jpeg;base64,...')",
+                            },
+                            "description": "List of base64-encoded images to associate with the item.",
+                            "example": [
+                                "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+                            ],
+                        },
                     },
                     "example": {
                         "name": "Summer Dress",
@@ -180,6 +206,9 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "product_code": "SKU12345",
                         "description": "Lightweight summer dress.",
                         "price_per_day": 15.0,
+                        "images": [
+                            "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+                        ],
                     },
                 },
                 "ItemUpdateRequest": {
@@ -195,6 +224,17 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "product_code": {"type": "string"},
                         "description": {"type": "string"},
                         "price_per_day": {"type": "number"},
+                        "images": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "description": "Base64 image string. Accepts either raw base64 or data URL prefixed format (e.g. 'data:image/jpeg;base64,...')",
+                            },
+                            "description": "List of base64-encoded images to associate with the item.",
+                            "example": [
+                                "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+                            ],
+                        },
                     },
                     "example": {
                         "name": "Summer Dress Updated",
@@ -207,6 +247,9 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "product_code": "SKU12345",
                         "description": "Updated description for summer dress.",
                         "price_per_day": 18.0,
+                        "images": [
+                            "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+                        ],
                     },
                 },
                 # Authentication Models
@@ -404,42 +447,78 @@ For the latest development status, see the PROJECT_STATUS.md file.
                         "id": {"type": "integer", "example": 1},
                         "user_id": {"type": "integer", "example": 2},
                         "item_id": {"type": "integer", "example": 10},
-                        "review_message": {"type": "string", "example": "Great quality, fast delivery!"},
-                        "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 5},
-                        "created_at": {"type": "string", "format": "date-time", "example": "2025-07-24T15:43:26+07:00"},
+                        "review_message": {
+                            "type": "string",
+                            "example": "Great quality, fast delivery!",
+                        },
+                        "rating": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5,
+                            "example": 5,
+                        },
+                        "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-07-24T15:43:26+07:00",
+                        },
                         "images": {
                             "type": "array",
-                            "items": {"type": "string", "example": "https://cdn.werent.com/reviews/img1.jpg"}
-                        }
-                    }
+                            "items": {
+                                "type": "string",
+                                "example": "https://cdn.werent.com/reviews/img1.jpg",
+                            },
+                        },
+                    },
                 },
                 "ReviewCreateRequest": {
                     "type": "object",
                     "required": ["review_message", "rating"],
                     "properties": {
-                        "review_message": {"type": "string", "minLength": 5, "example": "Great quality, fast delivery!"},
-                        "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 5},
+                        "review_message": {
+                            "type": "string",
+                            "minLength": 5,
+                            "example": "Great quality, fast delivery!",
+                        },
+                        "rating": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5,
+                            "example": 5,
+                        },
                         "images": {
                             "type": "array",
-                            "items": {"type": "string", "example": "https://cdn.werent.com/reviews/img1.jpg"},
-                            "description": "Optional image URLs for the review"
-                        }
+                            "items": {
+                                "type": "string",
+                                "example": "https://cdn.werent.com/reviews/img1.jpg",
+                            },
+                            "description": "Optional image URLs for the review",
+                        },
                     },
                     "example": {
                         "review_message": "Great quality, fast delivery!",
-                        "rating": 5
-                    }
+                        "rating": 5,
+                    },
                 },
                 "ReviewUpdateRequest": {
                     "type": "object",
                     "properties": {
-                        "review_message": {"type": "string", "minLength": 5, "example": "Updated review message."},
-                        "rating": {"type": "integer", "minimum": 1, "maximum": 5, "example": 4}
+                        "review_message": {
+                            "type": "string",
+                            "minLength": 5,
+                            "example": "Updated review message.",
+                        },
+                        "rating": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5,
+                            "example": 4,
+                        },
                     },
                     "example": {
                         "review_message": "Updated review message.",
                         "rating": 4,
-                    }
+                    },
                 },
                 # Response Models
                 "SignupSuccessResponse": {
@@ -1027,7 +1106,7 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "in": "path",
                             "required": True,
                             "description": "ID of the item",
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "responses": {
@@ -1038,23 +1117,28 @@ For the latest development status, see the PROJECT_STATUS.md file.
                                     "schema": {
                                         "type": "object",
                                         "properties": {
-                                            "success": {"type": "boolean", "example": True},
+                                            "success": {
+                                                "type": "boolean",
+                                                "example": True,
+                                            },
                                             "data": {
                                                 "type": "object",
                                                 "properties": {
                                                     "reviews": {
                                                         "type": "array",
-                                                        "items": {"$ref": "#/components/schemas/Review"}
+                                                        "items": {
+                                                            "$ref": "#/components/schemas/Review"
+                                                        },
                                                     }
-                                                }
-                                            }
-                                        }
+                                                },
+                                            },
+                                        },
                                     }
                                 }
-                            }
+                            },
                         },
-                        "404": {"description": "Item not found"}
-                    }
+                        "404": {"description": "Item not found"},
+                    },
                 },
                 "post": {
                     "tags": ["Review"],
@@ -1067,20 +1151,22 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "in": "path",
                             "required": True,
                             "description": "ID of the item",
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "requestBody": {
                         "required": True,
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/ReviewCreateRequest"},
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReviewCreateRequest"
+                                },
                                 "example": {
                                     "review_message": "Great quality, fast delivery!",
                                     "rating": 5,
-                                }
+                                },
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "201": {
@@ -1089,14 +1175,16 @@ For the latest development status, see the PROJECT_STATUS.md file.
                                 "application/json": {
                                     "schema": {"$ref": "#/components/schemas/Review"}
                                 }
-                            }
+                            },
                         },
                         "400": {"description": "Bad request"},
                         "401": {"description": "Unauthorized"},
-                        "403": {"description": "User already reviewed this item or not allowed"},
-                        "404": {"description": "Item not found"}
-                    }
-                }
+                        "403": {
+                            "description": "User already reviewed this item or not allowed"
+                        },
+                        "404": {"description": "Item not found"},
+                    },
+                },
             },
             "/reviews/{review_id}": {
                 "put": {
@@ -1110,21 +1198,25 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "in": "path",
                             "required": True,
                             "description": "ID of the review to update",
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "requestBody": {
                         "required": True,
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/ReviewUpdateRequest"},
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReviewUpdateRequest"
+                                },
                                 "example": {
                                     "review_message": "Updated review message.",
                                     "rating": 4,
-                                    "images": ["https://cdn.werent.com/reviews/img2.jpg"]
-                                }
+                                    "images": [
+                                        "https://cdn.werent.com/reviews/img2.jpg"
+                                    ],
+                                },
                             }
-                        }
+                        },
                     },
                     "responses": {
                         "200": {
@@ -1133,13 +1225,13 @@ For the latest development status, see the PROJECT_STATUS.md file.
                                 "application/json": {
                                     "schema": {"$ref": "#/components/schemas/Review"}
                                 }
-                            }
+                            },
                         },
                         "400": {"description": "Bad request"},
                         "401": {"description": "Unauthorized"},
                         "403": {"description": "Forbidden: Not the review owner"},
-                        "404": {"description": "Review not found"}
-                    }
+                        "404": {"description": "Review not found"},
+                    },
                 },
                 "delete": {
                     "tags": ["Review"],
@@ -1152,16 +1244,16 @@ For the latest development status, see the PROJECT_STATUS.md file.
                             "in": "path",
                             "required": True,
                             "description": "ID of the review to delete",
-                            "schema": {"type": "integer"}
+                            "schema": {"type": "integer"},
                         }
                     ],
                     "responses": {
                         "204": {"description": "Review deleted successfully"},
                         "401": {"description": "Unauthorized"},
                         "403": {"description": "Forbidden: Not the review owner"},
-                        "404": {"description": "Review not found"}
-                    }
-                }
+                        "404": {"description": "Review not found"},
+                    },
+                },
             },
         },
         "tags": [
