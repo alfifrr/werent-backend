@@ -119,31 +119,6 @@ class UserProfileResponseSchema(UserResponseSchema):
     member_since: Optional[str] = None
 
 
-class AdminPromotionSchema(BaseSchema):
-    """Schema for promoting/demoting admin status."""
-    
-    user_id: int = Field(..., gt=0, description="ID of the user to promote/demote")
-    action: str = Field(..., description="Action to perform: 'promote' or 'demote'")
-    
-    @field_validator('action')
-    @classmethod
-    def validate_action(cls, v):
-        """Validate action is either promote or demote."""
-        if v.lower() not in ['promote', 'demote']:
-            raise ValueError('Action must be either "promote" or "demote"')
-        return v.lower()
-
-
-class AdminPromotionResponseSchema(BaseSchema):
-    """Schema for admin promotion response."""
-    
-    success: bool
-    message: str
-    user: UserResponseSchema
-    previous_status: bool
-    new_status: bool
-
-
 class UserListResponseSchema(ResponseSchema):
     """Schema for user list response."""
 

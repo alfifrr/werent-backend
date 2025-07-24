@@ -438,72 +438,11 @@ def get_auth_paths():
 def get_admin_paths():
     """Get admin management paths."""
     return {
-        "/api/admin/users/promote": {
-            "post": {
-                "tags": ["Admin"],
-                "summary": "Promote user to admin",
-                "description": "Promote a regular user to admin status. Requires admin authentication.",
-                "security": [{"BearerAuth": []}],
-                "requestBody": {
-                    "required": True,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "user_id": {
-                                        "type": "integer",
-                                        "description": "ID of the user to promote",
-                                        "example": 123
-                                    }
-                                },
-                                "required": ["user_id"]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "User promoted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {"type": "boolean", "example": True},
-                                        "message": {"type": "string", "example": "User promoted to admin successfully"},
-                                        "data": {
-                                            "type": "object",
-                                            "properties": {
-                                                "user": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "id": {"type": "integer", "example": 123},
-                                                        "email": {"type": "string", "example": "user@example.com"},
-                                                        "first_name": {"type": "string", "example": "John"},
-                                                        "last_name": {"type": "string", "example": "Doe"},
-                                                        "is_admin": {"type": "boolean", "example": True}
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {"description": "Invalid request or user already admin"},
-                    "401": {"description": "Authentication required"},
-                    "403": {"description": "Admin access required"},
-                    "404": {"description": "User not found"}
-                }
-            }
-        },
         "/api/admin/users": {
             "get": {
                 "tags": ["Admin"],
                 "summary": "List all admin users",
-                "description": "Retrieve a list of all users with admin privileges. Requires admin authentication.",
+                "description": "Retrieve a list of all users with admin privileges. Admin status changes are managed via manual database operations. Requires admin authentication.",
                 "security": [{"BearerAuth": []}],
                 "responses": {
                     "200": {

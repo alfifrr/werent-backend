@@ -28,20 +28,25 @@
 
 ## ✅ Completed Features
 
-### 🛡️ Admin Management System (NEW - COMPLETE)
-- [x] Admin User Promotion Endpoint
+### 🛡️ Admin Management System (UPDATED - READ-ONLY)
 - [x] List All Admin Users Endpoint  
 - [x] Get Specific Admin Details Endpoint
 - [x] Admin-only Route Protection with @admin_required decorator
 - [x] Comprehensive Admin API Documentation
 - [x] Admin Endpoints Integration in Swagger UI
+- [x] **Simplified Admin Management** - Admin status changes via manual database operations
 
 **Admin API Endpoints:**
 ```
-POST /api/admin/users/promote    - Promote user to admin (Admin only)
 GET  /api/admin/users           - List all admin users (Admin only)
 GET  /api/admin/users/{id}      - Get admin user details (Admin only)
 ```
+
+**Admin Status Management:**
+- **Manual Database Operations** - Admin status changes handled via direct database updates
+- **Security Focus** - Prevents accidental privilege escalation through API
+- **Simplified Architecture** - Removes complex promotion/demotion logic
+- **Documentation** - See `ADMIN_MANAGEMENT.md` for detailed instructions
 
 ### 📊 Enhanced Documentation System (NEW - COMPLETE)
 - [x] Modular Swagger UI Architecture (88% file size reduction)

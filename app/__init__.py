@@ -100,7 +100,7 @@ def register_commands(app):
     
     @app.cli.command()
     def create_admin():
-        """Create an admin user."""
+        """Create an admin user. Admin status changes are handled via CLI/database operations."""
         from app.models import User
         
         email = input('Enter admin email: ')

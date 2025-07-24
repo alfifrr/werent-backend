@@ -1,6 +1,7 @@
 """
 Admin controller for WeRent Backend API.
-Handles admin-specific operations like user promotion/demotion.
+Handles admin-specific read-only operations.
+Admin status changes are managed via manual database operations.
 """
 
 from flask_jwt_extended import get_jwt_identity
@@ -8,7 +9,7 @@ from pydantic import ValidationError
 from app.models import User
 from app.extensions import db
 from app.services import UserService
-from app.schemas.user_schema import AdminPromotionSchema, UserResponseSchema
+from app.schemas.user_schema import UserResponseSchema
 from app.utils import (
     success_response, error_response, validation_error_response,
     not_found_response, unauthorized_response, internal_error_response,
@@ -43,92 +44,6 @@ def _check_admin_permission():
         return False, forbidden_response("Admin access required")
     
     return True, current_user
-
-
-def promote_user_controller(data):
-    """Handle user promotion/demotion to/from admin status."""
-    try:
-        if not data:
-            return error_response("JSON payload required", 400)
-
-        # Check admin permission
-        has_permission, response_or_user = _check_admin_permission()
-        if not has_permission:
-            return response_or_user
-        
-        current_admin = response_or_user
-
-        # Validate input data
-        try:
-            admin_data = AdminPromotionSchema(**data)
-        except ValidationError as e:
-            return _format_validation_errors(e)
-
-        user_service = UserService()
-        target_user = user_service.get_by_id(admin_data.user_id)
-        
-        if not target_user:
-            return not_found_response("Target user not found")
-
-        # Prevent self-demotion
-        if admin_data.action == 'demote' and target_user.id == current_admin.id:
-            return error_response("Cannot demote yourself from admin status", 400)
-
-        # Store previous status
-        previous_admin_status = target_user.is_admin
-
-        # Perform the action
-        if admin_data.action == 'promote':
-            result = user_service.promote_to_admin(admin_data.user_id)
-            if result['already_admin']:
-                return success_response(
-                    message=f"User {target_user.email} is already an admin",
-                    data={
-                        'user': UserResponseSchema.model_validate(result['user']).model_dump(),
-                        'previous_status': previous_admin_status,
-                        'new_status': result['user'].is_admin,
-                        'action_performed': False
-                    }
-                )
-            else:
-                return success_response(
-                    message=f"User {target_user.email} has been promoted to admin",
-                    data={
-                        'user': UserResponseSchema.model_validate(result['user']).model_dump(),
-                        'previous_status': previous_admin_status,
-                        'new_status': result['user'].is_admin,
-                        'action_performed': True
-                    },
-                    status_code=200
-                )
-        
-        elif admin_data.action == 'demote':
-            result = user_service.demote_from_admin(admin_data.user_id)
-            if result['already_non_admin']:
-                return success_response(
-                    message=f"User {target_user.email} is already a regular user",
-                    data={
-                        'user': UserResponseSchema.model_validate(result['user']).model_dump(),
-                        'previous_status': previous_admin_status,
-                        'new_status': result['user'].is_admin,
-                        'action_performed': False
-                    }
-                )
-            else:
-                return success_response(
-                    message=f"User {target_user.email} has been demoted from admin",
-                    data={
-                        'user': UserResponseSchema.model_validate(result['user']).model_dump(),
-                        'previous_status': previous_admin_status,
-                        'new_status': result['user'].is_admin,
-                        'action_performed': True
-                    },
-                    status_code=200
-                )
-
-    except Exception as e:
-        db.session.rollback()
-        return internal_error_response()
 
 
 def get_all_admins_controller():

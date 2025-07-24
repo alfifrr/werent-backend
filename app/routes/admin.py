@@ -1,36 +1,19 @@
 """
 Admin routes for WeRent Backend API.
-Handles admin-specific operations like user promotion/demotion.
+Handles admin-specific read-only operations.
+Admin status changes are handled via manual database operations.
 """
 
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from app.utils.admin_required import admin_required
 from app.controllers.admin import (
-    promote_user_controller, 
     get_all_admins_controller, 
     get_admin_by_id_controller
 )
 
 # Create admin blueprint
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
-
-
-@admin_bp.route('/users/promote', methods=['POST'])
-@jwt_required()
-@admin_required
-def promote_user():
-    """
-    Promote or demote a user to/from admin status.
-    
-    Expected JSON payload:
-    {
-        "user_id": 123,
-        "action": "promote"  # or "demote"
-    }
-    """
-    data = request.get_json()
-    return promote_user_controller(data)
 
 
 @admin_bp.route('/users', methods=['GET'])

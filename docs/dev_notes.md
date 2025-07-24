@@ -89,9 +89,13 @@ app/swagger/
 - 🔧 Updated admin tag description to remove "Coming Soon"
 
 **Admin Endpoints Available**:
-- **POST** `/api/admin/users/promote` - Promote user to admin
 - **GET** `/api/admin/users` - List all admin users
 - **GET** `/api/admin/users/{admin_id}` - Get specific admin details
+
+**Admin Management Changes**:
+- 🔧 **Removed promotion/demotion endpoints** - Admin status managed via manual database operations
+- 🔧 **Simplified architecture** - Eliminates complex privilege escalation logic
+- 🔧 **Enhanced security** - Prevents accidental admin status changes through API
 
 ### ✅ Database-Aware Health Checks (Previous Update)
 **Date**: July 24, 2025
