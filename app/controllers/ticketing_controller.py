@@ -6,7 +6,7 @@ Clean, readable controller following DRY principles with proper validation.
 from flask import request, jsonify
 from pydantic import ValidationError
 from app.services.ticketing_service import TicketingService
-from app.schemas.error_schema import error_response
+from app.utils.responses import error_response
 from app.schemas.ticketing_schema import (
     CreateTicketRequest,
     AddMessageRequest,

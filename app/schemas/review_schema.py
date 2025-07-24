@@ -13,7 +13,7 @@ class ReviewCreateSchema(BaseSchema):
 
     item_id: int = Field(..., description="ID of the item being reviewed")
     rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5")
-    comment: str = Field(..., min_length=5, max_length=500, description="Review comment")
+    review_message: str = Field(..., min_length=5, max_length=500, description="Review message")
 
     @field_validator('rating')
     @classmethod
@@ -28,7 +28,7 @@ class ReviewUpdateSchema(BaseSchema):
     """Schema for updating a review."""
 
     rating: Optional[int] = Field(None, ge=1, le=5, description="Rating from 1 to 5")
-    comment: Optional[str] = Field(None, min_length=5, max_length=500, description="Review comment")
+    review_message: Optional[str] = Field(None, min_length=5, max_length=500, description="Review message")
 
     @field_validator('rating')
     @classmethod
@@ -44,16 +44,16 @@ class ReviewResponseSchema(BaseSchema, TimestampMixin):
 
     id: int
     rating: int
-    comment: str
+    review_message: str
     item_id: int
-    reviewer_id: int
+    user_id: int
 
 
 class ReviewDetailResponseSchema(ReviewResponseSchema):
     """Extended review response with related data."""
 
     item: Optional[dict] = None
-    reviewer: Optional[dict] = None
+    user: Optional[dict] = None
 
 
 class ReviewListResponseSchema(ResponseSchema):
@@ -67,7 +67,7 @@ class ReviewSearchSchema(BaseSchema):
     """Schema for review search parameters."""
 
     item_id: Optional[int] = Field(None, description="Filter by item ID")
-    reviewer_id: Optional[int] = Field(None, description="Filter by reviewer ID")
+    reviewer_id: Optional[int] = Field(None, description="Filter by user ID")
     min_rating: Optional[int] = Field(None, ge=1, le=5, description="Minimum rating")
     max_rating: Optional[int] = Field(None, ge=1, le=5, description="Maximum rating")
 

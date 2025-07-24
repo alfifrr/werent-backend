@@ -344,9 +344,82 @@ NEW_ACCESS_TOKEN=$(curl -s -X POST http://localhost:5000/api/auth/refresh \
 - `POST /api/checkout/` - Process rental checkout
 - `GET /api/user/rentals` - Get user's rental history
 
-### Reviews & Content
-- `GET /api/reviews/{gear_id}` - Get gear reviews
-- `POST /api/reviews/` - Add review
+### Review Endpoints
+- `GET /items/<int:item_id>/reviews` - List all reviews for an item
+- `POST /items/<int:item_id>/reviews` - Create a review (JWT required)
+- `PUT /reviews/<int:review_id>` - Edit a review (owner only, JWT)
+- `DELETE /reviews/<int:review_id>` - Delete a review (owner only, JWT)
+
+#### Example: Create Review
+**POST** `/items/42/reviews`
+```json
+{
+  "rating": 5,
+  "review_message": "Amazing camera, highly recommended!"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "message": "Review created successfully",
+  "data": {
+    "id": 101,
+    "user_id": 1,
+    "item_id": 42,
+    "review_message": "Amazing camera, highly recommended!",
+    "rating": 5,
+    "created_at": "2025-07-24T16:36:56.000000"
+  }
+}
+```
+
+#### Example: List Reviews
+**GET** `/items/42/reviews`
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Reviews retrieved successfully",
+  "data": [
+    {
+      "id": 101,
+      "user_id": 1,
+      "item_id": 42,
+      "review_message": "Amazing camera, highly recommended!",
+      "rating": 5,
+      "created_at": "2025-07-24T16:36:56.000000"
+    },
+    ...
+  ]
+}
+```
+
+#### Example: Update Review
+**PUT** `/reviews/101`
+```json
+{
+  "rating": 4,
+  "review_message": "Good, but had minor issues."
+}
+```
+
+#### Example: Delete Review
+**DELETE** `/reviews/101`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Review deleted successfully"
+}
+```
+
+#### Review-Image Relationship
+Each review can have associated images. See the Image schema for details. Review responses may include an `images` field listing related image objects.
+
+### Content & Blog
 - `GET /api/blog/` - Get blog posts
 - `POST /api/contact/` - Contact form submission
 

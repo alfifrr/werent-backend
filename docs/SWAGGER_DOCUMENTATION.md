@@ -34,9 +34,11 @@ The WeRent backend features a comprehensive API documentation system built with 
 - **Authentication Endpoints**: Complete documentation for signup, login, profile management
 - **Interactive Testing**: Swagger UI allows live API testing with authentication
 - **Multiple Formats**: Swagger UI, ReDoc, JSON spec, and Postman collection
-- **Comprehensive Models**: Request/response schemas with validation rules
-- **Security Documentation**: JWT authentication setup and usage
+- **Comprehensive Models**: Request/response schemas with validation rules (including reviews and images)
+- **Security Documentation**: JWT authentication setup and usage (reviews require JWT)
 - **Error Handling**: Standardized error responses and status codes
+- **Review & Image Endpoints**: Fully documented in Swagger UI (see /items/{item_id}/reviews, /reviews/{review_id}, and image upload endpoints)
+- **Review-Image Relationship**: Review schemas in OpenAPI include optional `images` array referencing image objects
 
 ### 🚧 Future Endpoints (Placeholders Ready)
 - **Gear Management**: Equipment catalog and inventory

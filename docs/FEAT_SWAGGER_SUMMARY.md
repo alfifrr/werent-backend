@@ -48,6 +48,11 @@ app/swagger/
 
 #### Key Features
 - **Modular Architecture**: Easy to expand with new endpoints and schemas
+- **Authentication integration**: JWT-based authentication is supported in Swagger UI for all protected endpoints, including reviews.
+- **Review/Image endpoints**: All review and image endpoints are now fully documented and testable in Swagger UI, with schemas reflecting backend relationships.
+- **Usage examples**: Example requests and responses for reviews and images included.
+- **Technical benefits**: Ensures synchronization between documentation and backend.
+- **Next steps**: Continue expanding documentation and test coverage as new features are added.
 - **Security Integration**: JWT authentication support with Bearer token testing
 - **Comprehensive Schemas**: Detailed request/response models with validation rules
 - **Error Documentation**: Standardized error responses and status codes
