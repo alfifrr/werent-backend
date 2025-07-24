@@ -1,15 +1,15 @@
 # WeRent Backend - Project Status
 
-**Last Updated:** July 22, 2025  
-**Project Phase:** Authentication Complete + Enhanced Documentation + Field Alignment Fixed (Item 'status' field fully removed and schemas aligned)  
+**Last Updated:** July 24, 2025  
+**Project Phase:** Authentication Complete + Admin Management + Modular Documentation Architecture  
 **Flask App Status:** ✅ Running on http://localhost:5000  
-**Documentation Status:** ✅ Interactive API docs available at /docs/ and /redoc/
+**Documentation Status:** ✅ Enhanced interactive API docs with modular architecture at /docs/ and /redoc/
 
 ---
 
 ## 📋 Project Overview
 
-**WeRent** is an equipment rental platform backend built with Flask. The project follows RESTful API design principles, uses JWT authentication for secure user management, and implements Flask best practices with a modular architecture. Features comprehensive interactive API documentation with OpenAPI 3.0 and enhanced Swagger UI.
+**WeRent** is an equipment rental platform backend built with Flask. The project follows RESTful API design principles, uses JWT authentication for secure user management, and implements Flask best practices with a modular architecture. Features comprehensive interactive API documentation with OpenAPI 3.0, enhanced Swagger UI, and modular documentation architecture for better maintainability.
 
 ### Tech Stack
 - **Framework:** Flask (Python)
@@ -17,8 +17,8 @@
 - **Authentication:** JWT with Flask-JWT-Extended
 - **Password Security:** Flask-Bcrypt
 - **Database ORM:** SQLAlchemy with Flask-Migrate
-- **Data Validation:** Pydantic v2 with advanced validators (schemas now match models; no unused fields like 'status')
-- **API Documentation:** OpenAPI 3.0 with Swagger UI, ReDoc
+- **Data Validation:** Pydantic v2 with advanced validators
+- **API Documentation:** OpenAPI 3.0 with modular Swagger UI, ReDoc
 - **Package Management:** UV (modern Python package manager)
 - **Environment:** Python Virtual Environment (.venv)
 - **Testing:** Pytest with Flask-Testing
@@ -28,8 +28,61 @@
 
 ## ✅ Completed Features
 
-### 🔐 Authentication System (COMPLETE)
+### 🛡️ Admin Management System (UPDATED - READ-ONLY)
+- [x] List All Admin Users Endpoint  
+- [x] Get Specific Admin Details Endpoint
+- [x] Admin-only Route Protection with @admin_required decorator
+- [x] Comprehensive Admin API Documentation
+- [x] Admin Endpoints Integration in Swagger UI
+- [x] **Simplified Admin Management** - Admin status changes via manual database operations
+
+**Admin API Endpoints:**
+```
+GET  /api/admin/users           - List all admin users (Admin only)
+GET  /api/admin/users/{id}      - Get admin user details (Admin only)
+```
+
+**Admin Status Management:**
+- **Manual Database Operations** - Admin status changes handled via direct database updates
+- **Security Focus** - Prevents accidental privilege escalation through API
+- **Simplified Architecture** - Removes complex promotion/demotion logic
+- **Documentation** - See `ADMIN_MANAGEMENT.md` for detailed instructions
+
+### 📊 Enhanced Documentation System (NEW - COMPLETE)
+- [x] Modular Swagger UI Architecture (88% file size reduction)
+- [x] Multiple Documentation Interfaces (Swagger UI + ReDoc)
+- [x] Enhanced Styling and User Experience
+- [x] Organized Schema and Path Management
+- [x] Environment-Aware Configuration
+- [x] Professional Documentation Presentation
+
+**Documentation Interfaces:**
+```
+GET  /docs/                     - Enhanced Swagger UI interface
+GET  /docs/redoc               - Alternative ReDoc interface  
+GET  /docs/swagger.json        - OpenAPI 3.0 specification
+GET  /docs/health              - Documentation service health
+```
+
+### 🏥 Database-Aware Health Monitoring (NEW - COMPLETE)
+- [x] Environment-Specific Database Queries
+- [x] Automatic Database Type Detection
+- [x] Comprehensive Health Check Endpoints
+- [x] Production vs Development Query Optimization
+
+**Health Check Endpoints:**
+```
+GET  /api/health               - Basic connectivity and status
+GET  /api/health/detailed      - Comprehensive system information
+```
+
+### 🔐 Authentication System with Email Verification (COMPLETE)
 - [x] User Registration/Signup with validation (no JWT session created)
+- [x] **Email Verification System** with UUID-based verification links
+- [x] **Professional HTML Email Templates** with WeRent branding
+- [x] **Mailtrap SMTP Integration** for development email testing
+- [x] **Resend Verification Email** functionality for user convenience
+- [x] **Welcome Email** automatically sent after successful verification
 - [x] User Login/Authentication with dual-token system
 - [x] JWT Access Token Generation (15-minute expiry)
 - [x] JWT Refresh Token Generation (30-day expiry)
@@ -43,17 +96,35 @@
 
 **API Endpoints Ready:**
 ```
-POST /api/auth/signup     - User registration (no JWT created)
-POST /api/auth/login      - User authentication (returns access + refresh tokens)
-POST /api/auth/refresh    - Refresh access token using refresh token
-GET  /api/auth/profile    - Get user profile (Protected)
-PUT  /api/auth/profile    - Update user profile (Protected)
+POST /api/auth/signup                    - User registration with email verification
+POST /api/auth/login                     - User authentication (returns access + refresh tokens)  
+POST /api/auth/refresh                   - Refresh access token using refresh token
+GET  /api/auth/verify-email/{uuid}       - Verify user email using UUID from email
+POST /api/auth/resend-verification       - Resend verification email (JWT Protected)
+GET  /api/auth/profile                   - Get user profile (Protected)
+PUT  /api/auth/profile                   - Update user profile (Protected)
 ```
+
+**Enhanced Registration Flow:**
+1. **Signup** → User registers with email/password
+2. **Email Sent** → Professional verification email with UUID link
+3. **Verification** → User clicks link to verify account
+4. **Welcome Email** → Confirmation email sent after verification
+5. **Login** → User can now login to receive JWT tokens
+6. **Resend Verification** → Authenticated users can resend verification emails
+
+**Email Verification Features:**
+- **UUID-based verification** - Cryptographically secure links
+- **Professional HTML templates** - Branded emails with fallback text
+- **Protected resend functionality** - Only authenticated users can resend for their own account
+- **Welcome emails** - Sent automatically after successful verification
+- **Error handling** - Proper responses for invalid/expired links
+- **Security improvements** - Prevents email enumeration attacks
 
 **JWT Token System:**
 - **Access Token**: 15-minute expiry for API requests
 - **Refresh Token**: 30-day expiry for token renewal
-- **Secure Flow**: Signup → Login → Access/Refresh tokens → API calls → Token refresh
+- **Secure Flow**: Signup → Email Verification → Login → Access/Refresh tokens → API calls → Token refresh
 
 ### 📚 API Documentation System (COMPLETE)
 - [x] **OpenAPI 3.0 Specification** - Comprehensive API schema
