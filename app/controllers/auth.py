@@ -1,4 +1,8 @@
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+)
 from pydantic import ValidationError
 from app.models import User
 from app.extensions import db
@@ -6,19 +10,23 @@ from app.services import UserService
 from app.schemas.user_schema import UserUpdateSchema, UserResponseSchema
 from app.schemas.auth_schema import RegisterSchema, LoginSchema
 from app.utils import (
-    success_response, error_response, validation_error_response,
-    not_found_response, unauthorized_response, internal_error_response
+    success_response,
+    error_response,
+    validation_error_response,
+    not_found_response,
+    unauthorized_response,
+    internal_error_response,
 )
-from app.utils.image_utils import ImageValidator
+
 
 def _format_validation_errors(e: ValidationError):
     """Helper to format Pydantic validation errors for consistent API response."""
     field_errors = {}
     for error in e.errors():
-        field_name = error['loc'][0] if error['loc'] else 'unknown'
+        field_name = error["loc"][0] if error["loc"] else "unknown"
         if field_name not in field_errors:
             field_errors[field_name] = []
-        field_errors[field_name].append(error['msg'])
+        field_errors[field_name].append(error["msg"])
     return validation_error_response(field_errors)
 
 
@@ -45,19 +53,20 @@ def signup_controller(data):
             password=user_data.password,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
-            phone_number=user_data.phone_number
+            phone_number=user_data.phone_number,
         )
 
         return success_response(
             message="User created successfully",
-            data={'user': UserResponseSchema.model_validate(user).model_dump()},
-            status_code=201
+            data={"user": UserResponseSchema.model_validate(user).model_dump()},
+            status_code=201,
         )
 
     except Exception as e:
         db.session.rollback()
         # Optionally log the exception here
         return internal_error_response()
+
 
 def login_controller(data):
     """Handle user login with validation using LoginSchema."""
@@ -88,15 +97,16 @@ def login_controller(data):
         return success_response(
             message="Login successful",
             data={
-                'user': user.to_dict(),
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }
+                "user": user.to_dict(),
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            },
         )
 
     except Exception as e:
         # Optionally log the exception here
         return internal_error_response()
+
 
 def get_profile_controller(current_user_id):
     try:
@@ -108,13 +118,14 @@ def get_profile_controller(current_user_id):
 
         return success_response(
             message="Profile retrieved successfully",
-            data={'user': UserResponseSchema.model_validate(user).model_dump()}
+            data={"user": UserResponseSchema.model_validate(user).model_dump()},
         )
 
     except ValueError:
         return error_response("Invalid user ID in token", 400)
     except Exception as e:
         return internal_error_response()
+
 
 def update_profile_controller(current_user_id, data):
     """Handle profile update with validation using UserUpdateSchema."""
@@ -134,36 +145,16 @@ def update_profile_controller(current_user_id, data):
         except ValidationError as e:
             return _format_validation_errors(e)
 
-        # Convert to dict for processing
-        update_dict = update_data.model_dump(exclude_unset=True)
-        
-        # Handle profile image validation and compression if provided
-        if 'profile_image' in update_dict:
-            profile_image = update_dict['profile_image']
-            
-            if profile_image:  # If image is provided
-                # Validate the Base64 image
-                validation_result = ImageValidator.validate_base64_image(profile_image)
-                
-                if not validation_result['success']:
-                    return error_response(validation_result['message'], 400)
-                
-                # Compress the image for storage efficiency
-                compressed_image = ImageValidator.compress_image(profile_image)
-                update_dict['profile_image'] = compressed_image
-            
-            else:  # If empty string is provided, remove image
-                update_dict['profile_image'] = None
-
         # Update user using service
+        # Convert update_data to dict and ensure phone_number is used
+        update_dict = update_data.model_dump(exclude_unset=True)
         updated_user = user_service.update_profile(
-            user_id=current_user_id,
-            **update_dict
+            user_id=current_user_id, **update_dict
         )
 
         return success_response(
             message="Profile updated successfully",
-            data={'user': UserResponseSchema.model_validate(updated_user).model_dump()}
+            data={"user": UserResponseSchema.model_validate(updated_user).model_dump()},
         )
 
     except ValueError:
@@ -172,6 +163,7 @@ def update_profile_controller(current_user_id, data):
         db.session.rollback()
         # Optionally log the exception here
         return internal_error_response()
+
 
 def refresh_controller(current_user_id):
     try:
@@ -189,7 +181,7 @@ def refresh_controller(current_user_id):
 
         return success_response(
             message="Access token refreshed successfully",
-            data={'access_token': access_token}
+            data={"access_token": access_token},
         )
 
     except ValueError:

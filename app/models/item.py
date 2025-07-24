@@ -68,9 +68,9 @@ class Item(db.Model):
 
     # Relationships
     user = db.relationship('User', foreign_keys=[user_id], back_populates='items')
-    images = db.relationship('Image', back_populates='items', cascade='all, delete-orphan')
-    bookings = db.relationship('Booking', back_populates='items')
-    reviews = db.relationship('Review', back_populates='items')
+    images = db.relationship('Image', back_populates='item', cascade='all, delete-orphan')
+    bookings = db.relationship('Booking', back_populates='item')
+    reviews = db.relationship('Review', back_populates='item')
 
     def __repr__(self):
         """String representation of Item object."""

@@ -16,6 +16,10 @@ The Swagger UI now includes both development and production server URLs in the s
 - **Description:** Production server (Render deployment)
 - **Usage:** For production API testing
 
+### Review & Image Endpoints
+- Both development and production servers fully support review and image endpoints as documented in Swagger UI.
+- JWT authentication is required for POST, PUT, DELETE operations on reviews.
+
 ## Features
 
 ### 🔄 **Environment-Aware Ordering**

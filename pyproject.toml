@@ -14,7 +14,6 @@ dependencies = [
     "flask-cors>=4.0.0",
     "pydantic[email]>=2.11.7",
     "psycopg2-binary>=2.9.0",
-    "pillow>=11.3.0",
 ]
 
 [project.optional-dependencies]
