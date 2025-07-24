@@ -34,7 +34,8 @@ def create_review_controller(item_id, json_data):
             item_id=item_id,
             user_id=user_id,
             rating=schema.rating,
-            comment=schema.review_message
+            comment=schema.review_message,
+            images=schema.images if hasattr(schema, 'images') else None
         )
         return success_response('Review created successfully', review.to_dict(), status_code=201)
     except Exception as e:
@@ -57,7 +58,8 @@ def update_review_controller(review_id, json_data):
             review_id=review_id,
             user_id=user_id,
             rating=schema.rating,
-            comment=schema.review_message
+            comment=schema.review_message,
+            images=schema.images if hasattr(schema, 'images') else None
         )
         return success_response('Review updated successfully', updated_review.to_dict())
     except Exception as e:
