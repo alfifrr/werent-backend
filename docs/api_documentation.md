@@ -9,6 +9,23 @@ http://localhost:5000
 - **Swagger UI:** [http://localhost:5000/docs/](http://localhost:5000/docs/)
 - **ReDoc:** [http://localhost:5000/redoc/](http://localhost:5000/redoc/)
 
+## Item Images
+- When creating or updating an item, the `images` field in the request body should be a list of base64 strings or data URLs. Example:
+```json
+"images": [
+  "data:image/jpeg;base64,/9j/4AAQSk...",
+  "/9j/4AAQSk..."
+]
+```
+- In API responses, the `images` field is a list of image objects, e.g.:
+```json
+"images": [
+  {"id": 1, "url": "https://...", "created_at": "..."},
+  {"id": 2, "url": "https://...", "created_at": "..."}
+]
+```
+- For backward compatibility, `image_base64` may still be present in some responses but is deprecated. Use `images` instead.
+
 ## Authentication System
 
 WeRent uses JWT-based authentication with a dual-token system:

@@ -44,6 +44,8 @@ class ItemCreateSchema(BaseSchema):
     product_code: str = Field(..., min_length=1, max_length=50, description="Unique product code")
     description: str = Field(..., min_length=10, max_length=1000, description="Item description")
     price_per_day: float = Field(..., gt=0, description="Price per day in currency")
+    images: Optional[List[str]] = Field(None, description="List of base64-encoded images (raw or data URL prefixed)")
+
 
     @field_validator('price_per_day')
     @classmethod
@@ -92,6 +94,8 @@ class ItemUpdateSchema(BaseSchema):
     product_code: Optional[str] = Field(None, min_length=1, max_length=50, description="Unique product code")
     description: Optional[str] = Field(None, min_length=10, max_length=1000, description="Item description")
     price_per_day: Optional[float] = Field(None, gt=0, description="Price per day in currency")
+    images: Optional[List[str]] = Field(None, description="List of base64-encoded images (raw or data URL prefixed)")
+
 
     @field_validator('price_per_day')
     @classmethod
@@ -125,6 +129,7 @@ class ItemResponseSchema(BaseSchema, TimestampMixin):
     updated_at: str
     user_id: int
     images: Optional[List[dict]] = None
+    image_base64: Optional[str] = None
 
 
 class ItemDetailResponseSchema(ItemResponseSchema):

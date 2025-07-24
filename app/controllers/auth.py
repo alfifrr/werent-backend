@@ -46,14 +46,14 @@ def signup_controller(data):
         user_service = UserService()
         if user_service.find_by_email(user_data.email):
             return error_response("Email already registered", 409)
-
+        
         # Create new user using service
         user = user_service.create_user(
             email=user_data.email,
             password=user_data.password,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
-            phone_number=user_data.phone_number,
+            phone=user_data.phone_number,
         )
 
         return success_response(
