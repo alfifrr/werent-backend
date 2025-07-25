@@ -4,6 +4,46 @@ Contains all endpoint paths and their OpenAPI specifications.
 """
 
 
+def get_health_paths():
+    """Get health check paths."""
+    return {
+        "/api/health": {
+            "get": {
+                "tags": ["Health"],
+                "summary": "Basic health check",
+                "description": "Check service status and basic connectivity",
+                "responses": {
+                    "200": {
+                        "description": "Service is healthy",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/HealthResponse"}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/health/detailed": {
+            "get": {
+                "tags": ["Health"],
+                "summary": "Detailed health check",
+                "description": "Detailed system information including database version and environment details",
+                "responses": {
+                    "200": {
+                        "description": "Detailed system information",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/DetailedHealthResponse"}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 def get_item_paths():
     """Get item management paths."""
     return {
@@ -542,6 +582,187 @@ def get_admin_paths():
     }
 
 
+def get_review_paths():
+    """Get review and testimonial paths."""
+    return {
+        "/testimonial": {
+            "get": {
+                "tags": ["Review System"],
+                "summary": "Get testimonials",
+                "description": "Get all reviews to display as testimonials",
+                "responses": {
+                    "200": {
+                        "description": "List of testimonials retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Review"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/items/{item_id}/reviews": {
+            "get": {
+                "tags": ["Review System"],
+                "summary": "List reviews for an item",
+                "description": "Get all reviews for a specific item",
+                "parameters": [
+                    {
+                        "name": "item_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the item to get reviews for"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reviews retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Review"}
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Item not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": ["Review System"],
+                "summary": "Create a review",
+                "description": "Create a new review for an item (requires authentication)",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "item_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the item to review"
+                    }
+                ],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/ReviewRequest"}
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Review created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Review"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data"
+                    },
+                    "401": {
+                        "description": "Authentication required"
+                    },
+                    "404": {
+                        "description": "Item not found"
+                    }
+                }
+            }
+        },
+        "/reviews/{review_id}": {
+            "put": {
+                "tags": ["Review System"],
+                "summary": "Update a review",
+                "description": "Update an existing review (owner only)",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "review_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the review to update"
+                    }
+                ],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/ReviewRequest"}
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Review updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Review"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data"
+                    },
+                    "401": {
+                        "description": "Authentication required"
+                    },
+                    "403": {
+                        "description": "Not authorized to update this review"
+                    },
+                    "404": {
+                        "description": "Review not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": ["Review System"],
+                "summary": "Delete a review",
+                "description": "Delete an existing review (owner only)",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "review_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the review to delete"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Review deleted successfully"
+                    },
+                    "401": {
+                        "description": "Authentication required"
+                    },
+                    "403": {
+                        "description": "Not authorized to delete this review"
+                    },
+                    "404": {
+                        "description": "Review not found"
+                    }
+                }
+            }
+        }
+    }
+
+
 def get_payment_paths():
     """Get payment management paths."""
     return {
@@ -697,11 +918,244 @@ def get_payment_paths():
     }
 
 
+def get_ticketing_paths():
+    """Get ticketing system paths."""
+    return {
+        "/api/tickets": {
+            "post": {
+                "tags": ["Tickets"],
+                "summary": "Create a new ticket",
+                "description": "Create a new support ticket",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/TicketCreateRequest"}
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ticket created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Ticket"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data"
+                    }
+                }
+            }
+        },
+        "/api/tickets/{ticket_id}": {
+            "get": {
+                "tags": ["Tickets"],
+                "summary": "Get a specific ticket",
+                "description": "Retrieve details of a specific ticket by ID",
+                "parameters": [
+                    {
+                        "name": "ticket_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the ticket to retrieve"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ticket retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Ticket"}
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ticket not found"
+                    }
+                }
+            }
+        },
+        "/api/tickets/{ticket_id}/message": {
+            "post": {
+                "tags": ["Tickets"],
+                "summary": "Add message to ticket",
+                "description": "Add a new message to an existing ticket",
+                "parameters": [
+                    {
+                        "name": "ticket_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the ticket to add message to"
+                    }
+                ],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/TicketMessageRequest"}
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Message added successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/TicketMessage"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data"
+                    },
+                    "404": {
+                        "description": "Ticket not found"
+                    }
+                }
+            }
+        },
+        "/api/tickets/{ticket_id}/resolve": {
+            "patch": {
+                "tags": ["Tickets"],
+                "summary": "Resolve a ticket",
+                "description": "Mark a ticket as resolved",
+                "parameters": [
+                    {
+                        "name": "ticket_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the ticket to resolve"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ticket resolved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Ticket"}
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ticket not found"
+                    }
+                }
+            }
+        },
+        "/api/tickets/{ticket_id}/reopen": {
+            "patch": {
+                "tags": ["Tickets"],
+                "summary": "Reopen a ticket",
+                "description": "Reopen a resolved ticket",
+                "parameters": [
+                    {
+                        "name": "ticket_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the ticket to reopen"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ticket reopened successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Ticket"}
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ticket not found"
+                    }
+                }
+            }
+        },
+        "/api/tickets/user/{user_id}": {
+            "get": {
+                "tags": ["Tickets"],
+                "summary": "Get user tickets",
+                "description": "Get all tickets for a specific user",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the user"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User tickets retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Ticket"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tickets/open": {
+            "get": {
+                "tags": ["Tickets"],
+                "summary": "Get open tickets",
+                "description": "Get all open (unresolved) tickets",
+                "responses": {
+                    "200": {
+                        "description": "Open tickets retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Ticket"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tickets/resolved": {
+            "get": {
+                "tags": ["Tickets"],
+                "summary": "Get resolved tickets",
+                "description": "Get all resolved tickets",
+                "responses": {
+                    "200": {
+                        "description": "Resolved tickets retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Ticket"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 def get_all_paths():
     """Get all API paths."""
     paths = {}
+    paths.update(get_health_paths())
     paths.update(get_item_paths())
     paths.update(get_auth_paths())
     paths.update(get_admin_paths())
+    paths.update(get_review_paths())
     paths.update(get_payment_paths())
+    paths.update(get_ticketing_paths())
     return paths

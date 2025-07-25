@@ -1,5 +1,9 @@
 # WeRent Backend API Documentation
 
+**Last Updated:** July 25, 2025  
+**API Version:** 1.0.0  
+**Implementation Status:** Core Features Complete
+
 ## Base URL
 ```
 http://localhost:5000
@@ -7,7 +11,26 @@ http://localhost:5000
 
 ## Interactive Documentation
 - **Swagger UI:** [http://localhost:5000/docs/](http://localhost:5000/docs/)
-- **ReDoc:** [http://localhost:5000/redoc/](http://localhost:5000/redoc/)
+- **ReDoc:** [http://localhost:5000/docs/redoc](http://localhost:5000/docs/redoc)
+- **Health Check:** [http://localhost:5000/api/health](http://localhost:5000/api/health)
+
+## 🎯 Current Implementation Status
+
+### ✅ Fully Implemented & Documented
+- 🔐 **Authentication System** - JWT-based auth with refresh tokens
+- 👤 **User Profile Management** - Profile updates with Base64 image support  
+- 🛡️ **Admin Management** - Admin user management and protection
+- 🏥 **Health Monitoring** - System health and database connectivity
+- ⭐ **Review System** - User reviews and testimonials
+- 🎫 **Ticketing System** - Support ticket management
+- 💳 **Payment System** - Payment processing and management
+- 📦 **Item Management** - Equipment catalog and inventory
+
+### 📊 API Statistics
+- **Total Endpoints:** 25+ documented endpoints
+- **Authentication:** JWT with Bearer token
+- **Response Format:** JSON with consistent success/error structure
+- **Documentation Coverage:** 100% for implemented features
 
 ## Item Images
 - When creating or updating an item, the `images` field in the request body should be a list of base64 strings or data URLs. Example:

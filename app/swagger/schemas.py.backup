@@ -234,6 +234,120 @@ def get_auth_schemas():
     }
 
 
+def get_gear_schemas():
+    """Get gear management schemas (future implementation)."""
+    return {
+        "GearItem": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "name": {"type": "string", "example": "Canon EOS R5"},
+                "category": {
+                    "type": "string",
+                    "example": "camera",
+                    "enum": ["camera", "lens", "lighting", "accessory"],
+                },
+                "brand": {"type": "string", "example": "Canon"},
+                "model": {"type": "string", "example": "EOS R5"},
+                "description": {
+                    "type": "string",
+                    "example": "Professional mirrorless camera with 45MP sensor",
+                },
+                "daily_rate": {"type": "number", "example": 85.00},
+                "weekly_rate": {"type": "number", "example": 500.00},
+                "deposit_amount": {"type": "number", "example": 1000.00},
+                "availability_status": {
+                    "type": "string",
+                    "example": "available",
+                    "enum": [
+                        "available",
+                        "rented",
+                        "maintenance",
+                        "unavailable",
+                    ],
+                },
+                "condition": {
+                    "type": "string",
+                    "example": "excellent",
+                    "enum": ["excellent", "good", "fair", "poor"],
+                },
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"},
+            },
+        },
+        "GearCreateRequest": {
+            "type": "object",
+            "required": ["name", "category", "brand", "daily_rate"],
+            "properties": {
+                "name": {"type": "string", "example": "Canon EOS R5"},
+                "category": {
+                    "type": "string",
+                    "example": "camera",
+                    "enum": ["camera", "lens", "lighting", "accessory"],
+                },
+                "brand": {"type": "string", "example": "Canon"},
+                "model": {"type": "string", "example": "EOS R5"},
+                "description": {
+                    "type": "string",
+                    "example": "Professional mirrorless camera",
+                },
+                "daily_rate": {"type": "number", "example": 85.00},
+                "weekly_rate": {"type": "number", "example": 500.00},
+                "deposit_amount": {"type": "number", "example": 1000.00},
+            },
+        },
+    }
+
+
+def get_rental_schemas():
+    """Get rental system schemas (future implementation)."""
+    return {
+        "Rental": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "user_id": {"type": "integer", "example": 1},
+                "gear_item_id": {"type": "integer", "example": 1},
+                "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-15",
+                },
+                "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-20",
+                },
+                "total_cost": {"type": "number", "example": 425.00},
+                "deposit_paid": {"type": "number", "example": 1000.00},
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"},
+            },
+        },
+        "RentalRequest": {
+            "type": "object",
+            "required": ["gear_item_id", "start_date", "end_date"],
+            "properties": {
+                "gear_item_id": {"type": "integer", "example": 1},
+                "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-15",
+                },
+                "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-20",
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Needed for wedding photography",
+                },
+            },
+        },
+    }
+
+
 def get_review_schemas():
     """Get review system schemas."""
     return {
@@ -242,8 +356,8 @@ def get_review_schemas():
             "properties": {
                 "id": {"type": "integer", "example": 1},
                 "user_id": {"type": "integer", "example": 1},
-                "item_id": {"type": "integer", "example": 1, "description": "ID of the item being reviewed"},
-                "service_id": {"type": "integer", "example": 1, "description": "ID of the service transaction"},
+                "gear_item_id": {"type": "integer", "example": 1},
+                "rental_id": {"type": "integer", "example": 1},
                 "rating": {
                     "type": "integer",
                     "minimum": 1,
@@ -252,7 +366,7 @@ def get_review_schemas():
                 },
                 "comment": {
                     "type": "string",
-                    "example": "Excellent service, perfect condition!",
+                    "example": "Excellent camera, perfect condition!",
                 },
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
@@ -270,7 +384,7 @@ def get_review_schemas():
                 },
                 "comment": {
                     "type": "string",
-                    "example": "Excellent service, perfect condition!",
+                    "example": "Excellent camera, perfect condition!",
                 },
             },
         },
@@ -464,7 +578,7 @@ def get_health_schemas():
                     "type": "object",
                     "properties": {
                         "name": {"type": "string", "example": "WeRent Backend API"},
-                        "description": {"type": "string", "example": "Equipment rental platform backend service"},
+                        "description": {"type": "string", "example": "Outfit rental platform backend service"},
                         "version": {"type": "string", "example": "1.0.0"}
                     }
                 },
