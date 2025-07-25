@@ -506,55 +506,81 @@ def get_ticketing_schemas():
             "type": "object",
             "properties": {
                 "id": {"type": "integer", "example": 1},
-                "user_id": {"type": "integer", "example": 2},
-                "subject": {"type": "string", "example": "Issue with booking"},
-                "description": {"type": "string", "example": "Unable to complete my booking payment"},
-                "status": {"type": "string", "enum": ["open", "resolved"], "example": "open"},
-                "priority": {"type": "string", "enum": ["low", "medium", "high"], "example": "medium"},
-                "created_at": {"type": "string", "format": "date-time", "example": "2025-07-25T14:30:00Z"},
-                "updated_at": {"type": "string", "format": "date-time", "example": "2025-07-25T14:30:00Z"},
-                "resolved_at": {"type": "string", "format": "date-time", "nullable": True, "example": None}
+                "user_id": {"type": "integer", "example": 1},
+                "booking_id": {"type": "integer", "nullable": True, "example": None, "description": "Optional booking ID if ticket is booking-related"},
+                "chat_content": {"type": "string", "example": "[2025-07-25 16:45:30] I have an issue with my camera rental", "description": "Conversation history with timestamps"},
+                "is_resolved": {"type": "boolean", "example": False, "description": "Whether the ticket is resolved"},
+                "created_at": {"type": "string", "format": "date-time", "example": "2025-07-25T16:45:30.814919"},
+                "updated_at": {"type": "string", "format": "date-time", "example": "2025-07-25T16:45:30.814924"}
             },
-            "required": ["id", "user_id", "subject", "description", "status"]
+            "required": ["id", "user_id", "chat_content", "is_resolved", "created_at", "updated_at"]
         },
         "TicketCreateRequest": {
             "type": "object",
             "properties": {
-                "user_id": {"type": "integer", "example": 2},
-                "subject": {"type": "string", "example": "Payment issue"},
-                "description": {"type": "string", "example": "Cannot process payment for booking ID 123"},
-                "priority": {"type": "string", "enum": ["low", "medium", "high"], "example": "medium"}
+                "message": {
+                    "type": "string", 
+                    "minLength": 1,
+                    "maxLength": 5000,
+                    "example": "I have an issue with my camera rental",
+                    "description": "Initial message describing the issue"
+                },
+                "booking_id": {
+                    "type": "integer", 
+                    "nullable": True, 
+                    "example": None,
+                    "description": "Optional booking ID if ticket is related to a specific booking"
+                }
             },
-            "required": ["user_id", "subject", "description"],
+            "required": ["message"],
             "example": {
-                "user_id": 2,
-                "subject": "Payment issue",
-                "description": "Cannot process payment for booking ID 123",
-                "priority": "medium"
+                "message": "I have an issue with my camera rental",
+                "booking_id": None
             }
-        },
-        "TicketMessage": {
-            "type": "object",
-            "properties": {
-                "id": {"type": "integer", "example": 1},
-                "ticket_id": {"type": "integer", "example": 1},
-                "user_id": {"type": "integer", "example": 2},
-                "message": {"type": "string", "example": "Additional information about the issue"},
-                "created_at": {"type": "string", "format": "date-time", "example": "2025-07-25T14:30:00Z"}
-            },
-            "required": ["id", "ticket_id", "user_id", "message"]
         },
         "TicketMessageRequest": {
             "type": "object",
             "properties": {
-                "user_id": {"type": "integer", "example": 2},
-                "message": {"type": "string", "example": "Here's more information about my issue"}
+                "message": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000,
+                    "example": "The camera lens appears to be damaged",
+                    "description": "Message content to add to the ticket conversation"
+                }
             },
-            "required": ["user_id", "message"],
+            "required": ["message"],
             "example": {
-                "user_id": 2,
-                "message": "Here's more information about my issue"
+                "message": "The camera lens appears to be damaged"
             }
+        },
+        "TicketListResponse": {
+            "type": "object",
+            "properties": {
+                "tickets": {
+                    "type": "array",
+                    "items": {"$ref": "#/components/schemas/Ticket"}
+                },
+                "total_count": {"type": "integer", "example": 5}
+            },
+            "required": ["tickets", "total_count"]
+        },
+        "TicketStatsResponse": {
+            "type": "object",
+            "properties": {
+                "success": {"type": "boolean", "example": True},
+                "message": {"type": "string", "example": "Ticket statistics retrieved successfully"},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "total_tickets": {"type": "integer", "example": 15},
+                        "open_tickets": {"type": "integer", "example": 3},
+                        "resolved_tickets": {"type": "integer", "example": 12}
+                    },
+                    "required": ["total_tickets", "open_tickets", "resolved_tickets"]
+                }
+            },
+            "required": ["success", "message", "data"]
         }
     }
 

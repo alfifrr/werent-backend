@@ -100,10 +100,17 @@ admin_ns = Namespace(
     path='/admin'
 )
 
+tickets_ns = Namespace(
+    'Ticketing',
+    description='Support ticketing system - create, manage, and track customer support tickets',
+    path='/tickets'
+)
+
 # Register namespaces
 api.add_namespace(auth_ns)
 api.add_namespace(review_ns)
 api.add_namespace(admin_ns)
+api.add_namespace(tickets_ns)
 
 # Error handlers for Swagger
 @api.errorhandler

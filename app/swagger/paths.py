@@ -919,13 +919,54 @@ def get_payment_paths():
 
 
 def get_ticketing_paths():
-    """Get ticketing system paths."""
+    """
+    Get ticketing system paths with comprehensive role-based access control.
+    
+    SECURITY OVERVIEW:
+    =================
+    The ticketing system implements strict role-based authorization:
+    
+    👤 REGULAR USERS can:
+    - Create tickets for themselves
+    - View their own tickets only  
+    - Add messages to their own tickets only
+    - Reopen their own resolved tickets
+    
+    🔒 ADMIN USERS can:
+    - All user permissions above
+    - View ANY ticket system-wide
+    - Access admin-only endpoints (/open, /resolved, /stats)
+    - Resolve any ticket
+    - Add messages to any ticket
+    - Reopen any ticket
+    - View tickets for any user
+    
+    🚫 BLOCKED ACTIONS for regular users:
+    - Accessing other users' tickets (403 Forbidden)
+    - Viewing system-wide ticket lists (403 Forbidden)
+    - Resolving tickets (403 Forbidden)
+    - Accessing ticket statistics (403 Forbidden)
+    
+    All endpoints require JWT Bearer authentication.
+    Authorization is enforced at the controller level with proper error responses.
+    """
     return {
         "/api/tickets": {
             "post": {
-                "tags": ["Tickets"],
-                "summary": "Create a new ticket",
-                "description": "Create a new support ticket",
+                "tags": ["Ticketing"],
+                "summary": "Create a new support ticket",
+                "description": """
+                Create a new support ticket for assistance or reporting issues.
+                
+                **Authorization Rules:**
+                - **Users**: ✅ Can create tickets for themselves
+                - **Admins**: ✅ Can create tickets for themselves
+                
+                **Security**: JWT Bearer token required. User ID is automatically extracted from JWT token for security.
+                
+                **Note**: The user_id field in the request body will be ignored and overridden with the authenticated user's ID.
+                """,
+                "security": [{"BearerAuth": []}],
                 "requestBody": {
                     "required": True,
                     "content": {
@@ -939,21 +980,43 @@ def get_ticketing_paths():
                         "description": "Ticket created successfully",
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/Ticket"}
+                                "schema": {"$ref": "#/components/schemas/SuccessResponse"}
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid input data"
+                        "description": "Invalid input data or validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
                     }
                 }
             }
         },
         "/api/tickets/{ticket_id}": {
             "get": {
-                "tags": ["Tickets"],
+                "tags": ["Ticketing"],
                 "summary": "Get a specific ticket",
-                "description": "Retrieve details of a specific ticket by ID",
+                "description": """
+                Retrieve details of a specific ticket by ID.
+                
+                **Authorization Rules:**
+                - **Users**: Can only view tickets they created
+                - **Admins**: Can view any ticket
+                
+                **Security**: JWT Bearer token required with role-based access control.
+                """,
+                "security": [{"BearerAuth": []}],
                 "parameters": [
                     {
                         "name": "ticket_id",
@@ -968,21 +1031,60 @@ def get_ticketing_paths():
                         "description": "Ticket retrieved successfully",
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/Ticket"}
+                                "schema": {"$ref": "#/components/schemas/SuccessResponse"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ticket ID format",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied - Can only view own tickets (unless admin)",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
                             }
                         }
                     },
                     "404": {
-                        "description": "Ticket not found"
+                        "description": "Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
                     }
                 }
             }
         },
         "/api/tickets/{ticket_id}/message": {
             "post": {
-                "tags": ["Tickets"],
-                "summary": "Add message to ticket",
-                "description": "Add a new message to an existing ticket",
+                "tags": ["Ticketing"],
+                "summary": "Add message to ticket conversation",
+                "description": """
+                Add a new message to an existing ticket's conversation history.
+                
+                **Authorization Rules:**
+                - **Users**: Can only add messages to their own tickets
+                - **Admins**: Can add messages to any ticket
+                
+                **Security**: JWT Bearer token required with ownership or admin validation.
+                **Note**: Messages are timestamped and appended to the ticket's chat history.
+                """,
+                "security": [{"BearerAuth": []}],
                 "parameters": [
                     {
                         "name": "ticket_id",
@@ -1001,28 +1103,63 @@ def get_ticketing_paths():
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Message added successfully",
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/TicketMessage"}
+                                "schema": {"$ref": "#/components/schemas/SuccessResponse"}
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid input data"
+                        "description": "Invalid input data or ticket ID format",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied - Can only add messages to own tickets (unless admin)",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Ticket not found"
+                        "description": "Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
                     }
                 }
             }
         },
         "/api/tickets/{ticket_id}/resolve": {
             "patch": {
-                "tags": ["Tickets"],
-                "summary": "Resolve a ticket",
-                "description": "Mark a ticket as resolved",
+                "tags": ["Ticketing"],
+                "summary": "Resolve a ticket (Admin Only)",
+                "description": """
+                Mark a ticket as resolved and close it.
+                
+                **Authorization Rules:**
+                - **Users**: ❌ Cannot resolve tickets
+                - **Admins**: ✅ Can resolve any ticket
+                
+                **Security**: JWT Bearer token required with admin privileges.
+                """,
+                "security": [{"BearerAuth": []}],
                 "parameters": [
                     {
                         "name": "ticket_id",
@@ -1037,21 +1174,59 @@ def get_ticketing_paths():
                         "description": "Ticket resolved successfully",
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/Ticket"}
+                                "schema": {"$ref": "#/components/schemas/SuccessResponse"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ticket ID or ticket cannot be resolved",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Admin access required - Only administrators can resolve tickets",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
                             }
                         }
                     },
                     "404": {
-                        "description": "Ticket not found"
+                        "description": "Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
                     }
                 }
             }
         },
         "/api/tickets/{ticket_id}/reopen": {
             "patch": {
-                "tags": ["Tickets"],
-                "summary": "Reopen a ticket",
-                "description": "Reopen a resolved ticket",
+                "tags": ["Ticketing"],
+                "summary": "Reopen a resolved ticket",
+                "description": """
+                Reopen a previously resolved ticket for further assistance.
+                
+                **Authorization Rules:**
+                - **Users**: Can only reopen their own tickets
+                - **Admins**: Can reopen any ticket
+                
+                **Security**: JWT Bearer token required with ownership or admin validation.
+                """,
+                "security": [{"BearerAuth": []}],
                 "parameters": [
                     {
                         "name": "ticket_id",
@@ -1066,28 +1241,66 @@ def get_ticketing_paths():
                         "description": "Ticket reopened successfully",
                         "content": {
                             "application/json": {
-                                "schema": {"$ref": "#/components/schemas/Ticket"}
+                                "schema": {"$ref": "#/components/schemas/SuccessResponse"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ticket ID or ticket cannot be reopened",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied - Can only reopen own tickets (unless admin)",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
                             }
                         }
                     },
                     "404": {
-                        "description": "Ticket not found"
+                        "description": "Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
                     }
                 }
             }
         },
         "/api/tickets/user/{user_id}": {
             "get": {
-                "tags": ["Tickets"],
-                "summary": "Get user tickets",
-                "description": "Get all tickets for a specific user",
+                "tags": ["Ticketing"],
+                "summary": "Get all tickets for a specific user",
+                "description": """
+                Retrieve all support tickets created by a specific user.
+                
+                **Authorization Rules:**
+                - **Users**: Can only get their own tickets (user_id must match JWT identity)
+                - **Admins**: Can get tickets for any user
+                
+                **Security**: JWT Bearer token required with user identity or admin validation.
+                """,
+                "security": [{"BearerAuth": []}],
                 "parameters": [
                     {
                         "name": "user_id",
                         "in": "path",
                         "required": True,
                         "schema": {"type": "integer"},
-                        "description": "ID of the user"
+                        "description": "ID of the user to get tickets for"
                     }
                 ],
                 "responses": {
@@ -1095,10 +1308,39 @@ def get_ticketing_paths():
                         "description": "User tickets retrieved successfully",
                         "content": {
                             "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {"$ref": "#/components/schemas/Ticket"}
-                                }
+                                "schema": {"$ref": "#/components/schemas/SuccessResponse"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID format",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied - Can only access own data (unless admin)",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
                             }
                         }
                     }
@@ -1107,18 +1349,41 @@ def get_ticketing_paths():
         },
         "/api/tickets/open": {
             "get": {
-                "tags": ["Tickets"],
-                "summary": "Get open tickets",
-                "description": "Get all open (unresolved) tickets",
+                "tags": ["Ticketing"],
+                "summary": "Get all open tickets (Admin Only)",
+                "description": """
+                Retrieve all open (unresolved) support tickets across all users for admin management.
+                
+                **Authorization Rules:**
+                - **Users**: ❌ Cannot access (403 Forbidden)
+                - **Admins**: ✅ Can view all open tickets system-wide
+                
+                **Security**: JWT Bearer token required with admin privileges.
+                **Use Case**: Admin dashboard for ticket management and support overview.
+                """,
+                "security": [{"BearerAuth": []}],
                 "responses": {
                     "200": {
                         "description": "Open tickets retrieved successfully",
                         "content": {
                             "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {"$ref": "#/components/schemas/Ticket"}
-                                }
+                                "schema": {"$ref": "#/components/schemas/SuccessResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Admin access required - Only administrators can view all tickets",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
                             }
                         }
                     }
@@ -1127,18 +1392,90 @@ def get_ticketing_paths():
         },
         "/api/tickets/resolved": {
             "get": {
-                "tags": ["Tickets"],
-                "summary": "Get resolved tickets",
-                "description": "Get all resolved tickets",
+                "tags": ["Ticketing"],
+                "summary": "Get all resolved tickets (Admin Only)",
+                "description": """
+                Retrieve all resolved (closed) support tickets across all users for admin analysis.
+                
+                **Authorization Rules:**
+                - **Users**: ❌ Cannot access (403 Forbidden)
+                - **Admins**: ✅ Can view all resolved tickets system-wide
+                
+                **Security**: JWT Bearer token required with admin privileges.
+                **Use Case**: Admin reports, performance analysis, and historical ticket review.
+                """,
+                "security": [{"BearerAuth": []}],
                 "responses": {
                     "200": {
                         "description": "Resolved tickets retrieved successfully",
                         "content": {
                             "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {"$ref": "#/components/schemas/Ticket"}
-                                }
+                                "schema": {"$ref": "#/components/schemas/SuccessResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Admin access required - Only administrators can view all tickets",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tickets/stats": {
+            "get": {
+                "tags": ["Ticketing"],
+                "summary": "Get ticket statistics (Admin Only)",
+                "description": """
+                Retrieve comprehensive ticket statistics for admin dashboard and reporting.
+                
+                **Authorization Rules:**
+                - **Users**: ❌ Cannot access (403 Forbidden)
+                - **Admins**: ✅ Can view system-wide ticket statistics
+                
+                **Security**: JWT Bearer token required with admin privileges.
+                
+                **Response Data:**
+                - Total ticket count across all users
+                - Open (unresolved) ticket count
+                - Resolved ticket count
+                
+                **Use Case**: Admin dashboard metrics, performance monitoring, and support analytics.
+                """,
+                "security": [{"BearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "Ticket statistics retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/TicketStatsResponse"}
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required - Missing or invalid JWT token",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Admin access required - Only administrators can view ticket statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
                             }
                         }
                     }
