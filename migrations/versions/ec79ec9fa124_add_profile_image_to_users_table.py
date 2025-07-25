@@ -1,7 +1,7 @@
 """add profile_image to users table
 
 Revision ID: ec79ec9fa124
-Revises: 950629d98334
+Revises: 04b0fc975bd9
 Create Date: 2025-07-24 23:09:33.334471
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'ec79ec9fa124'
-down_revision = '950629d98334'
+down_revision = '04b0fc975bd9'
 branch_labels = None
 depends_on = None
 
