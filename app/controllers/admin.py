@@ -86,7 +86,7 @@ def get_admin_by_id_controller(admin_id):
         admin = user_service.get_admin_by_id(admin_id)
 
         if not admin:
-            return not_found_response("Admin user not found")
+            return not_found_response("Admin user")
 
         return success_response(
             message="Admin user retrieved successfully",

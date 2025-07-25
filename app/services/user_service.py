@@ -70,15 +70,11 @@ class UserService(BaseService):
         user = self.get_by_id(user_id)
         if user:
             # Only allow certain fields to be updated
-            allowed_fields = ['first_name', 'last_name', 'phone']
+            allowed_fields = ['first_name', 'last_name', 'phone_number', 'profile_image']
             update_data = {}
             for k, v in kwargs.items():
                 if k in allowed_fields:
-                    # Map phone to phone_number for the model
-                    if k == 'phone':
-                        update_data['phone_number'] = v
-                    else:
-                        update_data[k] = v
+                    update_data[k] = v
             return self.update(user, **update_data)
         return None
 

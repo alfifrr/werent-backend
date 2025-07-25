@@ -14,22 +14,17 @@ def get_item_schemas():
                 "name": {"type": "string", "example": "Summer Dress"},
                 "type": {"type": "string", "example": "Dress"},
                 "size": {"type": "string", "example": "M"},
-                "gender": {"type": "string", "example": "Women's"},
+                "gender": {"type": "string", "example": "Womens"},
                 "brand": {"type": "string", "example": "Zara"},
                 "color": {"type": "string", "example": "Red"},
                 "quantity": {"type": "integer", "example": 3},
-                "product_code": {"type": "string", "example": "ZARA_DRESS_001"},
+                "product_code": {"type": "string", "example": "SKU12345"},
                 "description": {"type": "string", "example": "Lightweight summer dress."},
                 "price_per_day": {"type": "number", "example": 15.0},
                 "rating": {"type": "number", "example": 4.7},
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
                 "user_id": {"type": "integer", "example": 2},
-                "images": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "example": []
-                }
             },
         },
         "ItemCreateRequest": {
@@ -45,45 +40,26 @@ def get_item_schemas():
                 "quantity",
             ],
             "properties": {
-                "name": {"type": "string", "description": "Item name", "example": "Summer Dress"},
-                "type": {
-                    "type": "string", 
-                    "description": "Item type",
-                    "enum": ["dress", "top", "bottom", "outerwear", "shoes", "accessory", "jewelry", "bag", "formal_wear", "costume", "other"],
-                    "example": "dress"
-                },
-                "size": {
-                    "type": "string",
-                    "description": "Item size",
-                    "enum": ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size"],
-                    "example": "M"
-                },
-                "gender": {
-                    "type": "string",
-                    "description": "Target gender",
-                    "enum": ["mens", "womens", "unisex", "kids"],
-                    "example": "womens"
-                },
-                "brand": {"type": "string", "description": "Brand name", "example": "Zara"},
-                "color": {"type": "string", "description": "Item color", "example": "Red"},
-                "quantity": {"type": "integer", "description": "Available quantity", "minimum": 0, "example": 3},
-                "product_code": {
-                    "type": "string", 
-                    "description": "Unique product code (must be unique across all items)",
-                    "example": "ZARA_DRESS_001"
-                },
-                "description": {"type": "string", "description": "Item description", "example": "Lightweight summer dress."},
-                "price_per_day": {"type": "number", "description": "Daily rental price", "minimum": 0, "example": 15.0},
+                "name": {"type": "string"},
+                "type": {"type": "string"},
+                "size": {"type": "string"},
+                "gender": {"type": "string"},
+                "brand": {"type": "string"},
+                "color": {"type": "string"},
+                "quantity": {"type": "integer"},
+                "product_code": {"type": "string"},
+                "description": {"type": "string"},
+                "price_per_day": {"type": "number"},
             },
             "example": {
                 "name": "Summer Dress",
-                "type": "dress",
+                "type": "Dress",
                 "size": "M",
-                "gender": "womens",
+                "gender": "Womens",
                 "brand": "Zara",
                 "color": "Red",
                 "quantity": 3,
-                "product_code": "ZARA_DRESS_001",
+                "product_code": "SKU12345",
                 "description": "Lightweight summer dress.",
                 "price_per_day": 15.0,
             },
@@ -91,45 +67,26 @@ def get_item_schemas():
         "ItemUpdateRequest": {
             "type": "object",
             "properties": {
-                "name": {"type": "string", "description": "Item name", "example": "Summer Dress Updated"},
-                "type": {
-                    "type": "string", 
-                    "description": "Item type",
-                    "enum": ["dress", "top", "bottom", "outerwear", "shoes", "accessory", "jewelry", "bag", "formal_wear", "costume", "other"],
-                    "example": "dress"
-                },
-                "size": {
-                    "type": "string",
-                    "description": "Item size",
-                    "enum": ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size"],
-                    "example": "L"
-                },
-                "gender": {
-                    "type": "string",
-                    "description": "Target gender",
-                    "enum": ["mens", "womens", "unisex", "kids"],
-                    "example": "womens"
-                },
-                "brand": {"type": "string", "description": "Brand name", "example": "Zara"},
-                "color": {"type": "string", "description": "Item color", "example": "Blue"},
-                "quantity": {"type": "integer", "description": "Available quantity", "minimum": 0, "example": 5},
-                "product_code": {
-                    "type": "string", 
-                    "description": "Unique product code (must be unique across all items)",
-                    "example": "ZARA_DRESS_001_UPDATED"
-                },
-                "description": {"type": "string", "description": "Item description", "example": "Updated description for summer dress."},
-                "price_per_day": {"type": "number", "description": "Daily rental price", "minimum": 0, "example": 18.0},
+                "name": {"type": "string"},
+                "type": {"type": "string"},
+                "size": {"type": "string"},
+                "gender": {"type": "string"},
+                "brand": {"type": "string"},
+                "color": {"type": "string"},
+                "quantity": {"type": "integer"},
+                "product_code": {"type": "string"},
+                "description": {"type": "string"},
+                "price_per_day": {"type": "number"},
             },
             "example": {
                 "name": "Summer Dress Updated",
-                "type": "dress",
+                "type": "Dress",
                 "size": "L",
-                "gender": "womens",
+                "gender": "Womens",
                 "brand": "Zara",
                 "color": "Blue",
                 "quantity": 5,
-                "product_code": "ZARA_DRESS_001_UPDATED",
+                "product_code": "SKU12345",
                 "description": "Updated description for summer dress.",
                 "price_per_day": 18.0,
             },
@@ -277,6 +234,120 @@ def get_auth_schemas():
     }
 
 
+def get_gear_schemas():
+    """Get gear management schemas (future implementation)."""
+    return {
+        "GearItem": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "name": {"type": "string", "example": "Canon EOS R5"},
+                "category": {
+                    "type": "string",
+                    "example": "camera",
+                    "enum": ["camera", "lens", "lighting", "accessory"],
+                },
+                "brand": {"type": "string", "example": "Canon"},
+                "model": {"type": "string", "example": "EOS R5"},
+                "description": {
+                    "type": "string",
+                    "example": "Professional mirrorless camera with 45MP sensor",
+                },
+                "daily_rate": {"type": "number", "example": 85.00},
+                "weekly_rate": {"type": "number", "example": 500.00},
+                "deposit_amount": {"type": "number", "example": 1000.00},
+                "availability_status": {
+                    "type": "string",
+                    "example": "available",
+                    "enum": [
+                        "available",
+                        "rented",
+                        "maintenance",
+                        "unavailable",
+                    ],
+                },
+                "condition": {
+                    "type": "string",
+                    "example": "excellent",
+                    "enum": ["excellent", "good", "fair", "poor"],
+                },
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"},
+            },
+        },
+        "GearCreateRequest": {
+            "type": "object",
+            "required": ["name", "category", "brand", "daily_rate"],
+            "properties": {
+                "name": {"type": "string", "example": "Canon EOS R5"},
+                "category": {
+                    "type": "string",
+                    "example": "camera",
+                    "enum": ["camera", "lens", "lighting", "accessory"],
+                },
+                "brand": {"type": "string", "example": "Canon"},
+                "model": {"type": "string", "example": "EOS R5"},
+                "description": {
+                    "type": "string",
+                    "example": "Professional mirrorless camera",
+                },
+                "daily_rate": {"type": "number", "example": 85.00},
+                "weekly_rate": {"type": "number", "example": 500.00},
+                "deposit_amount": {"type": "number", "example": 1000.00},
+            },
+        },
+    }
+
+
+def get_rental_schemas():
+    """Get rental system schemas (future implementation)."""
+    return {
+        "Rental": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "user_id": {"type": "integer", "example": 1},
+                "gear_item_id": {"type": "integer", "example": 1},
+                "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-15",
+                },
+                "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-20",
+                },
+                "total_cost": {"type": "number", "example": 425.00},
+                "deposit_paid": {"type": "number", "example": 1000.00},
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"},
+            },
+        },
+        "RentalRequest": {
+            "type": "object",
+            "required": ["gear_item_id", "start_date", "end_date"],
+            "properties": {
+                "gear_item_id": {"type": "integer", "example": 1},
+                "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-15",
+                },
+                "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-20",
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Needed for wedding photography",
+                },
+            },
+        },
+    }
+
+
 def get_review_schemas():
     """Get review system schemas."""
     return {
@@ -285,8 +356,8 @@ def get_review_schemas():
             "properties": {
                 "id": {"type": "integer", "example": 1},
                 "user_id": {"type": "integer", "example": 1},
-                "item_id": {"type": "integer", "example": 1, "description": "ID of the item being reviewed"},
-                "service_id": {"type": "integer", "example": 1, "description": "ID of the service transaction"},
+                "gear_item_id": {"type": "integer", "example": 1},
+                "rental_id": {"type": "integer", "example": 1},
                 "rating": {
                     "type": "integer",
                     "minimum": 1,
@@ -295,7 +366,7 @@ def get_review_schemas():
                 },
                 "comment": {
                     "type": "string",
-                    "example": "Excellent service, perfect condition!",
+                    "example": "Excellent camera, perfect condition!",
                 },
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
@@ -313,7 +384,7 @@ def get_review_schemas():
                 },
                 "comment": {
                     "type": "string",
-                    "example": "Excellent service, perfect condition!",
+                    "example": "Excellent camera, perfect condition!",
                 },
             },
         },
@@ -507,7 +578,7 @@ def get_health_schemas():
                     "type": "object",
                     "properties": {
                         "name": {"type": "string", "example": "WeRent Backend API"},
-                        "description": {"type": "string", "example": "Equipment rental platform backend service"},
+                        "description": {"type": "string", "example": "Outfit rental platform backend service"},
                         "version": {"type": "string", "example": "1.0.0"}
                     }
                 },
@@ -549,81 +620,55 @@ def get_ticketing_schemas():
             "type": "object",
             "properties": {
                 "id": {"type": "integer", "example": 1},
-                "user_id": {"type": "integer", "example": 1},
-                "booking_id": {"type": "integer", "nullable": True, "example": None, "description": "Optional booking ID if ticket is booking-related"},
-                "chat_content": {"type": "string", "example": "[2025-07-25 16:45:30] I have an issue with my camera rental", "description": "Conversation history with timestamps"},
-                "is_resolved": {"type": "boolean", "example": False, "description": "Whether the ticket is resolved"},
-                "created_at": {"type": "string", "format": "date-time", "example": "2025-07-25T16:45:30.814919"},
-                "updated_at": {"type": "string", "format": "date-time", "example": "2025-07-25T16:45:30.814924"}
+                "user_id": {"type": "integer", "example": 2},
+                "subject": {"type": "string", "example": "Issue with booking"},
+                "description": {"type": "string", "example": "Unable to complete my booking payment"},
+                "status": {"type": "string", "enum": ["open", "resolved"], "example": "open"},
+                "priority": {"type": "string", "enum": ["low", "medium", "high"], "example": "medium"},
+                "created_at": {"type": "string", "format": "date-time", "example": "2025-07-25T14:30:00Z"},
+                "updated_at": {"type": "string", "format": "date-time", "example": "2025-07-25T14:30:00Z"},
+                "resolved_at": {"type": "string", "format": "date-time", "nullable": True, "example": None}
             },
-            "required": ["id", "user_id", "chat_content", "is_resolved", "created_at", "updated_at"]
+            "required": ["id", "user_id", "subject", "description", "status"]
         },
         "TicketCreateRequest": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string", 
-                    "minLength": 1,
-                    "maxLength": 5000,
-                    "example": "I have an issue with my camera rental",
-                    "description": "Initial message describing the issue"
-                },
-                "booking_id": {
-                    "type": "integer", 
-                    "nullable": True, 
-                    "example": None,
-                    "description": "Optional booking ID if ticket is related to a specific booking"
-                }
+                "user_id": {"type": "integer", "example": 2},
+                "subject": {"type": "string", "example": "Payment issue"},
+                "description": {"type": "string", "example": "Cannot process payment for booking ID 123"},
+                "priority": {"type": "string", "enum": ["low", "medium", "high"], "example": "medium"}
             },
-            "required": ["message"],
+            "required": ["user_id", "subject", "description"],
             "example": {
-                "message": "I have an issue with my camera rental",
-                "booking_id": None
+                "user_id": 2,
+                "subject": "Payment issue",
+                "description": "Cannot process payment for booking ID 123",
+                "priority": "medium"
             }
+        },
+        "TicketMessage": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "ticket_id": {"type": "integer", "example": 1},
+                "user_id": {"type": "integer", "example": 2},
+                "message": {"type": "string", "example": "Additional information about the issue"},
+                "created_at": {"type": "string", "format": "date-time", "example": "2025-07-25T14:30:00Z"}
+            },
+            "required": ["id", "ticket_id", "user_id", "message"]
         },
         "TicketMessageRequest": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 2000,
-                    "example": "The camera lens appears to be damaged",
-                    "description": "Message content to add to the ticket conversation"
-                }
+                "user_id": {"type": "integer", "example": 2},
+                "message": {"type": "string", "example": "Here's more information about my issue"}
             },
-            "required": ["message"],
+            "required": ["user_id", "message"],
             "example": {
-                "message": "The camera lens appears to be damaged"
+                "user_id": 2,
+                "message": "Here's more information about my issue"
             }
-        },
-        "TicketListResponse": {
-            "type": "object",
-            "properties": {
-                "tickets": {
-                    "type": "array",
-                    "items": {"$ref": "#/components/schemas/Ticket"}
-                },
-                "total_count": {"type": "integer", "example": 5}
-            },
-            "required": ["tickets", "total_count"]
-        },
-        "TicketStatsResponse": {
-            "type": "object",
-            "properties": {
-                "success": {"type": "boolean", "example": True},
-                "message": {"type": "string", "example": "Ticket statistics retrieved successfully"},
-                "data": {
-                    "type": "object",
-                    "properties": {
-                        "total_tickets": {"type": "integer", "example": 15},
-                        "open_tickets": {"type": "integer", "example": 3},
-                        "resolved_tickets": {"type": "integer", "example": 12}
-                    },
-                    "required": ["total_tickets", "open_tickets", "resolved_tickets"]
-                }
-            },
-            "required": ["success", "message", "data"]
         }
     }
 

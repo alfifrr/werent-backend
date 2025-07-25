@@ -46,8 +46,8 @@ def get_ticket(ticket_id):
     - Admin: Can view any ticket
     """
     current_user_id = get_jwt_identity()
-    # Authorization logic will be handled in controller
-    return get_ticket_controller(ticket_id)
+    # Pass current_user_id to controller for authorization
+    return get_ticket_controller(ticket_id, current_user_id)
 
 @ticketing_bp.route('/<int:ticket_id>/message', methods=['POST'])
 @jwt_required()
@@ -76,8 +76,8 @@ def resolve_ticket(ticket_id):
     - Admin: Can resolve any ticket
     """
     current_user_id = get_jwt_identity()
-    # Authorization logic will be handled in controller
-    return resolve_ticket_controller(ticket_id)
+    # Pass current_user_id to controller for authorization
+    return resolve_ticket_controller(ticket_id, current_user_id)
 
 @ticketing_bp.route('/<int:ticket_id>/reopen', methods=['PATCH'])
 @jwt_required()
@@ -90,8 +90,8 @@ def reopen_ticket(ticket_id):
     - Admin: Can reopen any ticket
     """
     current_user_id = get_jwt_identity()
-    # Authorization logic will be handled in controller
-    return reopen_ticket_controller(ticket_id)
+    # Pass current_user_id to controller for authorization
+    return reopen_ticket_controller(ticket_id, current_user_id)
 
 @ticketing_bp.route('/user/<int:user_id>', methods=['GET'])
 @jwt_required()
@@ -104,10 +104,9 @@ def get_user_tickets(user_id):
     - Admin: Can get tickets for any user
     """
     current_user_id = get_jwt_identity()
-    # Authorization logic will be handled in controller
-    return get_user_tickets_controller(user_id)
+    # Pass current_user_id to controller for authorization
+    return get_user_tickets_controller(user_id, current_user_id)
 
-# Admin-only routes for ticket management
 @ticketing_bp.route('/open', methods=['GET'])
 @jwt_required()
 def get_open_tickets():
@@ -119,8 +118,8 @@ def get_open_tickets():
     - Admin: Can view all open tickets
     """
     current_user_id = get_jwt_identity()
-    # Authorization logic will be handled in controller
-    return get_open_tickets_controller()
+    # Pass current_user_id to controller for authorization
+    return get_open_tickets_controller(current_user_id)
 
 @ticketing_bp.route('/resolved', methods=['GET'])
 @jwt_required()
@@ -133,8 +132,8 @@ def get_resolved_tickets():
     - Admin: Can view all resolved tickets
     """
     current_user_id = get_jwt_identity()
-    # Authorization logic will be handled in controller
-    return get_resolved_tickets_controller()
+    # Pass current_user_id to controller for authorization
+    return get_resolved_tickets_controller(current_user_id)
 
 @ticketing_bp.route('/stats', methods=['GET'])
 @jwt_required()
@@ -147,5 +146,5 @@ def get_ticket_stats():
     - Admin: Can view ticket statistics
     """
     current_user_id = get_jwt_identity()
-    # Authorization logic will be handled in controller
-    return get_ticket_stats_controller()
+    # Pass current_user_id to controller for authorization
+    return get_ticket_stats_controller(current_user_id)

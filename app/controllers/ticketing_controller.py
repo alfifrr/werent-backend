@@ -19,7 +19,112 @@ from app.utils import (
     validation_error_response,
     not_found_response,
     internal_error_response,
+    forbidden_response,
 )
+from app.models.user import User
+
+
+def _check_admin_access(current_user_id):
+    """
+    Check if current user has admin access.
+    
+    Args:
+        current_user_id: ID of the current user from JWT
+        
+    Returns:
+        tuple: (has_access: bool, user: User|None, error_response: dict|None)
+    """
+    try:
+        # Convert to integer
+        current_user_id = int(current_user_id)
+        
+        # Get current user
+        user = User.find_by_id(current_user_id)
+        if not user:
+            return False, None, error_response("User not found", 404)
+        
+        # Check admin access
+        is_admin = getattr(user, 'is_admin', False)
+        if not is_admin:
+            return False, user, forbidden_response('Admin access required')
+            
+        return True, user, None
+        
+    except Exception:
+        return False, None, internal_error_response()
+
+
+def _check_ticket_ownership_or_admin(current_user_id, ticket_id):
+    """
+    Check if current user can access a ticket (owner or admin).
+    
+    Args:
+        current_user_id: ID of the current user from JWT
+        ticket_id: ID of the ticket being accessed
+        
+    Returns:
+        tuple: (has_access: bool, user: User|None, ticket: Ticketing|None, error_response: dict|None)
+    """
+    try:
+        # Convert to integer
+        current_user_id = int(current_user_id)
+        
+        # Get current user
+        user = User.find_by_id(current_user_id)
+        if not user:
+            return False, None, None, error_response("User not found", 404)
+            
+        # Get ticket
+        ticketing_service = TicketingService()
+        ticket = ticketing_service.get_by_id(ticket_id)
+        if not ticket:
+            return False, user, None, error_response("Ticket not found", 404)
+            
+        # Check access: admin or ticket owner
+        is_admin = getattr(user, 'is_admin', False)
+        is_owner = ticket.user_id == current_user_id
+        
+        if not (is_admin or is_owner):
+            return False, user, ticket, forbidden_response('Access denied - can only access own tickets')
+            
+        return True, user, ticket, None
+        
+    except Exception:
+        return False, None, None, internal_error_response()
+
+
+def _check_user_access_or_admin(current_user_id, target_user_id):
+    """
+    Check if current user can access target user's data (same user or admin).
+    
+    Args:
+        current_user_id: ID of the current user from JWT
+        target_user_id: ID of the user whose data is being accessed
+        
+    Returns:
+        tuple: (has_access: bool, user: User|None, error_response: dict|None)
+    """
+    try:
+        # Convert to integers for comparison
+        current_user_id = int(current_user_id)
+        target_user_id = int(target_user_id)
+        
+        # Get current user
+        user = User.find_by_id(current_user_id)
+        if not user:
+            return False, None, error_response("User not found", 404)
+        
+        # Check access: admin or same user
+        is_admin = getattr(user, 'is_admin', False)
+        is_same_user = current_user_id == target_user_id
+        
+        if not (is_admin or is_same_user):
+            return False, user, forbidden_response('Access denied - can only access own data')
+            
+        return True, user, None
+        
+    except Exception:
+        return False, None, internal_error_response()
 
 
 def _format_validation_errors(e: ValidationError):
@@ -134,12 +239,13 @@ def create_ticket_controller(data):
         return internal_error_response()
 
 
-def get_ticket_controller(ticket_id):
+def get_ticket_controller(ticket_id, current_user_id):
     """
     Get a specific ticket by ID.
 
     Args:
         ticket_id: ID of the ticket to retrieve
+        current_user_id: ID of the current user from JWT token
 
     Returns:
         Flask response tuple: (response_dict, status_code)
@@ -151,14 +257,12 @@ def get_ticket_controller(ticket_id):
         except ValueError as e:
             return error_response(str(e), 400)
 
-        # Get ticket from service
-        ticketing_service = TicketingService()
-        ticket = ticketing_service.get_by_id(ticket_id)
+        # Check authorization (admin or ticket owner)
+        has_access, user, ticket, auth_error = _check_ticket_ownership_or_admin(current_user_id, ticket_id)
+        if not has_access:
+            return auth_error
 
-        if not ticket:
-            return not_found_response("Ticket")
-
-        # Return ticket data
+        # Return ticket data (ticket already retrieved in auth check)
         ticket_data = _serialize_ticket(ticket)
         return success_response(
             message="Ticket retrieved successfully",
@@ -216,12 +320,13 @@ def add_message_controller(ticket_id, data):
         return internal_error_response()
 
 
-def resolve_ticket_controller(ticket_id):
+def resolve_ticket_controller(ticket_id, current_user_id):
     """
-    Mark a ticket as resolved.
+    Mark a ticket as resolved (admin only).
 
     Args:
         ticket_id: ID of the ticket to resolve
+        current_user_id: ID of the current user from JWT token
 
     Returns:
         Flask response tuple: (response_dict, status_code)
@@ -232,29 +337,41 @@ def resolve_ticket_controller(ticket_id):
             ticket_id = _validate_id_parameter(ticket_id, "ticket ID")
         except ValueError as e:
             return error_response(str(e), 400)
+
+        # Check admin authorization
+        has_access, user, auth_error = _check_admin_access(current_user_id)
+        if not has_access:
+            return auth_error
 
         # Resolve ticket through service
         ticketing_service = TicketingService()
-        ticket = ticketing_service.resolve_ticket(ticket_id)
+        success = ticketing_service.resolve_ticket(ticket_id)
 
-        ticket_data = _serialize_ticket(ticket)
-        return success_response(
-            message="Ticket resolved successfully",
-            data=ticket_data
-        )
+        if success:
+            # Get updated ticket to return
+            ticket = ticketing_service.get_ticket_by_id(ticket_id)
+            if ticket:
+                serialized_ticket = _serialize_ticket(ticket)
+                return success_response(
+                    message="Ticket resolved successfully",
+                    data={"ticket": serialized_ticket}
+                )
+            else:
+                return error_response("Ticket not found after resolution", 404)
+        else:
+            return error_response("Failed to resolve ticket", 400)
 
-    except ValueError as e:
-        return error_response(str(e), 400)
     except Exception as e:
         return internal_error_response()
 
 
-def reopen_ticket_controller(ticket_id):
+def reopen_ticket_controller(ticket_id, current_user_id):
     """
-    Reopen a resolved ticket.
+    Reopen a resolved ticket (admin or ticket owner).
 
     Args:
         ticket_id: ID of the ticket to reopen
+        current_user_id: ID of the current user from JWT token
 
     Returns:
         Flask response tuple: (response_dict, status_code)
@@ -266,28 +383,40 @@ def reopen_ticket_controller(ticket_id):
         except ValueError as e:
             return error_response(str(e), 400)
 
+        # Check authorization (admin or ticket owner)
+        has_access, user, ticket, auth_error = _check_ticket_ownership_or_admin(current_user_id, ticket_id)
+        if not has_access:
+            return auth_error
+
         # Reopen ticket through service
         ticketing_service = TicketingService()
-        ticket = ticketing_service.reopen_ticket(ticket_id)
+        success = ticketing_service.reopen_ticket(ticket_id)
 
-        ticket_data = _serialize_ticket(ticket)
-        return success_response(
-            message="Ticket reopened successfully",
-            data=ticket_data
-        )
+        if success:
+            # Get updated ticket to return
+            updated_ticket = ticketing_service.get_by_id(ticket_id)
+            if updated_ticket:
+                serialized_ticket = _serialize_ticket(updated_ticket)
+                return success_response(
+                    message="Ticket reopened successfully",
+                    data={"ticket": serialized_ticket}
+                )
+            else:
+                return error_response("Ticket not found after reopening", 404)
+        else:
+            return error_response("Failed to reopen ticket", 400)
 
-    except ValueError as e:
-        return error_response(str(e), 400)
     except Exception as e:
         return internal_error_response()
 
 
-def get_user_tickets_controller(user_id):
+def get_user_tickets_controller(user_id, current_user_id):
     """
     Get all tickets for a specific user.
 
     Args:
         user_id: ID of the user whose tickets to retrieve
+        current_user_id: ID of the current user from JWT token
 
     Returns:
         Flask response tuple: (response_dict, status_code)
@@ -298,6 +427,11 @@ def get_user_tickets_controller(user_id):
             user_id = _validate_id_parameter(user_id, "user ID")
         except ValueError as e:
             return error_response(str(e), 400)
+
+        # Check authorization (admin or same user)
+        has_access, user, auth_error = _check_user_access_or_admin(current_user_id, user_id)
+        if not has_access:
+            return auth_error
 
         # Get tickets from service
         ticketing_service = TicketingService()
@@ -319,17 +453,27 @@ def get_user_tickets_controller(user_id):
         return internal_error_response()
 
 
-def get_open_tickets_controller():
+def get_open_tickets_controller(current_user_id):
     """
-    Get all open (unresolved) tickets.
+    Get all open tickets (admin only).
+
+    Args:
+        current_user_id: ID of the current user from JWT token
 
     Returns:
         Flask response tuple: (response_dict, status_code)
     """
     try:
+        # Check admin authorization
+        has_access, user, auth_error = _check_admin_access(current_user_id)
+        if not has_access:
+            return auth_error
+
+        # Get open tickets from service
         ticketing_service = TicketingService()
         tickets = ticketing_service.get_open_tickets()
 
+        # Serialize all tickets
         serialized_tickets = [_serialize_ticket(ticket) for ticket in tickets]
         response_data = {
             "tickets": serialized_tickets,
@@ -345,17 +489,27 @@ def get_open_tickets_controller():
         return internal_error_response()
 
 
-def get_resolved_tickets_controller():
+def get_resolved_tickets_controller(current_user_id):
     """
-    Get all resolved tickets.
+    Get all resolved tickets (admin only).
+
+    Args:
+        current_user_id: ID of the current user from JWT token
 
     Returns:
         Flask response tuple: (response_dict, status_code)
     """
     try:
+        # Check admin authorization
+        has_access, user, auth_error = _check_admin_access(current_user_id)
+        if not has_access:
+            return auth_error
+
+        # Get resolved tickets from service
         ticketing_service = TicketingService()
         tickets = ticketing_service.get_resolved_tickets()
 
+        # Serialize all tickets
         serialized_tickets = [_serialize_ticket(ticket) for ticket in tickets]
         response_data = {
             "tickets": serialized_tickets,
@@ -371,14 +525,23 @@ def get_resolved_tickets_controller():
         return internal_error_response()
 
 
-def get_ticket_stats_controller():
+def get_ticket_stats_controller(current_user_id):
     """
-    Get ticket statistics.
+    Get ticket statistics (admin only).
+
+    Args:
+        current_user_id: ID of the current user from JWT token
 
     Returns:
         Flask response tuple: (response_dict, status_code)
     """
     try:
+        # Check admin authorization
+        has_access, user, auth_error = _check_admin_access(current_user_id)
+        if not has_access:
+            return auth_error
+
+        # Get stats from service
         ticketing_service = TicketingService()
         stats = ticketing_service.get_ticket_stats()
 
