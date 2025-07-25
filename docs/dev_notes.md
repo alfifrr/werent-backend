@@ -2,7 +2,44 @@
 
 ## Recent Completed Tasks
 
-### ✅ Enhanced Image Upload Validation (Latest Update)
+### ✅ POST /items Endpoint Error Handling & Swagger Documentation (Latest Update)
+**Date**: July 25, 2025
+**Changes Made**:
+- 🔧 **Enhanced error handling** for POST /items endpoint with specific database constraint violations
+- 🔧 **Comprehensive Swagger documentation** with detailed error responses and examples
+- 🔧 **Improved schema definitions** with proper enum constraints and validation rules
+- 🔧 **Added error response examples** for duplicate product codes and invalid enum values
+
+**Error Handling Improvements**:
+- **Database constraint violations** - proper 400 errors instead of 500 errors
+- **Duplicate product code handling** - clear error message for unique constraint violations
+- **Invalid enum value handling** - descriptive errors with available options
+- **Authorization validation** - proper 403 errors for non-admin users
+
+**Swagger Documentation Enhancements**:
+```yaml
+# Enhanced POST /items documentation
+- Detailed endpoint description with admin-only requirements
+- Comprehensive error response examples (400, 401, 403, 500)
+- Proper enum constraints for type, size, and gender fields
+- Clear field descriptions and validation rules
+- Reusable error response schemas
+```
+
+**Schema Improvements**:
+- **ItemCreateRequest** - added enum constraints and field descriptions
+- **ItemUpdateRequest** - consistent enum values and validation
+- **Item** - updated examples with proper product code format
+- **Error responses** - using existing ErrorResponse schemas for consistency
+
+**Testing Results**:
+- ✅ **Valid item creation** - returns 201 with complete item details
+- ✅ **Duplicate product code** - returns 400 with clear error message
+- ✅ **Invalid enum values** - returns 400 with available options
+- ✅ **Admin authorization** - properly enforced with 403 for regular users
+- ✅ **Swagger UI** - displays comprehensive documentation with examples
+
+### ✅ Enhanced Image Upload Validation (Previous Update)
 **Date**: July 24, 2025
 **Changes Made**:
 - 🔧 **Enhanced Base64 validation** with comprehensive security checks

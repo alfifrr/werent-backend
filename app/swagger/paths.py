@@ -69,6 +69,7 @@ def get_item_paths():
             "post": {
                 "tags": ["Item"],
                 "summary": "Create a new item (admin only)",
+                "description": "Create a new rental item. Only administrators can create items. Product codes must be unique across all items.",
                 "security": [{"BearerAuth": []}],
                 "requestBody": {
                     "required": True,
@@ -89,7 +90,41 @@ def get_item_paths():
                             }
                         },
                     },
+                    "400": {
+                        "description": "Bad request - validation error or constraint violation",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"},
+                                "examples": {
+                                    "duplicate_product_code": {
+                                        "summary": "Duplicate product code",
+                                        "value": {
+                                            "success": False,
+                                            "error": "Product code already exists. Please use a unique product code."
+                                        }
+                                    },
+                                    "invalid_enum": {
+                                        "summary": "Invalid enum value",
+                                        "value": {
+                                            "success": False,
+                                            "error": "'INVALID_TYPE' is not among the defined enum values. Enum name: itemtype. Possible values: DRESS, TOP, BOTTOM, ..., OTHER",
+                                            "error_code": "INTERNAL_ERROR"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {"description": "Authentication required"},
                     "403": {"description": "Admin access required"},
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        }
+                    },
                 },
             },
         },

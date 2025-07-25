@@ -52,6 +52,13 @@ def create_item_controller(json_data):
 
         return success_response('Item created successfully', item.to_dict(), status_code=201)
     except Exception as e:
+        error_str = str(e)
+        # Handle database constraint violations
+        if 'UNIQUE constraint failed: items.product_code' in error_str:
+            return error_response('Product code already exists. Please use a unique product code.', status_code=400)
+        elif 'IntegrityError' in error_str or 'constraint failed' in error_str:
+            return error_response('Database constraint violation. Please check your input data.', status_code=400)
+        # Handle other specific errors
         return internal_error_response(str(e))
 
 def get_item_controller(item_id):

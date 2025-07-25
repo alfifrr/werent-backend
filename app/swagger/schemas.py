@@ -14,17 +14,22 @@ def get_item_schemas():
                 "name": {"type": "string", "example": "Summer Dress"},
                 "type": {"type": "string", "example": "Dress"},
                 "size": {"type": "string", "example": "M"},
-                "gender": {"type": "string", "example": "Womens"},
+                "gender": {"type": "string", "example": "Women's"},
                 "brand": {"type": "string", "example": "Zara"},
                 "color": {"type": "string", "example": "Red"},
                 "quantity": {"type": "integer", "example": 3},
-                "product_code": {"type": "string", "example": "SKU12345"},
+                "product_code": {"type": "string", "example": "ZARA_DRESS_001"},
                 "description": {"type": "string", "example": "Lightweight summer dress."},
                 "price_per_day": {"type": "number", "example": 15.0},
                 "rating": {"type": "number", "example": 4.7},
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
                 "user_id": {"type": "integer", "example": 2},
+                "images": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "example": []
+                }
             },
         },
         "ItemCreateRequest": {
@@ -40,26 +45,45 @@ def get_item_schemas():
                 "quantity",
             ],
             "properties": {
-                "name": {"type": "string"},
-                "type": {"type": "string"},
-                "size": {"type": "string"},
-                "gender": {"type": "string"},
-                "brand": {"type": "string"},
-                "color": {"type": "string"},
-                "quantity": {"type": "integer"},
-                "product_code": {"type": "string"},
-                "description": {"type": "string"},
-                "price_per_day": {"type": "number"},
+                "name": {"type": "string", "description": "Item name", "example": "Summer Dress"},
+                "type": {
+                    "type": "string", 
+                    "description": "Item type",
+                    "enum": ["dress", "top", "bottom", "outerwear", "shoes", "accessory", "jewelry", "bag", "formal_wear", "costume", "other"],
+                    "example": "dress"
+                },
+                "size": {
+                    "type": "string",
+                    "description": "Item size",
+                    "enum": ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size"],
+                    "example": "M"
+                },
+                "gender": {
+                    "type": "string",
+                    "description": "Target gender",
+                    "enum": ["mens", "womens", "unisex", "kids"],
+                    "example": "womens"
+                },
+                "brand": {"type": "string", "description": "Brand name", "example": "Zara"},
+                "color": {"type": "string", "description": "Item color", "example": "Red"},
+                "quantity": {"type": "integer", "description": "Available quantity", "minimum": 0, "example": 3},
+                "product_code": {
+                    "type": "string", 
+                    "description": "Unique product code (must be unique across all items)",
+                    "example": "ZARA_DRESS_001"
+                },
+                "description": {"type": "string", "description": "Item description", "example": "Lightweight summer dress."},
+                "price_per_day": {"type": "number", "description": "Daily rental price", "minimum": 0, "example": 15.0},
             },
             "example": {
                 "name": "Summer Dress",
-                "type": "Dress",
+                "type": "dress",
                 "size": "M",
-                "gender": "Womens",
+                "gender": "womens",
                 "brand": "Zara",
                 "color": "Red",
                 "quantity": 3,
-                "product_code": "SKU12345",
+                "product_code": "ZARA_DRESS_001",
                 "description": "Lightweight summer dress.",
                 "price_per_day": 15.0,
             },
@@ -67,26 +91,45 @@ def get_item_schemas():
         "ItemUpdateRequest": {
             "type": "object",
             "properties": {
-                "name": {"type": "string"},
-                "type": {"type": "string"},
-                "size": {"type": "string"},
-                "gender": {"type": "string"},
-                "brand": {"type": "string"},
-                "color": {"type": "string"},
-                "quantity": {"type": "integer"},
-                "product_code": {"type": "string"},
-                "description": {"type": "string"},
-                "price_per_day": {"type": "number"},
+                "name": {"type": "string", "description": "Item name", "example": "Summer Dress Updated"},
+                "type": {
+                    "type": "string", 
+                    "description": "Item type",
+                    "enum": ["dress", "top", "bottom", "outerwear", "shoes", "accessory", "jewelry", "bag", "formal_wear", "costume", "other"],
+                    "example": "dress"
+                },
+                "size": {
+                    "type": "string",
+                    "description": "Item size",
+                    "enum": ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size"],
+                    "example": "L"
+                },
+                "gender": {
+                    "type": "string",
+                    "description": "Target gender",
+                    "enum": ["mens", "womens", "unisex", "kids"],
+                    "example": "womens"
+                },
+                "brand": {"type": "string", "description": "Brand name", "example": "Zara"},
+                "color": {"type": "string", "description": "Item color", "example": "Blue"},
+                "quantity": {"type": "integer", "description": "Available quantity", "minimum": 0, "example": 5},
+                "product_code": {
+                    "type": "string", 
+                    "description": "Unique product code (must be unique across all items)",
+                    "example": "ZARA_DRESS_001_UPDATED"
+                },
+                "description": {"type": "string", "description": "Item description", "example": "Updated description for summer dress."},
+                "price_per_day": {"type": "number", "description": "Daily rental price", "minimum": 0, "example": 18.0},
             },
             "example": {
                 "name": "Summer Dress Updated",
-                "type": "Dress",
+                "type": "dress",
                 "size": "L",
-                "gender": "Womens",
+                "gender": "womens",
                 "brand": "Zara",
                 "color": "Blue",
                 "quantity": 5,
-                "product_code": "SKU12345",
+                "product_code": "ZARA_DRESS_001_UPDATED",
                 "description": "Updated description for summer dress.",
                 "price_per_day": 18.0,
             },
