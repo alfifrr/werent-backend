@@ -542,10 +542,166 @@ def get_admin_paths():
     }
 
 
+def get_payment_paths():
+    """Get payment management paths."""
+    return {
+        "/payments": {
+            "get": {
+                "tags": ["Payment"],
+                "summary": "List all payments",
+                "security": [{"BearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "List of payments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Payment"}
+                                }
+                            }
+                        },
+                    }
+                },
+            },
+            "post": {
+                "tags": ["Payment"],
+                "summary": "Create a new payment",
+                "security": [{"BearerAuth": []}],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/PaymentCreateRequest"}
+                        }
+                    },
+                },
+                "responses": {
+                    "201": {
+                        "description": "Payment created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Payment"}
+                            }
+                        },
+                    },
+                    "400": {"description": "Invalid input"},
+                },
+            },
+        },
+        "/payments/user/{user_id}": {
+            "get": {
+                "tags": ["Payment"],
+                "summary": "List all payments for a specific user",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "ID of the user to get payments for"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of payments for the user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Payment"}
+                                }
+                            }
+                        },
+                    },
+                    "404": {"description": "User not found or no payments"},
+                },
+            }
+        },
+        "/payments/{payment_id}": {
+            "get": {
+                "tags": ["Payment"],
+                "summary": "Get payment by ID",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "payment_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment details",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Payment"}
+                            }
+                        },
+                    },
+                    "404": {"description": "Payment not found"},
+                },
+            },
+            "put": {
+                "tags": ["Payment"],
+                "summary": "Update payment",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "payment_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/PaymentUpdateRequest"}
+                        }
+                    },
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Payment"}
+                            }
+                        },
+                    },
+                    "404": {"description": "Payment not found"},
+                },
+            },
+            "delete": {
+                "tags": ["Payment"],
+                "summary": "Delete payment",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "payment_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {"description": "Payment deleted"},
+                    "404": {"description": "Payment not found"},
+                },
+            },
+        },
+    }
+
+
 def get_all_paths():
     """Get all API paths."""
     paths = {}
     paths.update(get_item_paths())
     paths.update(get_auth_paths())
     paths.update(get_admin_paths())
+    paths.update(get_payment_paths())
     return paths

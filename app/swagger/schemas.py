@@ -488,6 +488,55 @@ def get_response_schemas():
     }
 
 
+def get_payment_schemas():
+    """Get payment-related schemas."""
+    return {
+        "Payment": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "booking_id": {"type": "array", "items": {"type": "integer"}, "example": [1, 2]},
+                "total_price": {"type": "number", "example": 100.0},
+                "payment_method": {"type": "string", "enum": ["CC", "QRIS", "TRANSFER", "Cash"], "example": "CC"},
+                "payment_type": {"type": "string", "enum": ["RENT", "FINE"], "example": "RENT"},
+                "payment_date": {"type": "string", "format": "date-time", "example": "2024-05-01T12:00:00Z"},
+                "user_id": {"type": "integer", "example": 1},
+            },
+        },
+        "PaymentCreateRequest": {
+            "type": "object",
+            "required": ["booking_id", "total_price", "payment_method", "payment_type"],
+            "properties": {
+                "booking_id": {"type": "array", "items": {"type": "integer"}},
+                "total_price": {"type": "number"},
+                "payment_method": {"type": "string", "enum": ["CC", "QRIS", "TRANSFER", "Cash"]},
+                "payment_type": {"type": "string", "enum": ["RENT", "FINE"]},
+                "user_id": {"type": "integer"},
+            },
+            "example": {
+                "booking_id": [1, 2],
+                "total_price": 100.0,
+                "payment_method": "CC",
+                "payment_type": "RENT",
+                "user_id": 1
+            },
+        },
+        "PaymentUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "booking_id": {"type": "array", "items": {"type": "integer"}},
+                "total_price": {"type": "number"},
+                "payment_method": {"type": "string", "enum": ["CC", "QRIS", "TRANSFER", "Cash"]},
+                "payment_type": {"type": "string", "enum": ["RENT", "FINE"]},
+                "user_id": {"type": "integer"},
+            },
+            "example": {
+                "total_price": 120.0
+            },
+        },
+    }
+
+
 def get_all_schemas():
     """Get all OpenAPI component schemas."""
     schemas = {}
@@ -497,4 +546,5 @@ def get_all_schemas():
     schemas.update(get_rental_schemas())
     schemas.update(get_review_schemas())
     schemas.update(get_response_schemas())
+    schemas.update(get_payment_schemas())
     return schemas
