@@ -15,6 +15,8 @@ class BookingStatus(enum.Enum):
     CANCELLED = "CANCELLED"
     PASTDUE = "PASTDUE"
     RETURNED = "RETURNED"
+    COMPLETED = "COMPLETED"
+    CONFIRMED = "CONFIRMED"
 
 
 class Booking(db.Model):
@@ -28,6 +30,8 @@ class Booking(db.Model):
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.Enum(BookingStatus), nullable=False, default=BookingStatus.PENDING)
     is_paid = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

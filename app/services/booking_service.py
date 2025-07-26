@@ -1,46 +1,133 @@
-"""
-Booking service for business logic operations.
-Handles booking management, availability checking, and booking-related operations.
-"""
-
 from datetime import datetime, timedelta
 from app.services.base_service import BaseService
-from app.models.booking import Booking
+from app.models.booking import Booking, BookingStatus
+from app.models.item import Item
+from app.models.user import User
+from app.extensions import db
+from typing import List, Optional
+from datetime import date
 
 
 class BookingService(BaseService):
-    """Service class for Booking model business logic."""
 
     def __init__(self):
-        """Initialize BookingService."""
         super().__init__(Booking)
 
-    def create_booking(self, item_id, renter_id, start_date, end_date):
-        """Create a new booking with validation."""
-        # Check if item is available for the requested dates
-        if not self.is_available_for_dates(item_id, start_date, end_date):
-            raise ValueError("Item is not available for the requested dates")
+    @staticmethod
+    def check_availability(item_id: int, start_date: date, end_date: date) -> bool:
+        overlapping = Booking.query.filter(
+            Booking.item_id == item_id,
+            Booking.end_date >= start_date,
+            Booking.start_date <= end_date,
+            Booking.status.in_([BookingStatus.PENDING, BookingStatus.PAID])
+        ).first()
+        return overlapping is None
 
-        # Calculate total price
-        from app.services.item_service import ItemService
-        item_service = ItemService()
-        item = item_service.get_by_id(item_id)
-
+    @staticmethod
+    def create_booking(user_id: int, item_id: int, start_date: date, end_date: date) -> Optional[Booking]:
+        # Check user exists and is verified
+        user = User.query.get(user_id)
+        if not user or not getattr(user, 'is_verified', False):
+            return None
+            
+        if not BookingService.check_availability(item_id, start_date, end_date):
+            return None
+        item = Item.query.get(item_id)
         if not item:
-            raise ValueError("Item not found")
+            return None
+        duration = (end_date - start_date).days + 1
+        total_price = item.price_per_day * duration
+        booking = Booking(
+            user_id=user_id,
+            item_id=item_id,
+            start_date=start_date,
+            end_date=end_date,
+            total_price=total_price,
+            status=BookingStatus.PENDING,
+            is_paid=False
+        )
+        db.session.add(booking)
+        db.session.commit()
+        return booking
 
-        duration_days = (end_date - start_date).days + 1
-        total_price = duration_days * item.price_per_day
+    @staticmethod
+    def get_user_bookings(user_id: int) -> List[Booking]:
+        # Check user exists and is verified
+        user = User.query.get(user_id)
+        if not user or not getattr(user, 'is_verified', False):
+            return []
+        return Booking.query.filter_by(user_id=user_id).all()
 
-        booking = Booking()
-        booking.item_id = item_id
-        booking.renter_id = renter_id
-        booking.start_date = start_date
-        booking.end_date = end_date
-        booking.total_price = total_price
-        booking.status = 'pending'
+    @staticmethod
+    def get_booking(booking_id: int, user_id: Optional[int] = None) -> Optional[Booking]:
+        booking = Booking.query.get(booking_id)
+        if not booking:
+            return None
+        # If user_id is provided, verify user and check if booking belongs to them
+        if user_id is not None:
+            user = User.query.get(user_id)
+            if not user or not getattr(user, 'is_verified', False):
+                return None
+            if booking.user_id != user_id:
+                return None
+                
+        return booking
 
-        return self.save(booking)
+    @staticmethod
+    def update_booking(booking_id: int, user_id: Optional[int] = None, **kwargs) -> Optional[Booking]:
+        booking = Booking.query.get(booking_id)
+        if not booking:
+            return None
+            
+        # If user_id is provided, verify user and check if booking belongs to them
+        if user_id is not None:
+            user = User.query.get(user_id)
+            if not user or not getattr(user, 'is_verified', False):
+                return None
+            if booking.user_id != user_id:
+                return None
+                
+        # Convert date strings to date objects
+        for key, value in kwargs.items():
+            if key in ['start_date', 'end_date'] and isinstance(value, str):
+                try:
+                    value = date.fromisoformat(value)
+                except ValueError:
+                    continue  # skip invalid date
+            # Ensure start_date is not before booking creation date
+            if key == 'start_date' and value is not None:
+                created_date = booking.__dict__.get('created_at')
+                if created_date:
+                    if hasattr(created_date, 'date'):
+                        created_date = created_date.date()
+                    if value < created_date:
+                        return None  # Invalid: start_date before booking creation
+            # Ensure end_date is not before start_date
+            if key == 'end_date' and value is not None:
+                start_date = kwargs.get('start_date', booking.start_date)
+                if isinstance(start_date, str):
+                    try:
+                        start_date = date.fromisoformat(start_date)
+                    except ValueError:
+                        continue
+                if value < start_date:
+                    return None  # Invalid: end_date before start_date
+            if hasattr(booking, key) and value is not None:
+                setattr(booking, key, value)
+        # Recalculate total_price if start_date or end_date changed
+        if 'start_date' in kwargs or 'end_date' in kwargs:
+            start_date = booking.start_date
+            end_date = booking.end_date
+            if start_date and end_date and booking.item:
+                duration = (end_date - start_date).days + 1
+                booking.total_price = booking.item.price_per_day * duration
+        db.session.commit()
+        return booking
+
+    @staticmethod
+    def get_all_bookings() -> List[Booking]:
+        """Get all bookings in the system with pagination."""
+        return Booking.query.order_by(Booking.created_at.desc()).all()
 
     def is_available_for_dates(self, item_id, start_date, end_date):
         """Check if item is available for the specified date range."""
@@ -61,68 +148,13 @@ class BookingService(BaseService):
 
         return conflicting_bookings == 0
 
-    def confirm_booking(self, booking_id):
-        """Confirm a pending booking."""
-        booking = self.get_by_id(booking_id)
-        if not booking:
-            return None
-
-        if booking.status != 'pending':
-            raise ValueError("Only pending bookings can be confirmed")
-
-        # Double-check availability
-        if not self.is_available_for_dates(booking.item_id, booking.start_date, booking.end_date):
-            raise ValueError("Item is no longer available for these dates")
-
-        booking.status = 'confirmed'
-
-        # Update item status to rented
-        from app.services.item_service import ItemService
-        item_service = ItemService()
-        item_service.mark_as_rented(booking.item_id)
-
-        return self.save(booking)
-
-    def complete_booking(self, booking_id):
-        """Mark booking as completed."""
-        booking = self.get_by_id(booking_id)
-        if not booking:
-            return None
-
-        if booking.status != 'confirmed':
-            raise ValueError("Only confirmed bookings can be completed")
-
-        booking.status = 'completed'
-
-        # Update item status back to available
-        from app.services.item_service import ItemService
-        item_service = ItemService()
-        item_service.mark_as_available(booking.item_id)
-
-        return self.save(booking)
-
-    def cancel_booking(self, booking_id):
-        """Cancel a booking."""
-        booking = self.get_by_id(booking_id)
-        if not booking:
-            return None
-
-        if booking.status in ['completed', 'cancelled']:
-            raise ValueError("Cannot cancel completed or already cancelled bookings")
-
-        booking.status = 'cancelled'
-
-        # If booking was confirmed, make item available again
-        if booking.status == 'confirmed':
-            from app.services.item_service import ItemService
-            item_service = ItemService()
-            item_service.mark_as_available(booking.item_id)
-
-        return self.save(booking)
-
     def get_bookings_by_renter(self, renter_id):
         """Get all bookings made by a specific renter."""
-        return Booking.query.filter_by(renter_id=renter_id).order_by(Booking.created_at.desc()).all()
+        # Check user exists and is verified
+        user = User.query.get(renter_id)
+        if not user or not getattr(user, 'is_verified', False):
+            return []
+        return Booking.query.filter_by(user_id=renter_id).order_by(Booking.created_at.desc()).all()
 
     def get_bookings_by_item(self, item_id):
         """Get all bookings for a specific item."""
@@ -130,33 +162,18 @@ class BookingService(BaseService):
 
     def get_bookings_by_status(self, status):
         """Get all bookings with a specific status."""
+        # Accept both Enum and string
+        if isinstance(status, str):
+            status = status.upper()
         return Booking.query.filter_by(status=status).order_by(Booking.created_at.desc()).all()
-
-    def get_active_bookings(self):
-        """Get all currently active bookings."""
-        now = datetime.now()
-        return Booking.query.filter(
-            Booking.status == 'confirmed',
-            Booking.start_date <= now,
-            Booking.end_date >= now
-        ).all()
-
-    def get_upcoming_bookings(self, days_ahead=7):
-        """Get bookings starting within the next specified days."""
-        from datetime import timedelta
-
-        now = datetime.now()
-        future_date = now + timedelta(days=days_ahead)
-
-        return Booking.query.filter(
-            Booking.status == 'confirmed',
-            Booking.start_date >= now,
-            Booking.start_date <= future_date
-        ).order_by(Booking.start_date).all()
 
     def get_booking_history(self, user_id, limit=20):
         """Get booking history for a user."""
-        return Booking.query.filter_by(renter_id=user_id).order_by(
+        # Check user exists and is verified
+        user = User.query.get(user_id)
+        if not user or not getattr(user, 'is_verified', False):
+            return []
+        return Booking.query.filter_by(user_id=user_id).order_by(
             Booking.created_at.desc()
         ).limit(limit).all()
 
@@ -171,15 +188,19 @@ class BookingService(BaseService):
         """Calculate total revenue from completed bookings for an owner's items."""
         from app.models.item import Item
 
+        # Check user exists and is verified
+        user = User.query.get(owner_id)
+        if not user or not getattr(user, 'is_verified', False):
+            return 0
+
         completed_bookings = Booking.query.join(Item).filter(
-            Item.owner_id == owner_id,
-            Booking.status == 'completed'
+            Item.user_id == owner_id,
+            Booking.status == 'COMPLETED'
         ).all()
 
         return sum(booking.total_price for booking in completed_bookings)
 
     def get_booking_statistics(self, start_date=None, end_date=None):
-        """Get booking statistics for a date range."""
         query = Booking.query
 
         if start_date:
@@ -189,43 +210,18 @@ class BookingService(BaseService):
 
         bookings = query.all()
 
+        # Debug print
+        print("Booking statuses in statistics:")
+        for b in bookings:
+            print(f"Booking ID: {b.id}, Status: {b.status} ({type(b.status)})")
+
         return {
             'total_bookings': len(bookings),
-            'pending_bookings': len([b for b in bookings if b.status == 'pending']),
-            'confirmed_bookings': len([b for b in bookings if b.status == 'confirmed']),
-            'completed_bookings': len([b for b in bookings if b.status == 'completed']),
-            'cancelled_bookings': len([b for b in bookings if b.status == 'cancelled']),
-            'total_revenue': sum(b.total_price for b in bookings if b.status == 'completed')
+            'pending_bookings': len([b for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'PENDING']),
+            'confirmed_bookings': len([b for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'CONFIRMED']),
+            'completed_bookings': len([b for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'COMPLETED']),
+            'cancelled_bookings': len([b for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'CANCELLED']),
+            'pastdue_bookings': len([b for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'PASTDUE']),
+            'returned_bookings': len([b for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'RETURNED']),
+            'total_revenue': sum(b.total_price for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'COMPLETED')
         }
-
-    def get_owner_bookings(self, owner_id):
-        """Get all bookings for items owned by a specific user."""
-        from app.models.item import Item
-
-        return Booking.query.join(Item).filter(Item.owner_id == owner_id).order_by(
-            Booking.created_at.desc()
-        ).all()
-
-    def extend_booking(self, booking_id, new_end_date):
-        """Extend booking end date if possible."""
-        booking = self.get_by_id(booking_id)
-        if not booking:
-            return None
-
-        if booking.status != 'confirmed':
-            raise ValueError("Only confirmed bookings can be extended")
-
-        # Check if extension is possible
-        if not self.is_available_for_dates(booking.item_id, booking.end_date + timedelta(days=1), new_end_date):
-            raise ValueError("Item is not available for the extended period")
-
-        # Recalculate total price
-        from app.services.item_service import ItemService
-        item_service = ItemService()
-        item = item_service.get_by_id(booking.item_id)
-
-        new_duration = (new_end_date - booking.start_date).days + 1
-        booking.total_price = new_duration * item.price_per_day
-        booking.end_date = new_end_date
-
-        return self.save(booking)

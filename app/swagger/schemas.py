@@ -537,6 +537,199 @@ def get_payment_schemas():
     }
 
 
+def get_booking_schemas():
+    """Get booking-related schemas."""
+    return {
+        "Booking": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "user_id": {"type": "integer", "example": 1},
+                "item_id": {"type": "integer", "example": 2},
+                "start_date": {"type": "string", "format": "date", "example": "2024-08-01"},
+                "end_date": {"type": "string", "format": "date", "example": "2024-08-05"},
+                "total_price": {"type": "number", "example": 100.0},
+                "status": {
+                    "type": "string", 
+                    "enum": ["pending", "confirmed", "completed", "cancelled", "pastdue", "returned"], 
+                    "example": "pending"
+                },
+                "is_paid": {"type": "boolean", "example": False},
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"},
+            },
+        },
+        "BookingCreate": {
+            "type": "object",
+            "required": ["item_id", "start_date", "end_date"],
+            "properties": {
+                "item_id": {
+                    "type": "integer",
+                    "description": "ID of the item to book",
+                    "example": 2
+                },
+                "start_date": {
+                    "type": "string", 
+                    "format": "date",
+                    "description": "Booking start date (YYYY-MM-DD)",
+                    "example": "2024-08-01"
+                },
+                "end_date": {
+                    "type": "string", 
+                    "format": "date",
+                    "description": "Booking end date (YYYY-MM-DD)",
+                    "example": "2024-08-05"
+                },
+            },
+        },
+        "BookingCreateRequest": {
+            "type": "object",
+            "required": ["item_id", "start_date", "end_date"],
+            "properties": {
+                "item_id": {
+                    "type": "integer",
+                    "description": "ID of the item to book",
+                    "example": 2
+                },
+                "start_date": {
+                    "type": "string", 
+                    "format": "date",
+                    "description": "Booking start date (YYYY-MM-DD)",
+                    "example": "2024-08-01"
+                },
+                "end_date": {
+                    "type": "string", 
+                    "format": "date",
+                    "description": "Booking end date (YYYY-MM-DD)",
+                    "example": "2024-08-05"
+                },
+            },
+        },
+        "BookingOut": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "user_id": {"type": "integer", "example": 1},
+                "item_id": {"type": "integer", "example": 2},
+                "start_date": {"type": "string", "format": "date", "example": "2024-08-01"},
+                "end_date": {"type": "string", "format": "date", "example": "2024-08-05"},
+                "total_price": {"type": "number", "example": 100.0},
+                "status": {
+                    "type": "string", 
+                    "enum": ["pending", "confirmed", "completed", "cancelled", "pastdue", "returned"], 
+                    "example": "pending"
+                },
+                "is_paid": {"type": "boolean", "example": False},
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"},
+            },
+        },
+        "BookingUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "start_date": {
+                    "type": "string", 
+                    "format": "date",
+                    "description": "New booking start date (YYYY-MM-DD)",
+                    "example": "2024-08-02"
+                },
+                "end_date": {
+                    "type": "string", 
+                    "format": "date",
+                    "description": "New booking end date (YYYY-MM-DD)",
+                    "example": "2024-08-06"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["pending", "confirmed", "completed", "cancelled", "pastdue", "returned"],
+                    "description": "Booking status",
+                    "example": "confirmed"
+                },
+                "is_paid": {
+                    "type": "boolean",
+                    "description": "Payment status",
+                    "example": True
+                },
+            },
+            "example": {
+                "start_date": "2024-08-02",
+                "end_date": "2024-08-06",
+                "status": "confirmed"
+            }
+        },
+        "BookingExtendRequest": {
+            "type": "object",
+            "required": ["new_end_date"],
+            "properties": {
+                "new_end_date": {
+                    "type": "string", 
+                    "format": "date",
+                    "description": "New end date for the booking (YYYY-MM-DD)",
+                    "example": "2024-08-10"
+                },
+            },
+            "example": {
+                "new_end_date": "2024-08-10"
+            }
+        },
+        "BookingStatistics": {
+            "type": "object",
+            "properties": {
+                "total_bookings": {
+                    "type": "integer",
+                    "description": "Total number of bookings",
+                    "example": 150
+                },
+                "pending_bookings": {
+                    "type": "integer",
+                    "description": "Number of pending bookings",
+                    "example": 25
+                },
+                "confirmed_bookings": {
+                    "type": "integer",
+                    "description": "Number of confirmed bookings",
+                    "example": 80
+                },
+                "completed_bookings": {
+                    "type": "integer",
+                    "description": "Number of completed bookings",
+                    "example": 40
+                },
+                "cancelled_bookings": {
+                    "type": "integer",
+                    "description": "Number of cancelled bookings",
+                    "example": 5
+                },
+                "pastdue_bookings": {
+                    "type": "integer",
+                    "description": "Number of pastdue bookings",
+                    "example": 10
+                },
+                "returned_bookings": {
+                    "type": "integer",
+                    "description": "Number of returned bookings",
+                    "example": 10
+                },
+                "total_revenue": {
+                    "type": "number",
+                    "description": "Total revenue from completed bookings",
+                    "example": 2500.75
+                }
+            },
+            "example": {
+                "total_bookings": 150,
+                "pending_bookings": 25,
+                "confirmed_bookings": 80,
+                "completed_bookings": 40,
+                "cancelled_bookings": 5,
+                "pastdue_bookings": 10,
+                "returned_bookings": 10,
+                "total_revenue": 2500.75
+            }
+        },
+    }
+
+
 def get_all_schemas():
     """Get all OpenAPI component schemas."""
     schemas = {}
@@ -547,4 +740,5 @@ def get_all_schemas():
     schemas.update(get_review_schemas())
     schemas.update(get_response_schemas())
     schemas.update(get_payment_schemas())
+    schemas.update(get_booking_schemas())
     return schemas
