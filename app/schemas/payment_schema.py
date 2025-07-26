@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum
@@ -34,5 +34,4 @@ class PaymentOut(PaymentBase):
     id: int
     payment_date: datetime
 
-    class Config:
-        from_attributes = True 
+    model_config = dict(from_attributes=True) 

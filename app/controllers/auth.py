@@ -69,10 +69,14 @@ def signup_controller(data):
         if not email_sent:
             response_message += " (Note: Verification email could not be sent)"
 
+        # Create access token for immediate login after signup
+        access_token = create_access_token(identity=str(user.id))
+        
         return success_response(
             message=response_message,
             data={
                 'user': UserResponseSchema.model_validate(user).model_dump(),
+                'access_token': access_token,
                 'verification_email_sent': email_sent
             },
             status_code=201

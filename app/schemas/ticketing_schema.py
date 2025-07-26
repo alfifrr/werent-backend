@@ -96,9 +96,7 @@ class TicketResponse(BaseModel):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
-    class Config:
-        """Allow creation from database model objects."""
-        from_attributes = True
+    model_config = dict(from_attributes=True)
 
     @field_validator('created_at', 'updated_at', mode='before')
     @classmethod
