@@ -6,6 +6,42 @@ from datetime import datetime, date
 from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
+from enum import Enum
+
+
+class BookingStatus(str, Enum):
+    PENDING = "PENDING"
+    PAID = "PAID"
+    CANCELLED = "CANCELLED"
+    PASTDUE = "PASTDUE"
+    RETURNED = "RETURNED"
+    COMPLETED = "COMPLETED"
+    CONFIRMED = "CONFIRMED"
+
+class BookingBase(BaseModel):
+    item_id: int
+    start_date: date
+    end_date: date
+
+    @field_validator('end_date')
+    def end_date_after_start(cls, v, info):
+        start_date = info.data.get('start_date')
+        if start_date and v < start_date:
+            raise ValueError('end_date must be after start_date')
+        return v
+
+class BookingCreate(BookingBase):
+    pass
+
+class BookingOut(BookingBase):
+    id: int
+    user_id: int
+    total_price: float
+    status: BookingStatus
+    is_paid: bool
+
+    class Config:
+        from_attributes = True
 
 
 class BookingCreateSchema(BaseSchema):
@@ -77,7 +113,7 @@ class BookingStatusUpdateSchema(BaseSchema):
     @classmethod
     def validate_status(cls, v):
         """Validate status value."""
-        valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled']
+        valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'pastdue', 'returned']
         if v not in valid_statuses:
             raise ValueError(f'Status must be one of: {valid_statuses}')
         return v
@@ -139,7 +175,7 @@ class BookingSearchSchema(BaseSchema):
     def validate_status(cls, v):
         """Validate status value."""
         if v is not None:
-            valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'all']
+            valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'pastdue', 'returned', 'all']
             if v not in valid_statuses:
                 raise ValueError(f'Status must be one of: {valid_statuses}')
         return v
@@ -162,6 +198,8 @@ class BookingStatsSchema(BaseSchema):
     confirmed_bookings: int
     completed_bookings: int
     cancelled_bookings: int
+    pastdue_bookings: int
+    returned_bookings: int
     total_revenue: float
 
 
