@@ -45,14 +45,14 @@ def get_api_info():
         "description": """
 # WeRent Backend API Documentation
 
-A comprehensive camera and photography equipment rental platform backend service.
+A comprehensive equipment rental platform backend service.
 
 ## Features
 - **Authentication**: JWT-based user authentication and authorization ✅
 - **User Management**: User registration, login, and profile management ✅
-- **Gear Management**: Camera equipment catalog and inventory 🚧
-- **Rental System**: Equipment booking and rental management 🚧
-- **Review System**: User reviews and ratings 🚧
+- **Review System**: User reviews and ratings ✅
+- **Payment System**: Payment processing and management ✅
+- **Support System**: Ticketing system for customer support ✅
 - **Admin Panel**: Administrative features for managing the platform ✅
 
 ## Authentication
@@ -98,23 +98,19 @@ All API responses follow a standardized format:
 
 ## Current Implementation Status
 
-### ✅ Implemented Features
+### ✅ Fully Implemented Features
 - 🔐 **Authentication System**: Complete JWT-based auth with refresh tokens
 - 👤 **User Profile Management**: Profile updates with Base64 image support
 - 🛡️ **Admin Management**: User promotion and admin user management
 - 🏥 **Health Monitoring**: Basic and detailed health check endpoints
+- ⭐ **Review System**: User reviews and testimonials system
+- 🎫 **Ticketing System**: Complete support ticket management
+- 💳 **Payment System**: Payment processing and management
+- 📦 **Item Management**: Equipment catalog and inventory
 
-### 🚧 In Development
-- 📷 **Gear Management**: Planning phase
-- 🏪 **Rental System**: Planning phase  
-- ⭐ **Review System**: Planning phase
-
-## Project Roadmap
+## Project Status
 - ✅ **Phase 1**: Authentication & User Management (Completed)
-- 🚧 **Phase 2**: Gear Management (Planning)
-- 🚧 **Phase 3**: Rental System (Planning)
-- 🚧 **Phase 4**: Review System (Planning)
-- 🚧 **Phase 5**: Advanced Admin Features (Planning)
+- ✅ **Phase 2**: Core Features Implementation (Completed)
 """,
         "contact": {
             "name": "WeRent Development Team",
@@ -147,16 +143,8 @@ def get_tags():
             "description": "User authentication and account management",
         },
         {
-            "name": "Gear Management",
-            "description": "Camera equipment catalog and inventory (Coming Soon)",
-        },
-        {
-            "name": "Rental System",
-            "description": "Equipment booking and rental management (Coming Soon)",
-        },
-        {
             "name": "Review System",
-            "description": "User reviews and ratings (Coming Soon)",
+            "description": "User reviews and ratings system - fully implemented",
         },
         {"name": "Admin", "description": "Administrative endpoints for user management and platform administration"},
     ]
