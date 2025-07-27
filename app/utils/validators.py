@@ -155,21 +155,14 @@ def validate_base64_image(image_str: str) -> bool:
     if not image_str or not isinstance(image_str, str):
         return False
 
-    print("here")
     try:
         # Remove data URL prefix if present
         if image_str.startswith('data:image'):
             image_str = image_str.split(',', 1)[-1]
-        print("here2")
         decoded = base64.b64decode(image_str, validate=True)
-        print("here3")
         # Try to open as image
         with Image.open(io.BytesIO(decoded)) as img:
-            print("here4")
-            print(img)
             img.load()  # Will raise if not an image
-            print("here5")
         return True
     except Exception as e:
-        print("Base64 image validation error:", e)
         return False

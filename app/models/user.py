@@ -91,7 +91,7 @@ class User(db.Model):
     @classmethod
     def find_by_id(cls, user_id):
         """Find user by ID."""
-        return cls.query.get(user_id)
+        return db.session.get(cls, user_id)
 
     @classmethod
     def find_by_email(cls, email):

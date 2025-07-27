@@ -15,7 +15,7 @@ class BookingService(BaseService):
         """Initialize BookingService."""
         super().__init__(Booking)
 
-    def create_booking(self, item_id, renter_id, start_date, end_date):
+    def create_booking(self, item_id, user_id, start_date, end_date):
         """Create a new booking with validation."""
         # Check if item is available for the requested dates
         if not self.is_available_for_dates(item_id, start_date, end_date):
@@ -34,7 +34,7 @@ class BookingService(BaseService):
 
         booking = Booking()
         booking.item_id = item_id
-        booking.renter_id = renter_id
+        booking.user_id = user_id
         booking.start_date = start_date
         booking.end_date = end_date
         booking.total_price = total_price
@@ -120,9 +120,9 @@ class BookingService(BaseService):
 
         return self.save(booking)
 
-    def get_bookings_by_renter(self, renter_id):
+    def get_bookings_by_renter(self, user_id):
         """Get all bookings made by a specific renter."""
-        return Booking.query.filter_by(renter_id=renter_id).order_by(Booking.created_at.desc()).all()
+        return Booking.query.filter_by(user_id=user_id).order_by(Booking.created_at.desc()).all()
 
     def get_bookings_by_item(self, item_id):
         """Get all bookings for a specific item."""
@@ -156,7 +156,7 @@ class BookingService(BaseService):
 
     def get_booking_history(self, user_id, limit=20):
         """Get booking history for a user."""
-        return Booking.query.filter_by(renter_id=user_id).order_by(
+        return Booking.query.filter_by(user_id=user_id).order_by(
             Booking.created_at.desc()
         ).limit(limit).all()
 

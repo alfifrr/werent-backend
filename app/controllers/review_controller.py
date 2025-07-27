@@ -38,6 +38,8 @@ def create_review_controller(item_id, json_data):
             images=schema.images if hasattr(schema, 'images') else None
         )
         return success_response('Review created successfully', review.to_dict(), status_code=201)
+    except ValueError as e:
+        return error_response(str(e), status_code=400)
     except Exception as e:
         return internal_error_response(str(e))
 
@@ -48,7 +50,7 @@ def update_review_controller(review_id, json_data):
         return error_response(f'Invalid input: {str(e)}', status_code=422)
     try:
         user_id = get_jwt_identity()
-        review = Review.query.get(review_id)
+        review = db.session.get(Review, review_id)
         if not review:
             return not_found_response('Review')
         if str(review.user_id) != str(user_id):
@@ -69,7 +71,7 @@ def update_review_controller(review_id, json_data):
 def delete_review_controller(review_id):
     try:
         user_id = get_jwt_identity()
-        review = Review.query.get(review_id)
+        review = db.session.get(Review, review_id)
         if not review:
             return not_found_response('Review')
         # both in string to compare

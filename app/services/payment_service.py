@@ -18,7 +18,7 @@ class PaymentService:
 
     @staticmethod
     def get_payment(payment_id: int) -> Optional[Payment]:
-        return Payment.query.get(payment_id)
+        return db.session.get(Payment, payment_id)
 
     @staticmethod
     def get_all_payments() -> List[Payment]:
@@ -26,7 +26,7 @@ class PaymentService:
 
     @staticmethod
     def update_payment(payment_id: int, **kwargs) -> Optional[Payment]:
-        payment = Payment.query.get(payment_id)
+        payment = db.session.get(Payment, payment_id)
         if not payment:
             return None
         for key, value in kwargs.items():
@@ -37,7 +37,7 @@ class PaymentService:
 
     @staticmethod
     def delete_payment(payment_id: int) -> bool:
-        payment = Payment.query.get(payment_id)
+        payment = db.session.get(Payment, payment_id)
         if not payment:
             return False
         db.session.delete(payment)
