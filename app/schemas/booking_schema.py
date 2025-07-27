@@ -4,7 +4,7 @@ Booking schemas for request/response validation.
 
 from datetime import datetime, date
 from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
 from enum import Enum
 
@@ -40,8 +40,8 @@ class BookingOut(BookingBase):
     status: BookingStatus
     is_paid: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 
 class BookingCreateSchema(BaseSchema):

@@ -75,36 +75,36 @@ def update_item_controller(item_id, json_data):
         schema = ItemUpdateSchema(**json_data)
     except Exception as e:
         return error_response(f'Invalid input: {str(e)}', status_code=422)
-    # Validate image_base64 if present
-    image_base64 = getattr(schema, 'image_base64', None)
-    if image_base64 is not None:
-        if not validate_base64_image(image_base64):
-            return error_response('Invalid image: not a valid base64-encoded image', status_code=400)
+
     try:
         item = db.session.get(Item, item_id)
         if not item:
             return not_found_response('Item')
         # Update item fields except image_base64
         for field, value in schema.model_dump(exclude_unset=True).items():
-            if value is not None and field not in ['image_base64', 'user_id']:
+            if value is not None and field not in ['images', 'user_id']:
                 setattr(item, field, value)
         db.session.commit()
         # Handle multiple images if provided
         images = getattr(schema, 'images', None)
         if images:
-            # Remove all existing images for this item
-            existing_images = Image.find_by_item_id(item.id)
-            for img_obj in existing_images:
-                img_obj.delete()
-            # Add new images
+            # Validate all images before DB ops
             for img in images:
                 if not validate_base64_image(img):
                     return error_response('Invalid image in images array: not a valid base64-encoded image', status_code=400)
-                # Store with data URL prefix if missing
-                if not img.startswith('data:image'):
-                    img = f'data:image/jpeg;base64,{img}'
-                image = Image(image_base64=img, item_id=item.id)
-                image.save()
+            else:
+                # Only proceed if all images are valid
+                # Remove all existing images for this item
+                existing_images = Image.find_by_item_id(item.id)
+                for img_obj in existing_images:
+                    img_obj.delete()
+                # Add new images
+                for img in images:
+                    # Store with data URL prefix if missing
+                    if not img.startswith('data:image'):
+                        img = f'data:image/jpeg;base64,{img}'
+                    image = Image(image_base64=img, item_id=item.id)
+                    image.save()
 
         return success_response('Item updated successfully', item.to_dict())
     except Exception as e:
