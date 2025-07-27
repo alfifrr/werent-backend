@@ -28,7 +28,6 @@ class User(db.Model):
         nullable=False,
         default=lambda: str(uuid_lib.uuid4()),
     )
-    profile_image = db.Column(db.Text, nullable=True)  # Base64 encoded image
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     updated_at = db.Column(
         db.DateTime, default=datetime.now, onupdate=datetime.now, nullable=False
@@ -74,7 +73,6 @@ class User(db.Model):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "phone_number": self.phone_number,
-            "profile_image": self.profile_image,
             "is_admin": self.is_admin,
             "is_verified": self.is_verified,
             "is_active": self.is_active,
@@ -91,7 +89,7 @@ class User(db.Model):
     @classmethod
     def find_by_id(cls, user_id):
         """Find user by ID."""
-        return db.session.get(cls, user_id)
+        return cls.query.get(user_id)
 
     @classmethod
     def find_by_email(cls, email):

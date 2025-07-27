@@ -4,7 +4,7 @@ Placeholder endpoints for gear, rentals, reviews, and admin functionality.
 """
 
 from flask_restx import Resource
-from app.swagger import gear_ns, rental_ns, review_ns
+from app.swagger import gear_ns, rental_ns, review_ns, admin_ns
 
 
 def register_future_routes(api):
@@ -212,6 +212,60 @@ def register_future_routes(api):
                 'error_code': 'NOT_IMPLEMENTED'
             }, 501
 
-    # Admin Routes - Implemented (see admin_routes.py)
-    # The admin functionality has been implemented and documented in admin_routes.py
-    # These placeholder routes have been removed to avoid conflicts with the actual implementation
+    # Admin Routes (Coming Soon)
+    @admin_ns.route('/dashboard')
+    class AdminDashboardResource(Resource):
+        @admin_ns.doc(
+            'admin_dashboard',
+            description='Admin dashboard statistics (Coming Soon)',
+            security='JWT',
+            responses={
+                200: 'Dashboard statistics',
+                501: 'Not implemented yet'
+            }
+        )
+        def get(self):
+            """Get admin dashboard statistics."""
+            return {
+                'success': False,
+                'error': 'Admin endpoints coming soon in Phase 5',
+                'error_code': 'NOT_IMPLEMENTED'
+            }, 501
+
+    @admin_ns.route('/users')
+    class AdminUsersResource(Resource):
+        @admin_ns.doc(
+            'admin_list_users',
+            description='List all users (Admin only, Coming Soon)',
+            security='JWT',
+            responses={
+                200: 'List of users',
+                501: 'Not implemented yet'
+            }
+        )
+        def get(self):
+            """List all users (Admin only)."""
+            return {
+                'success': False,
+                'error': 'Admin endpoints coming soon in Phase 5',
+                'error_code': 'NOT_IMPLEMENTED'
+            }, 501
+
+    @admin_ns.route('/users/<int:user_id>/toggle')
+    class AdminUserToggleResource(Resource):
+        @admin_ns.doc(
+            'admin_toggle_user',
+            description='Activate/deactivate user (Admin only, Coming Soon)',
+            security='JWT',
+            responses={
+                200: 'User status updated',
+                501: 'Not implemented yet'
+            }
+        )
+        def post(self, user_id):
+            """Activate/deactivate user (Admin only)."""
+            return {
+                'success': False,
+                'error': 'Admin endpoints coming soon in Phase 5',
+                'error_code': 'NOT_IMPLEMENTED'
+            }, 501

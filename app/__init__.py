@@ -10,11 +10,7 @@ from flask import Flask
 if os.environ.get('FLASK_ENV') != 'production':
     try:
         from dotenv import load_dotenv
-        # Load .env.local first (if exists), then .env
-        load_dotenv('.env.local', override=True)
-        # Override database URL for local testing to avoid PostgreSQL connection issues
-        os.environ['DATABASE_URL'] = 'sqlite:///werent-email-test.db'
-        load_dotenv('.env')
+        load_dotenv()
     except ImportError:
         pass  # python-dotenv not installed, skip
 
@@ -100,7 +96,7 @@ def register_commands(app):
     
     @app.cli.command()
     def create_admin():
-        """Create an admin user. Admin status changes are handled via CLI/database operations."""
+        """Create an admin user."""
         from app.models import User
         
         email = input('Enter admin email: ')

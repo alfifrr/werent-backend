@@ -4,45 +4,8 @@ Booking schemas for request/response validation.
 
 from datetime import datetime, date
 from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
-from enum import Enum
-
-
-class BookingStatus(str, Enum):
-    PENDING = "PENDING"
-    PAID = "PAID"
-    CANCELLED = "CANCELLED"
-    PASTDUE = "PASTDUE"
-    RETURNED = "RETURNED"
-    COMPLETED = "COMPLETED"
-    CONFIRMED = "CONFIRMED"
-
-class BookingBase(BaseModel):
-    item_id: int
-    start_date: date
-    end_date: date
-    quantity: int = Field(default=1, ge=1, le=10, description="Number of items to book (1-10)")
-
-    @field_validator('end_date')
-    def end_date_after_start(cls, v, info):
-        start_date = info.data.get('start_date')
-        if start_date and v < start_date:
-            raise ValueError('end_date must be after start_date')
-        return v
-
-class BookingCreate(BookingBase):
-    pass
-
-class BookingOut(BookingBase):
-    id: int
-    user_id: int
-    total_price: float
-    status: BookingStatus
-    is_paid: bool
-
-    model_config = ConfigDict(from_attributes=True)
-
 
 
 class BookingCreateSchema(BaseSchema):
@@ -51,7 +14,6 @@ class BookingCreateSchema(BaseSchema):
     item_id: int = Field(..., description="ID of the item to book")
     start_date: date = Field(..., description="Booking start date")
     end_date: date = Field(..., description="Booking end date")
-    quantity: int = Field(default=1, ge=1, le=10, description="Number of items to book (1-10)")
 
     @field_validator('start_date')
     @classmethod
@@ -115,7 +77,7 @@ class BookingStatusUpdateSchema(BaseSchema):
     @classmethod
     def validate_status(cls, v):
         """Validate status value."""
-        valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'pastdue', 'returned']
+        valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled']
         if v not in valid_statuses:
             raise ValueError(f'Status must be one of: {valid_statuses}')
         return v
@@ -144,7 +106,7 @@ class BookingResponseSchema(BaseSchema, TimestampMixin):
     status: str
     total_price: float
     item_id: int
-    user_id: int
+    renter_id: int
     duration_days: Optional[int] = None
 
 
@@ -170,14 +132,14 @@ class BookingSearchSchema(BaseSchema):
     start_date_from: Optional[date] = Field(None, description="Filter bookings starting from this date")
     start_date_to: Optional[date] = Field(None, description="Filter bookings starting before this date")
     item_id: Optional[int] = Field(None, description="Filter by item ID")
-    user_id: Optional[int] = Field(None, description="Filter by user ID")
+    renter_id: Optional[int] = Field(None, description="Filter by renter ID")
 
     @field_validator('status')
     @classmethod
     def validate_status(cls, v):
         """Validate status value."""
         if v is not None:
-            valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'pastdue', 'returned', 'all']
+            valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'all']
             if v not in valid_statuses:
                 raise ValueError(f'Status must be one of: {valid_statuses}')
         return v
@@ -200,8 +162,6 @@ class BookingStatsSchema(BaseSchema):
     confirmed_bookings: int
     completed_bookings: int
     cancelled_bookings: int
-    pastdue_bookings: int
-    returned_bookings: int
     total_revenue: float
 
 

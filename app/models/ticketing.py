@@ -67,7 +67,7 @@ class Ticketing(db.Model):
     @classmethod
     def find_by_id(cls, ticket_id):
         """Find ticket by ID."""
-        return db.session.get(cls, ticket_id)
+        return cls.query.get(ticket_id)
 
     @classmethod
     def find_by_user_id(cls, user_id):

@@ -1,8 +1,8 @@
-"""create initial schema
+"""add review_id to image and allow item_id to be nullable
 
-Revision ID: 04b0fc975bd9
+Revision ID: a082c8c16a75
 Revises: 
-Create Date: 2025-07-25 03:35:50.954671
+Create Date: 2025-07-24 16:32:06.716917
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '04b0fc975bd9'
+revision = 'a082c8c16a75'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -94,7 +94,7 @@ def upgrade():
     )
     op.create_table('images',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('image_base64', sa.Text(), nullable=False),
+    sa.Column('url', sa.String(length=500), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('item_id', sa.Integer(), nullable=True),
     sa.Column('review_id', sa.Integer(), nullable=True),

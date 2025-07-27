@@ -35,8 +35,6 @@ The WeRent backend features a comprehensive API documentation system built with 
 - **Interactive Testing**: Swagger UI allows live API testing with authentication
 - **Multiple Formats**: Swagger UI, ReDoc, JSON spec, and Postman collection
 - **Comprehensive Models**: Request/response schemas with validation rules (including reviews and images)
-  - `Item` schemas now use an `images` field which is a list of image objects (with id, url, etc.), not just URLs or base64 strings. Requests accept `images` as a list of base64 strings or data URLs; responses return full image objects.
-  - For backward compatibility, `image_base64` may be present but is deprecated.
 - **Security Documentation**: JWT authentication setup and usage (reviews require JWT)
 - **Error Handling**: Standardized error responses and status codes
 - **Review & Image Endpoints**: Fully documented in Swagger UI (see /items/{item_id}/reviews, /reviews/{review_id}, and image upload endpoints)

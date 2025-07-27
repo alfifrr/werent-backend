@@ -21,7 +21,7 @@ from app.utils import (
     sanitize_string, success_response, error_response, validation_error_response,
     not_found_response, unauthorized_response, internal_error_response
 )
-from app.controllers.auth import signup_controller, login_controller, get_profile_controller, update_profile_controller, refresh_controller, verify_email_controller, resend_verification_controller
+from app.controllers.auth import signup_controller, login_controller, get_profile_controller, update_profile_controller, refresh_controller
 
 # Create authentication blueprint
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -78,23 +78,4 @@ def refresh():
     """
     current_user_id = int(get_jwt_identity())
     return refresh_controller(current_user_id)
-
-
-@auth_bp.route('/verify-email/<uuid>', methods=['GET'])
-def verify_email(uuid):
-    """
-    Email verification endpoint using UUID.
-    Users click the verification link in their email to verify their account.
-    """
-    return verify_email_controller(uuid)
-
-
-@auth_bp.route('/resend-verification', methods=['POST'])
-@jwt_required()
-def resend_verification():
-    """
-    Resend verification email endpoint.
-    Allows authenticated users to request a new verification email for their own account.
-    """
-    return resend_verification_controller()
 

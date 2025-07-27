@@ -4,12 +4,8 @@ Provides functions to validate and sanitize various types of input data.
 """
 
 import re
-import base64
-import io
 from typing import Optional, Tuple
-from PIL import Image, ImageFile
 
-ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def validate_email(email: str) -> bool:
     """
@@ -137,32 +133,3 @@ def sanitize_string(value: str, max_length: int = None) -> str:
         sanitized = sanitized[:max_length]
 
     return sanitized
-
-
-def validate_base64_image(image_str: str) -> bool:
-    """
-    Validate if a string is a valid base64-encoded image (checks both base64 and image validity).
-
-    Args:
-        image_str (str): Base64 string to validate
-
-    Returns:
-        bool: True if valid base64 image, False otherwise
-    """
-    if Image is None:
-        return False
-
-    if not image_str or not isinstance(image_str, str):
-        return False
-
-    try:
-        # Remove data URL prefix if present
-        if image_str.startswith('data:image'):
-            image_str = image_str.split(',', 1)[-1]
-        decoded = base64.b64decode(image_str, validate=True)
-        # Try to open as image
-        with Image.open(io.BytesIO(decoded)) as img:
-            img.load()  # Will raise if not an image
-        return True
-    except Exception as e:
-        return False
