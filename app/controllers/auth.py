@@ -113,7 +113,7 @@ def login_controller(data):
         #         403
         #     )
 
-        # Create access and refresh tokens
+        # Create access and refresh tokens with string identity for Flask-JWT-Extended compatibility
         access_token = create_access_token(identity=str(user.id))
         refresh_token = create_refresh_token(identity=str(user.id))
 
@@ -200,6 +200,7 @@ def refresh_controller(current_user_id):
             return unauthorized_response("Account is deactivated")
 
         # Create new access token
+        # Create new access token with string identity for Flask-JWT-Extended compatibility
         access_token = create_access_token(identity=str(user.id))
 
         return success_response(

@@ -3,6 +3,7 @@ from pydantic import ValidationError
 from app.models import Booking, User, Item
 from app.extensions import db
 from app.services.booking_service import BookingService
+from app.services.user_service import UserService
 from app.schemas.booking_schema import BookingCreate, BookingOut
 from app.utils import (
     success_response,
@@ -10,10 +11,20 @@ from app.utils import (
     validation_error_response,
     not_found_response,
     unauthorized_response,
-    internal_error_response,
+    internal_error_response
 )
 from typing import List, Optional
 from datetime import date, datetime
+
+
+def _get_user_id_from_jwt(jwt_identity):
+    """Helper function to ensure JWT identity is an integer user ID."""
+    if isinstance(jwt_identity, int):
+        return jwt_identity
+    try:
+        return int(jwt_identity)
+    except (ValueError, TypeError):
+        return None
 
 
 def _format_validation_errors(e: ValidationError):
@@ -39,6 +50,11 @@ def create_booking_controller(data, current_user_id):
         if not data:
             return error_response("JSON payload required", 400)
 
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
         # Validate using BookingCreate schema
         try:
             booking_data = BookingCreate(**data)
@@ -46,15 +62,26 @@ def create_booking_controller(data, current_user_id):
             return _format_validation_errors(e)
 
         # Create booking using service
-        booking = BookingService.create_booking(
-            user_id=current_user_id,
-            item_id=booking_data.item_id,
-            start_date=booking_data.start_date,
-            end_date=booking_data.end_date
-        )
-
-        if not booking:
-            return error_response("Booking creation failed. Check if item is available, exists, and user is verified.", 400)
+        try:
+            booking = BookingService.create_booking(
+                user_id=current_user_id,
+                item_id=booking_data.item_id,
+                start_date=booking_data.start_date,
+                end_date=booking_data.end_date
+            )
+        except ValueError as ve:
+            error_msg = str(ve)
+            if "Email verification required" in error_msg:
+                return error_response(
+                    "Email verification is required to create bookings. Please check your email for a verification link.",
+                    403
+                )
+            elif "not available" in error_msg:
+                return error_response("The selected item is not available for the chosen dates.", 409)
+            elif "not found" in error_msg:
+                return not_found_response("Item not found")
+            else:
+                return error_response(error_msg, 400)
 
         return success_response(
             message="Booking created successfully",
@@ -68,33 +95,61 @@ def create_booking_controller(data, current_user_id):
 
 
 def get_all_bookings_controller(current_user_id):
-    """Handle getting all bookings (admin only)."""
+    """Controller to get all bookings (admin only)."""
     try:
-        # Check if user is admin
-        if not _is_admin(current_user_id):
-            return unauthorized_response("Admin access required")
-
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        
+        user_service = UserService()
+        user = user_service.get_by_id(current_user_id)
+        
+        if not user or not user.is_admin:
+            return error_response(
+                message="Admin access required",
+                error_code="INSUFFICIENT_PRIVILEGES",
+                status_code=403
+            )
+        
         bookings = BookingService.get_all_bookings()
-        booking_data = [BookingOut.from_orm(b).dict() for b in bookings]
-
+        
         return success_response(
-            message="All bookings retrieved successfully",
-            data=booking_data
+            data=[booking.to_dict() for booking in bookings],
+            message="All bookings retrieved successfully"
         )
-
     except Exception as e:
-        return internal_error_response()
+        return internal_error_response(
+            message="Failed to retrieve bookings"
+        )
 
 
 def get_booking_controller(booking_id, current_user_id):
     """Handle getting a specific booking."""
     try:
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
         # Check if user is admin for access control
         user_id_for_check = current_user_id if not _is_admin(current_user_id) else None
-        booking = BookingService.get_booking(booking_id, user_id_for_check)
+        
+        try:
+            booking = BookingService.get_booking(booking_id, user_id_for_check)
+        except ValueError as ve:
+            error_msg = str(ve)
+            if "Email verification required" in error_msg:
+                return error_response(
+                    "Email verification is required to access bookings. Please check your email for a verification link.",
+                    403
+                )
+            elif "Access denied" in error_msg:
+                return unauthorized_response("Access denied: You can only view your own bookings")
+            elif "User not found" in error_msg:
+                return unauthorized_response("Invalid user authentication")
+            else:
+                return error_response(error_msg, 400)
         
         if not booking:
-            return not_found_response("Booking not found or access denied")
+            return not_found_response("Booking not found")
 
         return success_response(
             message="Booking retrieved successfully",
@@ -108,11 +163,29 @@ def get_booking_controller(booking_id, current_user_id):
 def get_bookings_by_user_controller(user_id, current_user_id):
     """Handle getting bookings by user ID."""
     try:
+        # Convert JWT identity (string) to int for comparison with route parameter
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+        
         # Check if current user is requesting their own bookings or is admin
         if user_id != current_user_id and not _is_admin(current_user_id):
-            return unauthorized_response("Access denied")
+            return unauthorized_response("Access denied: You can only view your own bookings")
 
-        bookings = BookingService.get_user_bookings(user_id)
+        try:
+            bookings = BookingService.get_user_bookings(user_id)
+        except ValueError as ve:
+            error_msg = str(ve)
+            if "Email verification required" in error_msg:
+                return error_response(
+                    "Email verification is required to access bookings. Please check your email for a verification link.",
+                    403
+                )
+            elif "User not found" in error_msg:
+                return not_found_response("User not found")
+            else:
+                return error_response(error_msg, 400)
+
         booking_data = [BookingOut.from_orm(b).dict() for b in bookings]
 
         return success_response(
@@ -168,21 +241,41 @@ def check_availability_controller(item_id, start_date, end_date):
         except ValueError:
             return error_response("Invalid date format, use YYYY-MM-DD", 400)
 
-        available = BookingService.check_availability(item_id, start, end)
-        return success_response(
-            message="Availability check completed",
-            data={"available": available}
-        )
+        try:
+            available = BookingService.check_availability(item_id, start, end)
+            return success_response(
+                message="Availability check completed",
+                data={"available": available}
+            )
+        except Exception as service_error:
+            print(f"Service error: {service_error}")
+            return error_response("Failed to check availability", 500)
 
     except Exception as e:
+        print(f"Availability check error: {e}")  # Debug log
         return internal_error_response()
 
 
-def get_bookings_by_status_controller(status):
+def get_bookings_by_status_controller(status, current_user_id):
     """Handle getting bookings by status."""
     try:
-        booking_service = BookingService()
-        bookings = booking_service.get_bookings_by_status(status)
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
+        # Check if user is admin (status filtering is typically admin-only)
+        if not _is_admin(current_user_id):
+            return unauthorized_response("Admin access required to filter bookings by status")
+
+        try:
+            # Convert string status to enum
+            from app.models.booking import BookingStatus
+            status_enum = BookingStatus(status.upper())
+        except ValueError:
+            return error_response(f"Invalid status '{status}'. Valid statuses are: {[s.value for s in BookingStatus]}", 400)
+
+        bookings = BookingService.get_bookings_by_status(status_enum)
         booking_data = [BookingOut.from_orm(b).dict() for b in bookings]
 
         return success_response(
@@ -197,8 +290,26 @@ def get_bookings_by_status_controller(status):
 def get_booking_history_controller(current_user_id, limit=20):
     """Handle getting booking history for current user."""
     try:
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
         booking_service = BookingService()
-        bookings = booking_service.get_booking_history(current_user_id, limit)
+        try:
+            bookings = booking_service.get_booking_history(current_user_id, limit)
+        except ValueError as ve:
+            error_msg = str(ve)
+            if "Email verification required" in error_msg:
+                return error_response(
+                    "Email verification is required to access booking history. Please check your email for a verification link.",
+                    403
+                )
+            elif "User not found" in error_msg:
+                return unauthorized_response("Invalid user authentication")
+            else:
+                return error_response(error_msg, 400)
+
         booking_data = [BookingOut.from_orm(b).dict() for b in bookings]
 
         return success_response(
@@ -265,9 +376,18 @@ def get_revenue_controller(current_user_id):
         return internal_error_response()
 
 
-def get_booking_statistics_controller(start_date_str=None, end_date_str=None):
+def get_booking_statistics_controller(start_date_str, end_date_str, current_user_id):
     """Handle getting booking statistics."""
     try:
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
+        # Check if user is admin (statistics are typically admin-only)
+        if not _is_admin(current_user_id):
+            return unauthorized_response("Admin access required to view booking statistics")
+
         start_date = None
         end_date = None
 
@@ -292,4 +412,95 @@ def get_booking_statistics_controller(start_date_str=None, end_date_str=None):
         )
 
     except Exception as e:
-        return internal_error_response() 
+        return internal_error_response()
+
+
+def get_bookings_by_item_controller(item_id, current_user_id):
+    """Handle getting bookings for a specific item."""
+    try:
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
+        # Check if user is admin (item booking history is typically admin-only)
+        if not _is_admin(current_user_id):
+            return unauthorized_response("Admin access required to view item booking history")
+
+        bookings = BookingService.get_bookings_by_item(item_id)
+        booking_data = [BookingOut.from_orm(b).dict() for b in bookings]
+
+        return success_response(
+            message=f"Bookings for item {item_id} retrieved successfully",
+            data=booking_data
+        )
+
+    except Exception as e:
+        return internal_error_response()
+
+
+def get_booking_duration_controller(booking_id, current_user_id):
+    """Handle getting booking duration."""
+    try:
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
+        # Check if user is admin for access control
+        user_id_for_check = current_user_id if not _is_admin(current_user_id) else None
+        
+        try:
+            booking = BookingService.get_booking(booking_id, user_id_for_check)
+        except ValueError as ve:
+            error_msg = str(ve)
+            if "Email verification required" in error_msg:
+                return error_response(
+                    "Email verification is required to access bookings. Please check your email for a verification link.",
+                    403
+                )
+            elif "Access denied" in error_msg:
+                return unauthorized_response("Access denied: You can only view your own bookings")
+            elif "User not found" in error_msg:
+                return unauthorized_response("Invalid user authentication")
+            else:
+                return error_response(error_msg, 400)
+        
+        if not booking:
+            return not_found_response("Booking not found")
+
+        booking_service = BookingService()
+        duration = booking_service.calculate_duration_days(booking_id)
+
+        return success_response(
+            message="Booking duration calculated successfully",
+            data={"duration_days": duration}
+        )
+
+    except Exception as e:
+        return internal_error_response()
+
+
+def get_revenue_controller(current_user_id, owner_id=None):
+    """Handle getting revenue data."""
+    try:
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
+        # Check if user is admin (revenue data is typically admin-only)
+        if not _is_admin(current_user_id):
+            return unauthorized_response("Admin access required to view revenue data")
+
+        target_owner_id = owner_id or current_user_id
+        booking_service = BookingService()
+        revenue = booking_service.calculate_total_revenue(target_owner_id)
+
+        return success_response(
+            message="Revenue data retrieved successfully",
+            data={"total_revenue": revenue, "owner_id": target_owner_id}
+        )
+
+    except Exception as e:
+        return internal_error_response()

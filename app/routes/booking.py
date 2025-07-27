@@ -63,7 +63,8 @@ def update_booking(booking_id):
 # Get bookings by status
 @booking_bp.route('/status/<status>', methods=['GET'])
 def get_bookings_by_status(status):
-    return get_bookings_by_status_controller(status)
+    current_user_id = get_jwt_identity()
+    return get_bookings_by_status_controller(status, current_user_id)
 
 # Get booking history for current user
 @booking_bp.route('/history', methods=['GET'])
@@ -93,6 +94,7 @@ def get_revenue():
 # Get booking statistics
 @booking_bp.route('/statistics', methods=['GET'])
 def get_booking_statistics():
+    current_user_id = get_jwt_identity()
     start_date_str = request.args.get('start_date')
     end_date_str = request.args.get('end_date')
-    return get_booking_statistics_controller(start_date_str, end_date_str)
+    return get_booking_statistics_controller(start_date_str, end_date_str, current_user_id)
