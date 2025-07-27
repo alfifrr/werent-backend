@@ -37,13 +37,14 @@ class Review(db.Model):
             'item_id': self.item_id,
             'review_message': self.review_message,
             'rating': self.rating,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'images': [image.to_dict() for image in self.images] if self.images else []
         }
 
     @classmethod
     def find_by_id(cls, review_id):
         """Find review by ID."""
-        return cls.query.get(review_id)
+        return db.session.get(cls, review_id)
 
     @classmethod
     def find_by_user_id(cls, user_id):

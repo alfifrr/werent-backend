@@ -13,7 +13,7 @@ class Image(db.Model):
     __tablename__ = 'images'
 
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String(500), nullable=False)
+    image_base64 = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
     # Foreign keys
@@ -32,7 +32,7 @@ class Image(db.Model):
         """Convert image object to dictionary for JSON serialization."""
         return {
             'id': self.id,
-            'url': self.url,
+            'image_base64': self.image_base64,
             'item_id': self.item_id,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
@@ -40,7 +40,7 @@ class Image(db.Model):
     @classmethod
     def find_by_id(cls, image_id):
         """Find image by ID."""
-        return cls.query.get(image_id)
+        return db.session.get(cls, image_id)
 
     @classmethod
     def find_by_item_id(cls, item_id):

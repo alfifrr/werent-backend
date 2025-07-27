@@ -7,6 +7,14 @@ from app import db
 
 review_service = ReviewService()
 
+def list_testimonials_controller():
+    try:
+        reviews = review_service.get_all_reviews()
+        data = [review.to_dict() for review in reviews]
+        return success_response('Testimonials retrieved successfully', data)
+    except Exception as e:
+        return internal_error_response(str(e))
+
 def list_reviews_controller(item_id):
     try:
         reviews = review_service.get_reviews_by_item(item_id)
@@ -26,9 +34,12 @@ def create_review_controller(item_id, json_data):
             item_id=item_id,
             user_id=user_id,
             rating=schema.rating,
-            comment=schema.review_message
+            comment=schema.review_message,
+            images=schema.images if hasattr(schema, 'images') else None
         )
         return success_response('Review created successfully', review.to_dict(), status_code=201)
+    except ValueError as e:
+        return error_response(str(e), status_code=400)
     except Exception as e:
         return internal_error_response(str(e))
 
@@ -39,16 +50,18 @@ def update_review_controller(review_id, json_data):
         return error_response(f'Invalid input: {str(e)}', status_code=422)
     try:
         user_id = get_jwt_identity()
-        review = Review.query.get(review_id)
+        review = db.session.get(Review, review_id)
         if not review:
             return not_found_response('Review')
-        if review.user_id != user_id:
+        if str(review.user_id) != str(user_id):
             return error_response('You can only update your own reviews', status_code=403)
+
         updated_review = review_service.update_review(
             review_id=review_id,
             user_id=user_id,
             rating=schema.rating,
-            comment=schema.review_message
+            comment=schema.review_message,
+            images=schema.images if hasattr(schema, 'images') else None
         )
         return success_response('Review updated successfully', updated_review.to_dict())
     except Exception as e:
@@ -58,10 +71,11 @@ def update_review_controller(review_id, json_data):
 def delete_review_controller(review_id):
     try:
         user_id = get_jwt_identity()
-        review = Review.query.get(review_id)
+        review = db.session.get(Review, review_id)
         if not review:
             return not_found_response('Review')
-        if review.user_id != user_id:
+        # both in string to compare
+        if str(review.user_id) != str(user_id):
             return error_response('You can only delete your own reviews', status_code=403)
         db.session.delete(review)
         db.session.commit()
