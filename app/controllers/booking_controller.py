@@ -67,7 +67,8 @@ def create_booking_controller(data, current_user_id):
                 user_id=current_user_id,
                 item_id=booking_data.item_id,
                 start_date=booking_data.start_date,
-                end_date=booking_data.end_date
+                end_date=booking_data.end_date,
+                quantity=booking_data.quantity
             )
         except ValueError as ve:
             error_msg = str(ve)
@@ -229,11 +230,21 @@ def update_booking_controller(booking_id, data, current_user_id):
         return internal_error_response()
 
 
-def check_availability_controller(item_id, start_date, end_date):
+def check_availability_controller(item_id, start_date, end_date, quantity=None):
     """Handle comprehensive availability check with quantity information."""
     try:
         if not (item_id and start_date and end_date):
             return error_response("item_id, start_date, and end_date are required", 400)
+
+        # Default quantity to 1 if not provided
+        requested_quantity = 1
+        if quantity is not None:
+            try:
+                requested_quantity = int(quantity)
+                if requested_quantity < 1 or requested_quantity > 10:
+                    return error_response("Quantity must be between 1 and 10", 400)
+            except (ValueError, TypeError):
+                return error_response("Invalid quantity format", 400)
 
         try:
             start = date.fromisoformat(start_date)
@@ -248,17 +259,18 @@ def check_availability_controller(item_id, start_date, end_date):
             # Expire old PENDING bookings before checking availability
             Booking.expire_pending_bookings()
             
-            availability = BookingService.check_availability(item_id, start, end)
+            availability = BookingService.check_availability(item_id, start, end, requested_quantity)
             
             # Remove sensitive information like specific booking IDs for external API
             response_data = {
                 'available': availability['available'],
                 'available_quantity': availability['available_quantity'],
                 'total_quantity': availability['total_quantity'],
+                'requested_quantity': availability['requested_quantity'],
+                'can_fulfill': availability['can_fulfill'],
                 'booked_quantity': availability.get('booked_quantity', 0),
-                'confirmed_bookings': availability.get('confirmed_bookings', 0),
-                'pending_bookings': availability.get('pending_bookings', 0),
-                'pending_expiring_soon': availability.get('pending_expiring_soon', 0),
+                'confirmed_reserved': availability.get('confirmed_reserved', 0),
+                'pending_reserved': availability.get('pending_reserved', 0),
                 'date_range': {
                     'start_date': start_date,
                     'end_date': end_date

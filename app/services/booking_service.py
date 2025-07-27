@@ -14,28 +14,35 @@ class BookingService(BaseService):
         super().__init__(Booking)
 
     @staticmethod
-    def check_availability(item_id: int, start_date: date, end_date: date) -> dict:
+    def check_availability(item_id: int, start_date: date, end_date: date, requested_quantity: int = 1) -> dict:
         """
         Check item availability using the comprehensive booking model method.
         
+        Args:
+            item_id: ID of the item to check
+            start_date: Start date for booking
+            end_date: End date for booking
+            requested_quantity: Number of items requested (default: 1)
+            
         Returns:
             dict: Detailed availability information
         """
         try:
-            return Booking.check_item_availability(item_id, start_date, end_date)
+            return Booking.check_item_availability(item_id, start_date, end_date, requested_quantity)
         except Exception as e:
             print(f"BookingService.check_availability error: {e}")
             # Return unavailable if there's an error to prevent double bookings
             return {
                 'available': False,
                 'available_quantity': 0,
-                'conflicting_bookings': [],
                 'total_quantity': 0,
+                'requested_quantity': requested_quantity,
+                'can_fulfill': False,
                 'error': str(e)
             }
 
     @staticmethod
-    def create_booking(user_id: int, item_id: int, start_date: date, end_date: date) -> Optional[Booking]:
+    def create_booking(user_id: int, item_id: int, start_date: date, end_date: date, quantity: int = 1) -> Optional[Booking]:
         # Check user exists and is verified
         user = User.query.get(user_id)
         if not user:
@@ -43,18 +50,21 @@ class BookingService(BaseService):
         if not getattr(user, 'is_verified', False):
             raise ValueError("Email verification is required to create bookings. Please check your email for a verification link.")
         
+        # Validate quantity
+        if quantity < 1 or quantity > 10:
+            raise ValueError("Quantity must be between 1 and 10")
+        
         # Check availability using the comprehensive method
-        availability = BookingService.check_availability(item_id, start_date, end_date)
-        if not availability['available']:
+        availability = BookingService.check_availability(item_id, start_date, end_date, quantity)
+        if not availability['available'] or not availability['can_fulfill']:
             if 'error' in availability:
                 raise ValueError(f"Availability check failed: {availability['error']}")
             else:
                 available_qty = availability['available_quantity']
                 total_qty = availability['total_quantity']
                 raise ValueError(
-                    f"Item is not available for the selected dates. "
-                    f"Available quantity: {available_qty}/{total_qty}. "
-                    f"Conflicting bookings: {len(availability['conflicting_bookings'])}"
+                    f"Insufficient quantity available. "
+                    f"Requested: {quantity}, Available: {available_qty}/{total_qty}"
                 )
             
         item = Item.query.get(item_id)
@@ -62,12 +72,13 @@ class BookingService(BaseService):
             raise ValueError("Item not found")
             
         duration = (end_date - start_date).days + 1
-        total_price = item.price_per_day * duration
+        total_price = item.price_per_day * duration * quantity  # Price includes quantity
         booking = Booking(
             user_id=user_id,
             item_id=item_id,
             start_date=start_date,
             end_date=end_date,
+            quantity=quantity,
             total_price=total_price,
             status=BookingStatus.PENDING,
             is_paid=False

@@ -29,6 +29,7 @@ class Booking(db.Model):
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     total_price = db.Column(db.Float, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
     status = db.Column(db.Enum(BookingStatus), nullable=False, default=BookingStatus.PENDING)
     is_paid = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -57,6 +58,7 @@ class Booking(db.Model):
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'end_date': self.end_date.isoformat() if self.end_date else None,
             'total_price': self.total_price,
+            'quantity': self.quantity,
             'status': self.status.value if self.status else None,
             'is_paid': self.is_paid
         }
@@ -100,29 +102,25 @@ class Booking(db.Model):
         db.session.commit()
 
     @classmethod
-    def check_item_availability(cls, item_id, start_date, end_date, exclude_booking_id=None):
+    def check_item_availability(cls, item_id, start_date, end_date, requested_quantity=1, exclude_booking_id=None):
         """
-        Check if an item is available for booking in the given date range.
+        Check if an item is available for booking in the given date range with quantity support.
         
         Best Practice Implementation:
         - PENDING bookings have a time limit (30 minutes by default)
         - Only PAID, CONFIRMED bookings permanently block availability
         - Expired PENDING bookings are automatically excluded
+        - Supports multiple quantities per booking
         
         Args:
             item_id: ID of the item to check
             start_date: Start date of the requested booking
             end_date: End date of the requested booking
+            requested_quantity: Number of items requested (default: 1)
             exclude_booking_id: Optional booking ID to exclude from check (for updates)
             
         Returns:
-            dict: {
-                'available': bool,
-                'available_quantity': int,
-                'conflicting_bookings': list,
-                'total_quantity': int,
-                'pending_expiring_soon': int  # PENDING bookings expiring within 5 minutes
-            }
+            dict: Enhanced availability information with quantity details
         """
         from app.models.item import Item
         from datetime import datetime, timedelta
@@ -133,29 +131,28 @@ class Booking(db.Model):
             return {
                 'available': False,
                 'available_quantity': 0,
-                'conflicting_bookings': [],
                 'total_quantity': 0,
+                'requested_quantity': requested_quantity,
+                'can_fulfill': False,
                 'error': 'Item not found'
             }
         
         current_time = datetime.utcnow()
         
-        # Define statuses that definitively block availability
-        confirmed_blocking_statuses = [
-            BookingStatus.PAID,
-            BookingStatus.CONFIRMED
-        ]
-        
-        # Find definitively blocking bookings (PAID/CONFIRMED)
-        confirmed_query = cls.query.filter(
+        # Calculate total quantity reserved by confirmed bookings (PAID/CONFIRMED)
+        confirmed_reserved_query = db.session.query(
+            db.func.coalesce(db.func.sum(cls.quantity), 0)
+        ).filter(
             cls.item_id == item_id,
-            cls.status.in_(confirmed_blocking_statuses),
+            cls.status.in_([BookingStatus.PAID, BookingStatus.CONFIRMED]),
             cls.start_date <= end_date,
             cls.end_date >= start_date
         )
         
-        # Find active PENDING bookings (not expired)
-        pending_query = cls.query.filter(
+        # Calculate total quantity reserved by active pending bookings
+        pending_reserved_query = db.session.query(
+            db.func.coalesce(db.func.sum(cls.quantity), 0)
+        ).filter(
             cls.item_id == item_id,
             cls.status == BookingStatus.PENDING,
             cls.start_date <= end_date,
@@ -167,41 +164,38 @@ class Booking(db.Model):
             )
         )
         
-        # Exclude a specific booking if provided (useful for updates)
+        # Exclude specific booking if provided (for updates)
         if exclude_booking_id:
-            confirmed_query = confirmed_query.filter(cls.id != exclude_booking_id)
-            pending_query = pending_query.filter(cls.id != exclude_booking_id)
+            confirmed_reserved_query = confirmed_reserved_query.filter(cls.id != exclude_booking_id)
+            pending_reserved_query = pending_reserved_query.filter(cls.id != exclude_booking_id)
         
-        confirmed_bookings = confirmed_query.all()
-        active_pending_bookings = pending_query.all()
+        confirmed_reserved = confirmed_reserved_query.scalar() or 0
+        pending_reserved = pending_reserved_query.scalar() or 0
         
-        # Calculate availability
-        confirmed_booked = len(confirmed_bookings)
-        pending_booked = len(active_pending_bookings)
-        total_booked = confirmed_booked + pending_booked
-        
-        available_quantity = max(0, item.quantity - total_booked)
+        total_reserved = confirmed_reserved + pending_reserved
+        available_quantity = max(0, item.quantity - total_reserved)
         
         # Count PENDING bookings expiring soon (within 5 minutes)
-        expiring_soon = cls.query.filter(
+        expiring_soon_quantity = db.session.query(
+            db.func.coalesce(db.func.sum(cls.quantity), 0)
+        ).filter(
             cls.item_id == item_id,
             cls.status == BookingStatus.PENDING,
             cls.expires_at.isnot(None),
             cls.expires_at > current_time,
             cls.expires_at <= current_time + timedelta(minutes=5)
-        ).count()
-        
-        all_blocking_bookings = confirmed_bookings + active_pending_bookings
+        ).scalar() or 0
         
         return {
-            'available': available_quantity > 0,
+            'available': available_quantity >= requested_quantity,
             'available_quantity': available_quantity,
-            'conflicting_bookings': [booking.id for booking in all_blocking_bookings],
             'total_quantity': item.quantity,
-            'booked_quantity': total_booked,
-            'confirmed_bookings': confirmed_booked,
-            'pending_bookings': pending_booked,
-            'pending_expiring_soon': expiring_soon
+            'requested_quantity': requested_quantity,
+            'can_fulfill': available_quantity >= requested_quantity,
+            'reserved_quantity': total_reserved,
+            'confirmed_reserved': confirmed_reserved,
+            'pending_reserved': pending_reserved,
+            'pending_expiring_soon': expiring_soon_quantity
         }
     
     @classmethod

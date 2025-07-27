@@ -45,7 +45,8 @@ def check_availability():
     item_id = request.args.get('item_id', type=int)
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    return check_availability_controller(item_id, start_date, end_date)
+    quantity = request.args.get('quantity', type=int)
+    return check_availability_controller(item_id, start_date, end_date, quantity)
 
 # Get availability calendar for date range
 @booking_bp.route('/availability/calendar', methods=['GET'])
