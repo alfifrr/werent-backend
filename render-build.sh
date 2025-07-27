@@ -8,6 +8,9 @@ export PATH="$HOME/.cargo/bin:$PATH"
 echo "🔄 Syncing dependencies with uv..."
 uv sync
 
+echo "🔄 Installing production dependencies..."
+uv sync --extra production
+
 echo "🔄 Generating requirements.txt for Render compatibility..."
 uv pip freeze > requirements.txt
 
