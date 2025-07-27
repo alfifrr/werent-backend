@@ -6,6 +6,7 @@ from app.controllers.booking_controller import (
     get_booking_controller,
     get_bookings_by_user_controller,
     update_booking_controller,
+    cancel_booking_controller,
     check_availability_controller,
     get_availability_calendar_controller,
     get_bookings_by_status_controller,
@@ -73,6 +74,12 @@ def get_bookings_by_user(user_id):
 def update_booking(booking_id):
     current_user_id = get_jwt_identity()
     return update_booking_controller(booking_id, request.json, current_user_id)
+
+# Cancel booking - Dedicated endpoint for better UX and security
+@booking_bp.route('/<int:booking_id>/cancel', methods=['POST'])
+def cancel_booking(booking_id):
+    current_user_id = get_jwt_identity()
+    return cancel_booking_controller(booking_id, current_user_id)
 
 # Get bookings by status
 @booking_bp.route('/status/<status>', methods=['GET'])

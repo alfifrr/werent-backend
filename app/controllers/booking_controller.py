@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask_jwt_extended import get_jwt_identity
 from pydantic import ValidationError
 from app.models import Booking, User, Item
@@ -265,6 +266,92 @@ def update_booking_controller(booking_id, data, current_user_id):
             data=BookingOut.from_orm(updated_booking).dict()
         )
 
+    except Exception as e:
+        db.session.rollback()
+        return internal_error_response()
+
+
+def cancel_booking_controller(booking_id, current_user_id):
+    """
+    Dedicated endpoint to cancel a booking with RBAC.
+    Industry best practice for better UX and security.
+    
+    Business Rules:
+    - Users can cancel their own PENDING or CONFIRMED bookings
+    - Admins can cancel any booking regardless of status
+    - Provides clear, single-purpose action
+    - More secure than general PUT endpoint
+    """
+    try:
+        # Convert JWT string to integer
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+        
+        # Get booking and verify it exists
+        booking = BookingService.get_booking(booking_id, 
+                                           None if _is_admin(current_user_id) else current_user_id)
+        
+        if not booking:
+            return error_response("Booking not found", 404)
+        
+        # Check current status to provide better error messages
+        current_status = booking.status.value if hasattr(booking.status, 'value') else str(booking.status)
+        
+        # Admin can cancel any booking
+        if _is_admin(current_user_id):
+            # Admin can cancel any status, but provide warnings for business logic
+            if current_status in ['COMPLETED', 'RETURNED']:
+                return error_response(
+                    f"Cannot cancel {current_status} booking. "
+                    "Consider creating a refund/return process instead.",
+                    403
+                )
+        else:
+            # Regular users have restrictions
+            if current_status not in ['PENDING', 'CONFIRMED']:
+                if current_status == 'CANCELLED':
+                    return error_response("Booking is already cancelled", 400)
+                elif current_status in ['PAID', 'COMPLETED', 'RETURNED']:
+                    return error_response(
+                        f"Cannot cancel {current_status} booking. Please contact support for assistance.",
+                        403
+                    )
+                elif current_status == 'PASTDUE':
+                    return error_response(
+                        "Cannot cancel overdue booking. Please contact support to resolve.",
+                        403
+                    )
+        
+        # Perform the cancellation using the existing update service
+        cancelled_booking = BookingService.update_booking(
+            booking_id, 
+            None if _is_admin(current_user_id) else current_user_id,
+            status='CANCELLED'
+        )
+        
+        if not cancelled_booking:
+            return error_response("Failed to cancel booking", 400)
+        
+        # Calculate potential refund info (for future implementation)
+        from datetime import datetime
+        refund_info = {
+            'cancellation_reason': 'User requested',
+            'cancelled_at': datetime.utcnow().isoformat(),
+            'original_total': float(cancelled_booking.total_price),
+            'refund_eligible': current_status in ['PENDING', 'CONFIRMED'],
+            'refund_amount': float(cancelled_booking.total_price) if current_status == 'PENDING' else 0.0
+        }
+        
+        response_data = BookingOut.from_orm(cancelled_booking).dict()
+        response_data['refund_info'] = refund_info
+        
+        return success_response(
+            message=f"Booking cancelled successfully. Status changed from {current_status} to CANCELLED.",
+            data=response_data
+        )
+        
+    except ValueError as e:
+        return error_response(f"Invalid booking ID: {str(e)}", 400)
     except Exception as e:
         db.session.rollback()
         return internal_error_response()
