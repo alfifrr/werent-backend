@@ -75,7 +75,7 @@ class Booking(db.Model):
     @classmethod
     def find_by_id(cls, booking_id):
         """Find booking by ID."""
-        return cls.query.get(booking_id)
+        return db.session.get(cls, booking_id)
 
     @classmethod
     def find_by_user_id(cls, user_id):

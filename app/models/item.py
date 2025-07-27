@@ -64,7 +64,7 @@ class Item(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
     # Foreign key
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     # Relationships
     user = db.relationship('User', foreign_keys=[user_id], back_populates='items')
@@ -100,7 +100,7 @@ class Item(db.Model):
     @classmethod
     def find_by_id(cls, item_id):
         """Find item by ID."""
-        return cls.query.get(item_id)
+        return db.session.get(cls, item_id)
 
     @classmethod
     def find_by_product_code(cls, product_code):

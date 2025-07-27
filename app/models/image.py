@@ -40,7 +40,7 @@ class Image(db.Model):
     @classmethod
     def find_by_id(cls, image_id):
         """Find image by ID."""
-        return cls.query.get(image_id)
+        return db.session.get(cls, image_id)
 
     @classmethod
     def find_by_item_id(cls, item_id):

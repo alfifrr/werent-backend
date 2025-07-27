@@ -26,7 +26,7 @@ class BaseService:
 
     def get_by_id(self, instance_id):
         """Get instance by ID."""
-        return self.model_class.query.get(instance_id)
+        return db.session.get(self.model_class, instance_id)
 
     def get_all(self):
         """Get all instances."""

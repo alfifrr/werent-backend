@@ -44,7 +44,7 @@ class Review(db.Model):
     @classmethod
     def find_by_id(cls, review_id):
         """Find review by ID."""
-        return cls.query.get(review_id)
+        return db.session.get(cls, review_id)
 
     @classmethod
     def find_by_user_id(cls, user_id):

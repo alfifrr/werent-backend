@@ -226,7 +226,7 @@ class ReviewService(BaseService):
 
         # Check if user has completed a booking for this item
         completed_booking = Booking.query.filter_by(
-            renter_id=user_id,
+            user_id=user_id,
             item_id=item_id,
             status='completed'
         ).first()

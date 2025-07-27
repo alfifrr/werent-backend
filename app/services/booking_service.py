@@ -156,6 +156,65 @@ class BookingService(BaseService):
             return []
         return Booking.query.filter_by(user_id=renter_id).order_by(Booking.created_at.desc()).all()
 
+    def confirm_booking(self, booking_id):
+        """Confirm a pending booking."""
+        booking = self.get_by_id(booking_id)
+        if not booking:
+            return None
+
+        if booking.status != 'pending':
+            raise ValueError("Only pending bookings can be confirmed")
+
+        # Double-check availability
+        if not self.is_available_for_dates(booking.item_id, booking.start_date, booking.end_date):
+            raise ValueError("Item is no longer available for these dates")
+
+        booking.status = 'confirmed'
+
+        # Update item status to rented
+        from app.services.item_service import ItemService
+        item_service = ItemService()
+        item_service.mark_as_rented(booking.item_id)
+
+        return self.save(booking)
+
+    def complete_booking(self, booking_id):
+        """Mark booking as completed."""
+        booking = self.get_by_id(booking_id)
+        if not booking:
+            return None
+
+        if booking.status != 'confirmed':
+            raise ValueError("Only confirmed bookings can be completed")
+
+        booking.status = 'completed'
+
+        # Update item status back to available
+        from app.services.item_service import ItemService
+        item_service = ItemService()
+        item_service.mark_as_available(booking.item_id)
+
+        return self.save(booking)
+
+    def cancel_booking(self, booking_id):
+        """Cancel a booking."""
+        booking = self.get_by_id(booking_id)
+        if not booking:
+            return None
+
+        if booking.status in ['completed', 'cancelled']:
+            raise ValueError("Cannot cancel completed or already cancelled bookings")
+
+        booking.status = 'cancelled'
+
+        # If booking was confirmed, make item available again
+        if booking.status == 'confirmed':
+            from app.services.item_service import ItemService
+            item_service = ItemService()
+            item_service.mark_as_available(booking.item_id)
+
+        return self.save(booking)
+
     def get_bookings_by_item(self, item_id):
         """Get all bookings for a specific item."""
         return Booking.query.filter_by(item_id=item_id).order_by(Booking.created_at.desc()).all()
