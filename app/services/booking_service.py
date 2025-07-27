@@ -160,13 +160,14 @@ class BookingService(BaseService):
                     return None  # Invalid: end_date before start_date
             if hasattr(booking, key) and value is not None:
                 setattr(booking, key, value)
-        # Recalculate total_price if start_date or end_date changed
-        if 'start_date' in kwargs or 'end_date' in kwargs:
+        # Recalculate total_price if start_date, end_date, or quantity changed
+        if 'start_date' in kwargs or 'end_date' in kwargs or 'quantity' in kwargs:
             start_date = booking.start_date
             end_date = booking.end_date
-            if start_date and end_date and booking.item:
+            quantity = booking.quantity
+            if start_date and end_date and booking.item and quantity:
                 duration = (end_date - start_date).days + 1
-                booking.total_price = booking.item.price_per_day * duration
+                booking.total_price = booking.item.price_per_day * duration * quantity
         db.session.commit()
         return booking
 

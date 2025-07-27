@@ -17,7 +17,6 @@ class BookingStatus(str, Enum):
     RETURNED = "RETURNED"
     COMPLETED = "COMPLETED"
     CONFIRMED = "CONFIRMED"
-    EXPIRED = "EXPIRED"
 
 class BookingBase(BaseModel):
     item_id: int

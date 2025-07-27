@@ -214,6 +214,11 @@ def update_booking_controller(booking_id, data, current_user_id):
         if not data:
             return error_response("JSON payload required", 400)
 
+        # Convert JWT identity to int
+        current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
+
         # Check if booking exists
         booking = BookingService.get_booking(booking_id)
         if not booking:
@@ -222,6 +227,31 @@ def update_booking_controller(booking_id, data, current_user_id):
         # Check if user owns the booking or is admin
         if booking.user_id != current_user_id and not _is_admin(current_user_id):
             return unauthorized_response("Access denied")
+
+        # Implement nuanced status update controls based on business rules
+        if 'status' in data:
+            new_status = data['status'].upper()
+            # Handle enum values by getting the string value
+            current_status = booking.status.value if hasattr(booking.status, 'value') else str(booking.status)
+            
+            # Define allowed user status transitions
+            user_allowed_transitions = {
+                'PENDING': ['CANCELLED'],  # Users can cancel pending bookings
+                'CONFIRMED': ['CANCELLED']  # Users can cancel confirmed bookings (may incur fees)
+            }
+            
+            # Admin can change any status
+            if _is_admin(current_user_id):
+                pass  # Admin has full control
+            # Regular users have limited status change privileges
+            elif current_status in user_allowed_transitions and new_status in user_allowed_transitions[current_status]:
+                pass  # User is allowed this transition
+            else:
+                return error_response(
+                    f"Status change from {current_status} to {new_status} requires admin privileges. "
+                    f"Users can only cancel PENDING or CONFIRMED bookings.",
+                    403
+                )
 
         # Update booking using service
         user_id_for_check = current_user_id if not _is_admin(current_user_id) else None
@@ -266,8 +296,8 @@ def check_availability_controller(item_id, start_date, end_date, quantity=None):
             return error_response("start_date must be before or equal to end_date", 400)
 
         try:
-            # Expire old PENDING bookings before checking availability
-            Booking.expire_pending_bookings()
+            # Availability checking now uses time-based expiration logic
+            # No need to explicitly expire bookings - done at query time
             
             availability = BookingService.check_availability(item_id, start, end, requested_quantity)
             

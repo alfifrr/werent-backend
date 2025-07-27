@@ -17,7 +17,6 @@ class BookingStatus(enum.Enum):
     RETURNED = "RETURNED"
     COMPLETED = "COMPLETED"
     CONFIRMED = "CONFIRMED"
-    EXPIRED = "EXPIRED"
 
 
 class Booking(db.Model):
@@ -109,7 +108,7 @@ class Booking(db.Model):
         Best Practice Implementation:
         - PENDING bookings have a time limit (30 minutes by default)
         - Only PAID, CONFIRMED bookings permanently block availability
-        - Expired PENDING bookings are automatically excluded
+        - PENDING bookings past their expires_at time are automatically ignored
         - Supports multiple quantities per booking
         
         Args:
@@ -237,38 +236,6 @@ class Booking(db.Model):
             current_date += timedelta(days=1)
         
         return calendar
-    
-    @classmethod
-    def expire_pending_bookings(cls):
-        """
-        Mark expired PENDING bookings as EXPIRED.
-        This should be called periodically (e.g., via a background job).
-        
-        Returns:
-            int: Number of bookings that were expired
-        """
-        from datetime import datetime
-        
-        current_time = datetime.utcnow()
-        
-        # Find expired PENDING bookings
-        expired_bookings = cls.query.filter(
-            cls.status == BookingStatus.PENDING,
-            cls.expires_at.isnot(None),
-            cls.expires_at <= current_time
-        ).all()
-        
-        expired_count = len(expired_bookings)
-        
-        # Mark them as expired
-        for booking in expired_bookings:
-            booking.status = BookingStatus.EXPIRED
-            booking.updated_at = current_time
-        
-        if expired_count > 0:
-            db.session.commit()
-        
-        return expired_count
     
     def set_expiration(self, minutes=30):
         """
