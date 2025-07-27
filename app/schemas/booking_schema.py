@@ -22,7 +22,6 @@ class BookingBase(BaseModel):
     item_id: int
     start_date: date
     end_date: date
-    quantity: int = Field(default=1, ge=1, le=10, description="Number of items to book (1-10)")
 
     @field_validator('end_date')
     def end_date_after_start(cls, v, info):
@@ -51,7 +50,6 @@ class BookingCreateSchema(BaseSchema):
     item_id: int = Field(..., description="ID of the item to book")
     start_date: date = Field(..., description="Booking start date")
     end_date: date = Field(..., description="Booking end date")
-    quantity: int = Field(default=1, ge=1, le=10, description="Number of items to book (1-10)")
 
     @field_validator('start_date')
     @classmethod
