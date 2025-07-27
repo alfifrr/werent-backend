@@ -106,7 +106,7 @@ class BookingResponseSchema(BaseSchema, TimestampMixin):
     status: str
     total_price: float
     item_id: int
-    renter_id: int
+    user_id: int
     duration_days: Optional[int] = None
 
 
@@ -132,7 +132,7 @@ class BookingSearchSchema(BaseSchema):
     start_date_from: Optional[date] = Field(None, description="Filter bookings starting from this date")
     start_date_to: Optional[date] = Field(None, description="Filter bookings starting before this date")
     item_id: Optional[int] = Field(None, description="Filter by item ID")
-    renter_id: Optional[int] = Field(None, description="Filter by renter ID")
+    user_id: Optional[int] = Field(None, description="Filter by user ID")
 
     @field_validator('status')
     @classmethod

@@ -44,7 +44,14 @@ class ItemCreateSchema(BaseSchema):
     product_code: str = Field(..., min_length=1, max_length=50, description="Unique product code")
     description: str = Field(..., min_length=10, max_length=1000, description="Item description")
     price_per_day: float = Field(..., gt=0, description="Price per day in currency")
-    images: Optional[List[str]] = Field(None, description="List of base64-encoded images (raw or data URL prefixed)")
+    images: Optional[List[str]] = Field(
+    None,
+    description="List of base64-encoded images (raw or data URL prefixed)",
+    json_schema_extra={"example": [
+        "iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # raw base64
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."  # data URL base64
+    ]}
+)
 
 
     @field_validator('price_per_day')
@@ -94,7 +101,14 @@ class ItemUpdateSchema(BaseSchema):
     product_code: Optional[str] = Field(None, min_length=1, max_length=50, description="Unique product code")
     description: Optional[str] = Field(None, min_length=10, max_length=1000, description="Item description")
     price_per_day: Optional[float] = Field(None, gt=0, description="Price per day in currency")
-    images: Optional[List[str]] = Field(None, description="List of base64-encoded images (raw or data URL prefixed)")
+    images: Optional[List[str]] = Field(
+    None,
+    description="List of base64-encoded images (raw or data URL prefixed)",
+    json_schema_extra={"example": [
+        "iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # raw base64
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."  # data URL base64
+    ]}
+)
 
 
     @field_validator('price_per_day')

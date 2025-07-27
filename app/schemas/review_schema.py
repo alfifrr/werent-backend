@@ -17,10 +17,10 @@ class ReviewCreateSchema(BaseSchema):
     images: Optional[List[str]] = Field(
         None,
         description="List of base64-encoded images (raw or data URL prefixed)",
-        example=[
-            "iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # truncated raw base64
+        json_schema_extra={"example": [
+            "iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # raw base64
             "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."  # data URL base64
-        ]
+        ]}
     )
 
     @field_validator('rating')
@@ -49,10 +49,10 @@ class ReviewUpdateSchema(BaseSchema):
     images: Optional[List[str]] = Field(
         None,
         description="List of base64-encoded images (raw or data URL prefixed)",
-        example=[
+        json_schema_extra={"example": [
             "iVBORw0KGgoAAAANSUhEUgAAAAUA...",
             "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..."
-        ]
+        ]}
     )
 
     @field_validator('rating')

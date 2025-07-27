@@ -63,7 +63,7 @@ def create_item_controller(json_data):
 
 def get_item_controller(item_id):
     try:
-        item = Item.query.get(item_id)
+        item = db.session.get(Item, item_id)
         if not item:
             return not_found_response('Item')
         return success_response('Item retrieved successfully', item.to_dict())
@@ -81,12 +81,12 @@ def update_item_controller(item_id, json_data):
         if not validate_base64_image(image_base64):
             return error_response('Invalid image: not a valid base64-encoded image', status_code=400)
     try:
-        item = Item.query.get(item_id)
+        item = db.session.get(Item, item_id)
         if not item:
             return not_found_response('Item')
         # Update item fields except image_base64
         for field, value in schema.model_dump(exclude_unset=True).items():
-            if value is not None and field != 'image_base64':
+            if value is not None and field not in ['image_base64', 'user_id']:
                 setattr(item, field, value)
         db.session.commit()
         # Handle multiple images if provided
@@ -113,7 +113,7 @@ def update_item_controller(item_id, json_data):
 
 def delete_item_controller(item_id):
     try:
-        item = Item.query.get(item_id)
+        item = db.session.get(Item, item_id)
         if not item:
             return not_found_response('Item')
         db.session.delete(item)

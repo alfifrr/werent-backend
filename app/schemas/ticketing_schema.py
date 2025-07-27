@@ -5,7 +5,7 @@ Following clean code principles with clear, beginner-friendly validation.
 
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class CreateTicketRequest(BaseModel):
@@ -96,9 +96,7 @@ class TicketResponse(BaseModel):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
-    class Config:
-        """Allow creation from database model objects."""
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @field_validator('created_at', 'updated_at', mode='before')
     @classmethod

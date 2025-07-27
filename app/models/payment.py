@@ -64,7 +64,7 @@ class Payment(db.Model):
 
     @classmethod
     def find_by_id(cls, payment_id):
-        return cls.query.get(payment_id)
+        return db.session.get(cls, payment_id)
 
     @classmethod
     def find_by_user_id(cls, user_id):
