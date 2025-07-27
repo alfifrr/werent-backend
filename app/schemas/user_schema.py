@@ -67,49 +67,6 @@ class UserUpdateSchema(BaseSchema):
     phone_number: Optional[str] = Field(
         None, max_length=20, description="User phone number"
     )
-    profile_image: Optional[str] = Field(
-        None, description="Base64 encoded profile image with data URI prefix (e.g., data:image/jpeg;base64,...)"
-    )
-
-    @field_validator("profile_image")
-    @classmethod
-    def validate_profile_image(cls, v):
-        """Validate Base64 profile image format and size."""
-        if v is not None:
-            import re
-            import base64
-            
-            # Check data URI format
-            if not v.startswith('data:image/'):
-                raise ValueError("Profile image must be a valid data URI (data:image/...)")
-            
-            # Extract MIME type and base64 data
-            match = re.match(r'data:image/(jpeg|jpg|png|gif);base64,(.+)', v)
-            if not match:
-                raise ValueError("Invalid image format. Supported: JPEG, PNG, GIF")
-            
-            mime_type, base64_data = match.groups()
-            
-            # Validate base64 encoding
-            try:
-                decoded_data = base64.b64decode(base64_data)
-            except Exception:
-                raise ValueError("Invalid base64 encoding")
-            
-            # Check file size (limit to 2MB)
-            max_size = 2 * 1024 * 1024  # 2MB
-            if len(decoded_data) > max_size:
-                raise ValueError("Image size must be less than 2MB")
-            
-            # Basic file header validation
-            if mime_type in ['jpeg', 'jpg'] and not decoded_data.startswith(b'\xff\xd8'):
-                raise ValueError("Invalid JPEG file format")
-            elif mime_type == 'png' and not decoded_data.startswith(b'\x89PNG'):
-                raise ValueError("Invalid PNG file format")
-            elif mime_type == 'gif' and not decoded_data.startswith(b'GIF8'):
-                raise ValueError("Invalid GIF file format")
-        
-        return v
 
     @field_validator("phone_number")
     @classmethod
@@ -160,14 +117,12 @@ class UserResponseSchema(BaseSchema, TimestampMixin):
     first_name: str
     last_name: str
     phone_number: Optional[str] = None
-    profile_image: Optional[str] = None
     is_verified: bool
     is_admin: bool
     is_active: bool
     uuid: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
 
 
 class UserProfileResponseSchema(UserResponseSchema):

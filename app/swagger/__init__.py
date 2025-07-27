@@ -17,16 +17,14 @@ api = Api(
     description='''
     **WeRent Backend API Documentation**
     
-    A comprehensive equipment rental platform backend service.
+    A comprehensive outfit rental platform backend service.
     
     ## Features
     - **Authentication**: JWT-based user authentication and authorization
-    - **User Management**: User registration, login, and profile management with image support
-    - **Admin Management**: Administrative endpoints for platform management
-    - **Review System**: User reviews and ratings system
-    - **Payment System**: Payment processing and management
-    - **Support System**: Ticketing system for customer support
-    - **Health Monitoring**: System health and status monitoring
+    - **User Management**: User registration, login, and profile management
+    - **Outfit Management**: Outfit catalog and inventory management
+    - **Rental System**: Outfit booking and rental management
+    - **Review System**: User reviews and ratings
     
     ## Authentication
     Most endpoints require authentication. Use the `/api/auth/login` endpoint to obtain a JWT token,
@@ -88,29 +86,36 @@ auth_ns = Namespace(
     path='/auth'
 )
 
+gear_ns = Namespace(
+    'Gear Management', 
+    description='Camera equipment catalog and inventory management endpoints (Coming Soon)',
+    path='/gear'
+)
+
+rental_ns = Namespace(
+    'Rental System', 
+    description='Equipment booking and rental management endpoints (Coming Soon)',
+    path='/rentals'
+)
+
 review_ns = Namespace(
     'Review System', 
-    description='User reviews and ratings endpoints - fully implemented',
+    description='User reviews and ratings endpoints (Coming Soon)',
     path='/reviews'
 )
 
 admin_ns = Namespace(
     'Admin', 
-    description='Administrative endpoints for user management and platform administration',
+    description='Administrative endpoints for platform management (Coming Soon)',
     path='/admin'
-)
-
-tickets_ns = Namespace(
-    'Ticketing',
-    description='Support ticketing system - create, manage, and track customer support tickets',
-    path='/tickets'
 )
 
 # Register namespaces
 api.add_namespace(auth_ns)
+api.add_namespace(gear_ns)
+api.add_namespace(rental_ns)
 api.add_namespace(review_ns)
 api.add_namespace(admin_ns)
-api.add_namespace(tickets_ns)
 
 # Error handlers for Swagger
 @api.errorhandler
