@@ -11,6 +11,9 @@ from app.models.item import ItemType, Size, Gender
 import json
 import random
 import string
+from app.models.ticketing import Ticketing
+from app.models.booking import Booking, BookingStatus
+from datetime import datetime, timedelta, UTC
 
 
 @pytest.fixture
@@ -123,6 +126,57 @@ def another_user(db, user_factory):
     db_ext.session.commit()
     return user
 
+@pytest.fixture
+def booking_factory(db, item_factory, user_factory):
+    def _factory(user=None, item=None, **kwargs):
+        if user is None:
+            user = user_factory()
+        if item is None:
+            item = item_factory(user=user)
+        start_date = kwargs.get('start_date', datetime.now(UTC).date())
+        end_date = kwargs.get('end_date', start_date + timedelta(days=2))
+        booking = Booking(
+            user_id=user.id,
+            item_id=item.id,
+            start_date=start_date,
+            end_date=end_date,
+            total_price=item.price_per_day * 3,
+            status=kwargs.get('status', BookingStatus.CONFIRMED),
+            is_paid=kwargs.get('is_paid', True)
+        )
+        db.session.add(booking)
+        db_ext.session.commit()
+        return booking
+    return _factory
+
+@pytest.fixture
+def ticket_factory(db, user_factory, booking_factory):
+    def _factory(user=None, booking=None, chat_content='Initial message', is_resolved=False, **kwargs):
+        if user is None:
+            user = user_factory()
+        if booking is None:
+            booking = booking_factory(user=user)
+        ticket = Ticketing(
+            user_id=user.id,
+            booking_id=booking.id,
+            chat_content=chat_content,
+            is_resolved=is_resolved,
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC)
+        )
+        db.session.add(ticket)
+        db_ext.session.commit()
+        return ticket
+    return _factory
+
+@pytest.fixture
+def resolved_ticket(ticket_factory):
+    return ticket_factory(is_resolved=True)
+
+@pytest.fixture
+def open_ticket(ticket_factory):
+    return ticket_factory(is_resolved=False)
+
 
 @pytest.fixture
 def admin_user(app):
@@ -138,7 +192,12 @@ def admin_user(app):
         user.set_password('AdminPass123')
         user.save()
         yield user
-        # Clean up: delete all items owned by this user before deleting the user
+        # Clean up: rollback if needed before further DB ops
+        from app import db
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         from app.models import Item
         Item.query.filter_by(user_id=user.id).delete()
         db_ext.session.commit()
