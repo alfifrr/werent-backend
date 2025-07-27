@@ -96,25 +96,35 @@ def create_booking_controller(data, current_user_id):
 
 
 def get_all_bookings_controller(current_user_id):
-    """Controller to get all bookings (admin only)."""
+    """
+    Controller to get bookings based on user role:
+    - Admin users: Get all bookings from all users
+    - Regular users: Get only their own bookings
+    """
     try:
         current_user_id = _get_user_id_from_jwt(current_user_id)
+        if current_user_id is None:
+            return unauthorized_response("Invalid user authentication")
         
         user_service = UserService()
         user = user_service.get_by_id(current_user_id)
         
-        if not user or not user.is_admin:
-            return error_response(
-                message="Admin access required",
-                error_code="INSUFFICIENT_PRIVILEGES",
-                status_code=403
-            )
+        if not user:
+            return not_found_response("User not found")
         
-        bookings = BookingService.get_all_bookings()
+        # Check if user has admin privileges
+        if user.is_admin:
+            # Admin can see all bookings
+            bookings = BookingService.get_all_bookings()
+            message = "All bookings retrieved successfully"
+        else:
+            # Regular user can only see their own bookings
+            bookings = BookingService.get_user_bookings(current_user_id)
+            message = "Your bookings retrieved successfully"
         
         return success_response(
             data=[booking.to_dict() for booking in bookings],
-            message="All bookings retrieved successfully"
+            message=message
         )
     except Exception as e:
         return internal_error_response(

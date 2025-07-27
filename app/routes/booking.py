@@ -27,9 +27,9 @@ def require_jwt():
     jwt_required()(lambda: None)()
     return
 
-# Get all bookings (admin only)
+# Get bookings (admin: all bookings, regular user: own bookings)
 @booking_bp.route('/', methods=['GET'])
-def get_all_bookings():
+def get_bookings():
     current_user_id = get_jwt_identity()
     return get_all_bookings_controller(current_user_id)
 
