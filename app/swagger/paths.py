@@ -1520,6 +1520,304 @@ def get_ticketing_paths():
     }
 
 
+def get_booking_paths():
+    """Get booking management paths."""
+    return {
+        "/bookings": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "List all bookings in the system",
+                "security": [{"BearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "List of all bookings",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Booking"}
+                                }
+                            }
+                        },
+                    }
+                },
+            },
+            "post": {
+                "tags": ["Booking"],
+                "summary": "Create a new booking",
+                "security": [{"BearerAuth": []}],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/BookingCreateRequest"}
+                        }
+                    },
+                },
+                "responses": {
+                    "201": {
+                        "description": "Booking created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Booking"}
+                            }
+                        },
+                    },
+                    "400": {"description": "Item not available, not found, or user not verified"},
+                },
+            },
+        },
+        "/bookings/user/{user_id}": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "List all bookings for a specific user",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {"name": "user_id", "in": "path", "required": True, "schema": {"type": "integer"}, "description": "ID of the user to get bookings for"}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of bookings for the user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Booking"}
+                                }
+                            }
+                        },
+                    },
+                    "404": {"description": "User not found or no bookings"},
+                },
+            }
+        },
+        "/bookings/{booking_id}": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "Get booking by ID (owner or admin only)",
+                "description": "Get booking details. Only the booking owner or admin can access.",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {"name": "booking_id", "in": "path", "required": True, "schema": {"type": "integer"}}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking details",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Booking"}
+                            }
+                        },
+                    },
+                    "403": {"description": "Access denied - not owner or admin"},
+                    "404": {"description": "Booking not found"},
+                },
+            },
+            "put": {
+                "tags": ["Booking"],
+                "summary": "Update booking (owner or admin only)",
+                "description": "Update booking details. Only the booking owner or admin can modify.",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {"name": "booking_id", "in": "path", "required": True, "schema": {"type": "integer"}}
+                ],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/BookingCreateRequest"}
+                        }
+                    },
+                },
+                "responses": {
+                    "200": {
+                        "description": "Booking updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Booking"}
+                            }
+                        },
+                    },
+                    "403": {"description": "Access denied - not owner or admin"},
+                    "404": {"description": "Booking not found or invalid update"},
+                },
+            },
+        },
+        "/bookings/status/{status}": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "Get bookings by status",
+                "description": "Get all bookings with a specific status.",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "status", 
+                        "in": "path", 
+                        "required": True, 
+                        "schema": {
+                            "type": "string",
+                            "enum": ["pending", "paid", "pastdue", "returned", "confirmed", "cancelled", "completed"]
+                        },
+                        "description": "Booking status to filter by"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of bookings with specified status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Booking"}
+                                }
+                            }
+                        },
+                    }
+                },
+            },
+        },
+        "/bookings/history": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "Get booking history",
+                "description": "Get booking history for the current user with optional limit.",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "limit", 
+                        "in": "query", 
+                        "required": False, 
+                        "schema": {"type": "integer", "default": 20},
+                        "description": "Maximum number of bookings to return (default: 20)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User's booking history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Booking"}
+                                }
+                            }
+                        },
+                    }
+                },
+            },
+        },
+        "/bookings/item/{item_id}": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "Get bookings for specific item",
+                "description": "Get all bookings for a specific item. Should only be accessible by item owner.",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {"name": "item_id", "in": "path", "required": True, "schema": {"type": "integer"}}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of bookings for the item",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {"$ref": "#/components/schemas/Booking"}
+                                }
+                            }
+                        },
+                    }
+                },
+            },
+        },
+        "/bookings/{booking_id}/duration": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "Get booking duration",
+                "description": "Get the duration of a booking in days. Users can only access their own bookings.",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {"name": "booking_id", "in": "path", "required": True, "schema": {"type": "integer"}}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking duration",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "duration_days": {"type": "integer", "example": 5}
+                                    }
+                                }
+                            }
+                        },
+                    },
+                    "404": {"description": "Booking not found or access denied"},
+                },
+            },
+        },
+        "/bookings/revenue": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "Get revenue from user's items",
+                "description": "Calculate total revenue from completed bookings for the current user's items.",
+                "security": [{"BearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "Total revenue",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "total_revenue": {"type": "number", "example": 1250.50}
+                                    }
+                                }
+                            }
+                        },
+                    }
+                },
+            },
+        },
+        "/bookings/statistics": {
+            "get": {
+                "tags": ["Booking"],
+                "summary": "Get booking statistics",
+                "description": "Get comprehensive booking statistics with optional date range filtering.",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "start_date", 
+                        "in": "query", 
+                        "required": False, 
+                        "schema": {"type": "string", "format": "date"},
+                        "description": "Start date for statistics (YYYY-MM-DD)"
+                    },
+                    {
+                        "name": "end_date", 
+                        "in": "query", 
+                        "required": False, 
+                        "schema": {"type": "string", "format": "date"},
+                        "description": "End date for statistics (YYYY-MM-DD)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/BookingStatistics"}
+                            }
+                        },
+                    },
+                    "400": {"description": "Invalid date format"},
+                },
+            },
+        },
+    }
+
+
 def get_all_paths():
     """Get all API paths."""
     paths = {}
@@ -1530,4 +1828,5 @@ def get_all_paths():
     paths.update(get_review_paths())
     paths.update(get_payment_paths())
     paths.update(get_ticketing_paths())
+    paths.update(get_booking_paths())
     return paths

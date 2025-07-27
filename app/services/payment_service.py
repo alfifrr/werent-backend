@@ -1,10 +1,24 @@
 from app.models.payment import Payment, PaymentMethod, PaymentType
 from app.extensions import db
 from typing import List, Optional
+from app.models.booking import Booking
+from app.models.user import User
 
 class PaymentService:
     @staticmethod
-    def create_payment(booking_id: List[int], total_price: float, payment_method: PaymentMethod, payment_type: PaymentType, user_id: Optional[int] = None) -> Payment:
+    def create_payment(booking_id: List[int], total_price: float, payment_method: PaymentMethod, payment_type: PaymentType, user_id: Optional[int] = None) -> Optional[Payment]:
+        # Check user exists and is verified
+        if user_id is not None:
+            user = User.query.get(user_id)
+            if not user or not getattr(user, 'is_verified', False):
+                return None
+        # Check all booking_ids exist and belong to user (if user_id provided)
+        for bid in booking_id:
+            booking = Booking.query.get(bid)
+            if not booking:
+                return None
+            if user_id is not None and booking.user_id != user_id:
+                return None
         payment = Payment(
             booking_id=booking_id,
             total_price=total_price,
