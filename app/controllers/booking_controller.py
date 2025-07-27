@@ -230,7 +230,7 @@ def update_booking_controller(booking_id, data, current_user_id):
 
 
 def check_availability_controller(item_id, start_date, end_date):
-    """Handle availability check."""
+    """Handle comprehensive availability check with quantity information."""
     try:
         if not (item_id and start_date and end_date):
             return error_response("item_id, start_date, and end_date are required", 400)
@@ -241,11 +241,37 @@ def check_availability_controller(item_id, start_date, end_date):
         except ValueError:
             return error_response("Invalid date format, use YYYY-MM-DD", 400)
 
+        if start > end:
+            return error_response("start_date must be before or equal to end_date", 400)
+
         try:
-            available = BookingService.check_availability(item_id, start, end)
+            # Expire old PENDING bookings before checking availability
+            Booking.expire_pending_bookings()
+            
+            availability = BookingService.check_availability(item_id, start, end)
+            
+            # Remove sensitive information like specific booking IDs for external API
+            response_data = {
+                'available': availability['available'],
+                'available_quantity': availability['available_quantity'],
+                'total_quantity': availability['total_quantity'],
+                'booked_quantity': availability.get('booked_quantity', 0),
+                'confirmed_bookings': availability.get('confirmed_bookings', 0),
+                'pending_bookings': availability.get('pending_bookings', 0),
+                'pending_expiring_soon': availability.get('pending_expiring_soon', 0),
+                'date_range': {
+                    'start_date': start_date,
+                    'end_date': end_date
+                }
+            }
+            
+            # Add error information if present
+            if 'error' in availability:
+                response_data['error'] = availability['error']
+            
             return success_response(
                 message="Availability check completed",
-                data={"available": available}
+                data=response_data
             )
         except Exception as service_error:
             print(f"Service error: {service_error}")
@@ -253,6 +279,51 @@ def check_availability_controller(item_id, start_date, end_date):
 
     except Exception as e:
         print(f"Availability check error: {e}")  # Debug log
+        return internal_error_response()
+
+
+def get_availability_calendar_controller(item_id, start_date, end_date):
+    """Handle availability calendar request for date range."""
+    try:
+        if not (item_id and start_date and end_date):
+            return error_response("item_id, start_date, and end_date are required", 400)
+
+        try:
+            start = date.fromisoformat(start_date)
+            end = date.fromisoformat(end_date)
+        except ValueError:
+            return error_response("Invalid date format, use YYYY-MM-DD", 400)
+
+        if start > end:
+            return error_response("start_date must be before or equal to end_date", 400)
+
+        # Limit the range to prevent excessive queries (max 90 days)
+        if (end - start).days > 90:
+            return error_response("Date range cannot exceed 90 days", 400)
+
+        try:
+            calendar = Booking.get_availability_calendar(item_id, start, end)
+            
+            if 'error' in calendar:
+                return error_response(calendar['error'], 404)
+            
+            return success_response(
+                message="Availability calendar retrieved successfully",
+                data={
+                    'item_id': item_id,
+                    'date_range': {
+                        'start_date': start_date,
+                        'end_date': end_date
+                    },
+                    'calendar': calendar
+                }
+            )
+        except Exception as service_error:
+            print(f"Calendar service error: {service_error}")
+            return error_response("Failed to retrieve availability calendar", 500)
+
+    except Exception as e:
+        print(f"Availability calendar error: {e}")
         return internal_error_response()
 
 

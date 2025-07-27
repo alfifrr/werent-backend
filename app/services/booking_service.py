@@ -14,19 +14,25 @@ class BookingService(BaseService):
         super().__init__(Booking)
 
     @staticmethod
-    def check_availability(item_id: int, start_date: date, end_date: date) -> bool:
+    def check_availability(item_id: int, start_date: date, end_date: date) -> dict:
+        """
+        Check item availability using the comprehensive booking model method.
+        
+        Returns:
+            dict: Detailed availability information
+        """
         try:
-            overlapping = Booking.query.filter(
-                Booking.item_id == item_id,
-                Booking.end_date >= start_date,
-                Booking.start_date <= end_date,
-                Booking.status.in_([BookingStatus.PENDING, BookingStatus.PAID])
-            ).first()
-            return overlapping is None
+            return Booking.check_item_availability(item_id, start_date, end_date)
         except Exception as e:
             print(f"BookingService.check_availability error: {e}")
-            # Return True (available) if there's an error to prevent blocking legitimate checks
-            return True
+            # Return unavailable if there's an error to prevent double bookings
+            return {
+                'available': False,
+                'available_quantity': 0,
+                'conflicting_bookings': [],
+                'total_quantity': 0,
+                'error': str(e)
+            }
 
     @staticmethod
     def create_booking(user_id: int, item_id: int, start_date: date, end_date: date) -> Optional[Booking]:
@@ -35,10 +41,21 @@ class BookingService(BaseService):
         if not user:
             raise ValueError("User not found")
         if not getattr(user, 'is_verified', False):
-            raise ValueError("Email verification required to create bookings")
-            
-        if not BookingService.check_availability(item_id, start_date, end_date):
-            raise ValueError("Item is not available for the selected dates")
+            raise ValueError("Email verification is required to create bookings. Please check your email for a verification link.")
+        
+        # Check availability using the comprehensive method
+        availability = BookingService.check_availability(item_id, start_date, end_date)
+        if not availability['available']:
+            if 'error' in availability:
+                raise ValueError(f"Availability check failed: {availability['error']}")
+            else:
+                available_qty = availability['available_quantity']
+                total_qty = availability['total_quantity']
+                raise ValueError(
+                    f"Item is not available for the selected dates. "
+                    f"Available quantity: {available_qty}/{total_qty}. "
+                    f"Conflicting bookings: {len(availability['conflicting_bookings'])}"
+                )
             
         item = Item.query.get(item_id)
         if not item:
@@ -55,6 +72,11 @@ class BookingService(BaseService):
             status=BookingStatus.PENDING,
             is_paid=False
         )
+        
+        # Set expiration for PENDING booking (30 minutes from creation)
+        from datetime import datetime, timedelta
+        booking.expires_at = datetime.utcnow() + timedelta(minutes=30)
+        
         db.session.add(booking)
         db.session.commit()
         return booking

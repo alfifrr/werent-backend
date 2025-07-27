@@ -7,6 +7,7 @@ from app.controllers.booking_controller import (
     get_bookings_by_user_controller,
     update_booking_controller,
     check_availability_controller,
+    get_availability_calendar_controller,
     get_bookings_by_status_controller,
     get_booking_history_controller,
     get_bookings_by_item_controller,
@@ -18,9 +19,13 @@ from app.controllers.booking_controller import (
 booking_bp = Blueprint('booking', __name__, url_prefix='/bookings')
 
 @booking_bp.before_request
-@jwt_required()
 def require_jwt():
-    pass
+    # Allow public access to availability endpoints
+    if request.endpoint and 'availability' in request.endpoint:
+        return
+    # Require JWT for all other endpoints
+    jwt_required()(lambda: None)()
+    return
 
 # Get all bookings (admin only)
 @booking_bp.route('/', methods=['GET'])
@@ -41,6 +46,14 @@ def check_availability():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     return check_availability_controller(item_id, start_date, end_date)
+
+# Get availability calendar for date range
+@booking_bp.route('/availability/calendar', methods=['GET'])
+def get_availability_calendar():
+    item_id = request.args.get('item_id', type=int)
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    return get_availability_calendar_controller(item_id, start_date, end_date)
 
 # Get booking by id
 @booking_bp.route('/<int:booking_id>', methods=['GET'])

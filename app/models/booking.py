@@ -17,6 +17,7 @@ class BookingStatus(enum.Enum):
     RETURNED = "RETURNED"
     COMPLETED = "COMPLETED"
     CONFIRMED = "CONFIRMED"
+    EXPIRED = "EXPIRED"
 
 
 class Booking(db.Model):
@@ -32,6 +33,7 @@ class Booking(db.Model):
     is_paid = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=True)  # When PENDING booking expires
 
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -96,3 +98,202 @@ class Booking(db.Model):
         """Delete booking from database."""
         db.session.delete(self)
         db.session.commit()
+
+    @classmethod
+    def check_item_availability(cls, item_id, start_date, end_date, exclude_booking_id=None):
+        """
+        Check if an item is available for booking in the given date range.
+        
+        Best Practice Implementation:
+        - PENDING bookings have a time limit (30 minutes by default)
+        - Only PAID, CONFIRMED bookings permanently block availability
+        - Expired PENDING bookings are automatically excluded
+        
+        Args:
+            item_id: ID of the item to check
+            start_date: Start date of the requested booking
+            end_date: End date of the requested booking
+            exclude_booking_id: Optional booking ID to exclude from check (for updates)
+            
+        Returns:
+            dict: {
+                'available': bool,
+                'available_quantity': int,
+                'conflicting_bookings': list,
+                'total_quantity': int,
+                'pending_expiring_soon': int  # PENDING bookings expiring within 5 minutes
+            }
+        """
+        from app.models.item import Item
+        from datetime import datetime, timedelta
+        
+        # Get the item to check its total quantity
+        item = Item.query.get(item_id)
+        if not item:
+            return {
+                'available': False,
+                'available_quantity': 0,
+                'conflicting_bookings': [],
+                'total_quantity': 0,
+                'error': 'Item not found'
+            }
+        
+        current_time = datetime.utcnow()
+        
+        # Define statuses that definitively block availability
+        confirmed_blocking_statuses = [
+            BookingStatus.PAID,
+            BookingStatus.CONFIRMED
+        ]
+        
+        # Find definitively blocking bookings (PAID/CONFIRMED)
+        confirmed_query = cls.query.filter(
+            cls.item_id == item_id,
+            cls.status.in_(confirmed_blocking_statuses),
+            cls.start_date <= end_date,
+            cls.end_date >= start_date
+        )
+        
+        # Find active PENDING bookings (not expired)
+        pending_query = cls.query.filter(
+            cls.item_id == item_id,
+            cls.status == BookingStatus.PENDING,
+            cls.start_date <= end_date,
+            cls.end_date >= start_date,
+            # Only include PENDING bookings that haven't expired
+            db.or_(
+                cls.expires_at.is_(None),  # No expiration set (legacy bookings)
+                cls.expires_at > current_time  # Not yet expired
+            )
+        )
+        
+        # Exclude a specific booking if provided (useful for updates)
+        if exclude_booking_id:
+            confirmed_query = confirmed_query.filter(cls.id != exclude_booking_id)
+            pending_query = pending_query.filter(cls.id != exclude_booking_id)
+        
+        confirmed_bookings = confirmed_query.all()
+        active_pending_bookings = pending_query.all()
+        
+        # Calculate availability
+        confirmed_booked = len(confirmed_bookings)
+        pending_booked = len(active_pending_bookings)
+        total_booked = confirmed_booked + pending_booked
+        
+        available_quantity = max(0, item.quantity - total_booked)
+        
+        # Count PENDING bookings expiring soon (within 5 minutes)
+        expiring_soon = cls.query.filter(
+            cls.item_id == item_id,
+            cls.status == BookingStatus.PENDING,
+            cls.expires_at.isnot(None),
+            cls.expires_at > current_time,
+            cls.expires_at <= current_time + timedelta(minutes=5)
+        ).count()
+        
+        all_blocking_bookings = confirmed_bookings + active_pending_bookings
+        
+        return {
+            'available': available_quantity > 0,
+            'available_quantity': available_quantity,
+            'conflicting_bookings': [booking.id for booking in all_blocking_bookings],
+            'total_quantity': item.quantity,
+            'booked_quantity': total_booked,
+            'confirmed_bookings': confirmed_booked,
+            'pending_bookings': pending_booked,
+            'pending_expiring_soon': expiring_soon
+        }
+    
+    @classmethod
+    def get_availability_calendar(cls, item_id, start_date, end_date):
+        """
+        Get a calendar view of item availability for a date range.
+        
+        Args:
+            item_id: ID of the item
+            start_date: Start date for calendar
+            end_date: End date for calendar
+            
+        Returns:
+            dict: Date-wise availability information
+        """
+        from app.models.item import Item
+        from datetime import timedelta
+        
+        item = Item.query.get(item_id)
+        if not item:
+            return {'error': 'Item not found'}
+        
+        calendar = {}
+        current_date = start_date
+        
+        while current_date <= end_date:
+            availability = cls.check_item_availability(
+                item_id, 
+                current_date, 
+                current_date
+            )
+            
+            calendar[current_date.isoformat()] = {
+                'available_quantity': availability['available_quantity'],
+                'total_quantity': availability['total_quantity'],
+                'is_available': availability['available']
+            }
+            
+            current_date += timedelta(days=1)
+        
+        return calendar
+    
+    @classmethod
+    def expire_pending_bookings(cls):
+        """
+        Mark expired PENDING bookings as EXPIRED.
+        This should be called periodically (e.g., via a background job).
+        
+        Returns:
+            int: Number of bookings that were expired
+        """
+        from datetime import datetime
+        
+        current_time = datetime.utcnow()
+        
+        # Find expired PENDING bookings
+        expired_bookings = cls.query.filter(
+            cls.status == BookingStatus.PENDING,
+            cls.expires_at.isnot(None),
+            cls.expires_at <= current_time
+        ).all()
+        
+        expired_count = len(expired_bookings)
+        
+        # Mark them as expired
+        for booking in expired_bookings:
+            booking.status = BookingStatus.EXPIRED
+            booking.updated_at = current_time
+        
+        if expired_count > 0:
+            db.session.commit()
+        
+        return expired_count
+    
+    def set_expiration(self, minutes=30):
+        """
+        Set expiration time for PENDING booking.
+        
+        Args:
+            minutes: Minutes until expiration (default 30)
+        """
+        from datetime import datetime, timedelta
+        
+        if self.status == BookingStatus.PENDING:
+            self.expires_at = datetime.utcnow() + timedelta(minutes=minutes)
+            db.session.commit()
+    
+    def is_expired(self):
+        """Check if a PENDING booking has expired."""
+        from datetime import datetime
+        
+        if self.status != BookingStatus.PENDING or not self.expires_at:
+            return False
+        
+        return datetime.utcnow() > self.expires_at
