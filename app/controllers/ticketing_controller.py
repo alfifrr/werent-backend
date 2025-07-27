@@ -342,16 +342,18 @@ def resolve_ticket_controller(ticket_id, current_user_id):
         has_access, user, auth_error = _check_admin_access(current_user_id)
         if not has_access:
             return auth_error
-
+        print("DEBUG: Admin access granted", user)
         # Resolve ticket through service
         ticketing_service = TicketingService()
         success = ticketing_service.resolve_ticket(ticket_id)
-
+        print("DEBUG: Ticket resolved", success)
         if success:
             # Get updated ticket to return
-            ticket = ticketing_service.get_ticket_by_id(ticket_id)
+            ticket = ticketing_service.get_by_id(ticket_id)
+            print("DEBUG: Updated ticket", ticket)
             if ticket:
                 serialized_ticket = _serialize_ticket(ticket)
+                print("DEBUG: Serialized ticket", serialized_ticket)
                 return success_response(
                     message="Ticket resolved successfully",
                     data={"ticket": serialized_ticket}
@@ -431,6 +433,7 @@ def get_user_tickets_controller(user_id, current_user_id):
         # Check authorization (admin or same user)
         has_access, user, auth_error = _check_user_access_or_admin(current_user_id, user_id)
         if not has_access:
+            print("DEBUG: User access denied", user)
             return auth_error
 
         # Get tickets from service

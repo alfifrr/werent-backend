@@ -288,7 +288,6 @@ def resend_verification_controller():
             user_name=user.full_name,
             verification_uuid=user.uuid
         )
-
         if email_sent:
             return success_response(
                 message="Verification email sent successfully. Please check your inbox.",

@@ -3,7 +3,7 @@ Ticketing service for WeRent Backend API.
 Handles all support ticket business logic with clean, readable code.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC
 from app.models.ticketing import Ticketing
 from app.services.base_service import BaseService
 from app.services.user_service import UserService
@@ -75,7 +75,7 @@ class TicketingService(BaseService):
         Returns:
             Formatted message string with timestamp
         """
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')
         return f"[{timestamp}] {message}"
 
     def create_ticket(self, user_id, initial_message, booking_id=None):
@@ -133,7 +133,7 @@ class TicketingService(BaseService):
         current_content = ticket.chat_content or ""
         new_message = self._format_chat_message(message)
         ticket.chat_content = current_content + "\n" + new_message
-        ticket.updated_at = datetime.now()
+        ticket.updated_at = datetime.now(UTC)
 
         # Step 3: Save and return updated ticket
         return self.save(ticket)
@@ -162,7 +162,7 @@ class TicketingService(BaseService):
 
         # Step 3: Mark as resolved and update timestamp
         ticket.is_resolved = True
-        ticket.updated_at = datetime.now()
+        ticket.updated_at = datetime.now(UTC)
 
         # Step 4: Save and return updated ticket
         return self.save(ticket)
@@ -191,7 +191,7 @@ class TicketingService(BaseService):
 
         # Step 3: Mark as open and update timestamp
         ticket.is_resolved = False
-        ticket.updated_at = datetime.now()
+        ticket.updated_at = datetime.now(UTC)
 
         # Step 4: Save and return updated ticket
         return self.save(ticket)
