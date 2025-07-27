@@ -14,38 +14,80 @@ class BookingService(BaseService):
         super().__init__(Booking)
 
     @staticmethod
-    def check_availability(item_id: int, start_date: date, end_date: date) -> bool:
-        overlapping = Booking.query.filter(
-            Booking.item_id == item_id,
-            Booking.end_date >= start_date,
-            Booking.start_date <= end_date,
-            Booking.status.in_([BookingStatus.PENDING, BookingStatus.PAID])
-        ).first()
-        return overlapping is None
+    def check_availability(item_id: int, start_date: date, end_date: date, requested_quantity: int = 1) -> dict:
+        """
+        Check item availability using the comprehensive booking model method.
+        
+        Args:
+            item_id: ID of the item to check
+            start_date: Start date for booking
+            end_date: End date for booking
+            requested_quantity: Number of items requested (default: 1)
+            
+        Returns:
+            dict: Detailed availability information
+        """
+        try:
+            return Booking.check_item_availability(item_id, start_date, end_date, requested_quantity)
+        except Exception as e:
+            print(f"BookingService.check_availability error: {e}")
+            # Return unavailable if there's an error to prevent double bookings
+            return {
+                'available': False,
+                'available_quantity': 0,
+                'total_quantity': 0,
+                'requested_quantity': requested_quantity,
+                'can_fulfill': False,
+                'error': str(e)
+            }
 
     @staticmethod
-    def create_booking(user_id: int, item_id: int, start_date: date, end_date: date) -> Optional[Booking]:
+    def create_booking(user_id: int, item_id: int, start_date: date, end_date: date, quantity: int = 1) -> Optional[Booking]:
         # Check user exists and is verified
         user = User.query.get(user_id)
-        if not user or not getattr(user, 'is_verified', False):
-            return None
+        if not user:
+            raise ValueError("User not found")
+        if not getattr(user, 'is_verified', False):
+            raise ValueError("Email verification is required to create bookings. Please check your email for a verification link.")
+        
+        # Validate quantity
+        if quantity < 1 or quantity > 10:
+            raise ValueError("Quantity must be between 1 and 10")
+        
+        # Check availability using the comprehensive method
+        availability = BookingService.check_availability(item_id, start_date, end_date, quantity)
+        if not availability['available'] or not availability['can_fulfill']:
+            if 'error' in availability:
+                raise ValueError(f"Availability check failed: {availability['error']}")
+            else:
+                available_qty = availability['available_quantity']
+                total_qty = availability['total_quantity']
+                raise ValueError(
+                    f"Insufficient quantity available. "
+                    f"Requested: {quantity}, Available: {available_qty}/{total_qty}"
+                )
             
-        if not BookingService.check_availability(item_id, start_date, end_date):
-            return None
         item = Item.query.get(item_id)
         if not item:
-            return None
+            raise ValueError("Item not found")
+            
         duration = (end_date - start_date).days + 1
-        total_price = item.price_per_day * duration
+        total_price = item.price_per_day * duration * quantity  # Price includes quantity
         booking = Booking(
             user_id=user_id,
             item_id=item_id,
             start_date=start_date,
             end_date=end_date,
+            quantity=quantity,
             total_price=total_price,
             status=BookingStatus.PENDING,
             is_paid=False
         )
+        
+        # Set expiration for PENDING booking (30 minutes from creation)
+        from datetime import datetime, timedelta
+        booking.expires_at = datetime.utcnow() + timedelta(minutes=30)
+        
         db.session.add(booking)
         db.session.commit()
         return booking
@@ -54,8 +96,10 @@ class BookingService(BaseService):
     def get_user_bookings(user_id: int) -> List[Booking]:
         # Check user exists and is verified
         user = User.query.get(user_id)
-        if not user or not getattr(user, 'is_verified', False):
-            return []
+        if not user:
+            raise ValueError("User not found")
+        if not getattr(user, 'is_verified', False):
+            raise ValueError("Email verification required to access bookings")
         return Booking.query.filter_by(user_id=user_id).all()
 
     @staticmethod
@@ -66,10 +110,12 @@ class BookingService(BaseService):
         # If user_id is provided, verify user and check if booking belongs to them
         if user_id is not None:
             user = User.query.get(user_id)
-            if not user or not getattr(user, 'is_verified', False):
-                return None
+            if not user:
+                raise ValueError("User not found")
+            if not getattr(user, 'is_verified', False):
+                raise ValueError("Email verification required to access bookings")
             if booking.user_id != user_id:
-                return None
+                raise ValueError("Access denied: Booking does not belong to user")
                 
         return booking
 
@@ -114,13 +160,14 @@ class BookingService(BaseService):
                     return None  # Invalid: end_date before start_date
             if hasattr(booking, key) and value is not None:
                 setattr(booking, key, value)
-        # Recalculate total_price if start_date or end_date changed
-        if 'start_date' in kwargs or 'end_date' in kwargs:
+        # Recalculate total_price if start_date, end_date, or quantity changed
+        if 'start_date' in kwargs or 'end_date' in kwargs or 'quantity' in kwargs:
             start_date = booking.start_date
             end_date = booking.end_date
-            if start_date and end_date and booking.item:
+            quantity = booking.quantity
+            if start_date and end_date and booking.item and quantity:
                 duration = (end_date - start_date).days + 1
-                booking.total_price = booking.item.price_per_day * duration
+                booking.total_price = booking.item.price_per_day * duration * quantity
         db.session.commit()
         return booking
 
@@ -230,8 +277,10 @@ class BookingService(BaseService):
         """Get booking history for a user."""
         # Check user exists and is verified
         user = User.query.get(user_id)
-        if not user or not getattr(user, 'is_verified', False):
-            return []
+        if not user:
+            raise ValueError("User not found")
+        if not getattr(user, 'is_verified', False):
+            raise ValueError("Email verification required to access booking history")
         return Booking.query.filter_by(user_id=user_id).order_by(
             Booking.created_at.desc()
         ).limit(limit).all()
@@ -284,3 +333,13 @@ class BookingService(BaseService):
             'returned_bookings': len([b for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'RETURNED']),
             'total_revenue': sum(b.total_price for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'COMPLETED')
         }
+
+    @staticmethod
+    def get_bookings_by_status(status: BookingStatus) -> List[Booking]:
+        """Get bookings by status."""
+        return Booking.query.filter_by(status=status).all()
+
+    @staticmethod
+    def get_bookings_by_item(item_id: int) -> List[Booking]:
+        """Get all bookings for a specific item."""
+        return Booking.query.filter_by(item_id=item_id).all()
