@@ -20,6 +20,7 @@ uv run python -m flask db upgrade
 
 # Run tests to ensure deployment integrity
 echo "🧪 Running post-deployment tests..."
+export FLASK_ENV=testing
 uv run pytest -v -s --cov=. --cov-report term-missing
 
 echo "✅ Build script completed!"

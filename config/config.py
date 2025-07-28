@@ -27,12 +27,17 @@ class Config:
     database_url = os.environ.get('DATABASE_URL') or 'sqlite:///instance/werent-dev.db'
     SQLALCHEMY_DATABASE_URI = fix_database_url(database_url)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Engine options - only add connect_timeout for PostgreSQL
+    _is_postgresql = 'postgresql' in (database_url or '').lower()
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,
         'pool_recycle': 300,
         'connect_args': {
             'connect_timeout': 60,
-        } if 'postgresql' in database_url else {}
+        } if _is_postgresql else {
+            'check_same_thread': False,  # For SQLite
+        }
     }
     
     # JWT Configuration
@@ -78,6 +83,14 @@ class TestingConfig(Config):
     
     # Use in-memory database for testing
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    
+    # SQLite-specific engine options (no connect_timeout)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'connect_args': {
+            'check_same_thread': False,  # Allow SQLite to be used across threads
+        }
+    }
     
     # Disable CSRF for testing
     WTF_CSRF_ENABLED = False
