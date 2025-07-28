@@ -14,6 +14,7 @@ from ..swagger.swagger_ui import swagger_bp
 from .booking import booking_bp
 
 from .review_routes import review_bp
+from .statistics import statistics_bp
 # Import future route blueprints here
 # from .gear import gear_bp
 # from .rentals import rentals_bp
@@ -30,6 +31,7 @@ def register_blueprints(app):
     app.register_blueprint(admin_bp)
     app.register_blueprint(payment_bp)
     app.register_blueprint(booking_bp)
+    app.register_blueprint(statistics_bp)
 
     # Register future blueprints here
     # app.register_blueprint(gear_bp)

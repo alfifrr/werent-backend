@@ -150,15 +150,24 @@ def booking_factory(db, item_factory, user_factory):
             item = item_factory(user=user)
         start_date = kwargs.get('start_date', datetime.now(UTC).date())
         end_date = kwargs.get('end_date', start_date + timedelta(days=2))
+        quantity = kwargs.get('quantity', 1)
+        duration = (end_date - start_date).days + 1
+        total_price = kwargs.get('total_price', item.price_per_day * duration * quantity)
         booking = Booking(
             user_id=user.id,
             item_id=item.id,
             start_date=start_date,
             end_date=end_date,
-            total_price=item.price_per_day * 3,
+            quantity=quantity,
+            total_price=total_price,
             status=kwargs.get('status', BookingStatus.CONFIRMED),
             is_paid=kwargs.get('is_paid', True)
         )
+        
+        # Set expiration for PENDING bookings
+        if kwargs.get('status') == BookingStatus.PENDING:
+            booking.expires_at = datetime.now(UTC) + timedelta(minutes=30)
+        
         db.session.add(booking)
         db_ext.session.commit()
         return booking

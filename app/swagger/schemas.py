@@ -137,6 +137,91 @@ def get_item_schemas():
     }
 
 
+def get_statistics_schemas():
+    """Get admin dashboard statistics schemas."""
+    return {
+        "AdminStatisticsResponse": {
+            "type": "object",
+            "properties": {
+                "success": {"type": "boolean", "example": True},
+                "message": {"type": "string", "example": "Admin statistics fetched successfully"},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "total_users": {"type": "integer", "example": 120},
+                        "total_items": {"type": "integer", "example": 85},
+                        "total_bookings": {"type": "integer", "example": 340},
+                        "total_revenue": {"type": "number", "example": 18500.50},
+                        "total_reviews": {"type": "integer", "example": 210},
+                        "total_tickets": {"type": "integer", "example": 14},
+                        "weekly": {
+                            "type": "object",
+                            "properties": {
+                                "users": {"type": "integer", "example": 5},
+                                "items": {"type": "integer", "example": 3},
+                                "bookings": {"type": "integer", "example": 22},
+                                "revenue": {"type": "number", "example": 1500.75},
+                                "reviews": {"type": "integer", "example": 11},
+                                "tickets": {"type": "integer", "example": 2}
+                            }
+                        }
+                    }
+                }
+            },
+            "example": {
+                "success": True,
+                "message": "Admin statistics fetched successfully",
+                "data": {
+                    "total_users": 120,
+                    "total_items": 85,
+                    "total_bookings": 340,
+                    "total_revenue": 18500.50,
+                    "total_reviews": 210,
+                    "total_tickets": 14,
+                    "weekly": {
+                        "users": 5,
+                        "items": 3,
+                        "bookings": 22,
+                        "revenue": 1500.75,
+                        "reviews": 11,
+                        "tickets": 2
+                    }
+                }
+            }
+        },
+        "AdminMonthlyStatisticsResponse": {
+            "type": "object",
+            "properties": {
+                "success": {"type": "boolean", "example": True},
+                "message": {"type": "string", "example": "Monthly statistics for 2024 fetched successfully"},
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "users": {"type": "array", "items": {"type": "integer"}, "example": [2, 3, 5, 1, 6, 2, 0, 0, 3, 4, 2, 2]},
+                        "items": {"type": "array", "items": {"type": "integer"}, "example": [1, 2, 1, 0, 3, 1, 0, 0, 2, 1, 0, 1]},
+                        "bookings": {"type": "array", "items": {"type": "integer"}, "example": [15, 20, 18, 22, 30, 25, 10, 12, 17, 19, 13, 16]},
+                        "revenue": {"type": "array", "items": {"type": "number"}, "example": [1250.0, 1500.5, 1800.0, 1400.0, 2100.0, 1750.0, 900.0, 950.0, 1600.0, 1700.0, 1200.0, 1300.0]},
+                        "reviews": {"type": "array", "items": {"type": "integer"}, "example": [4, 6, 5, 3, 7, 2, 0, 1, 5, 4, 2, 3]},
+                        "tickets": {"type": "array", "items": {"type": "integer"}, "example": [1, 0, 2, 1, 1, 0, 0, 1, 2, 1, 0, 1]}
+                    }
+                }
+            },
+            "example": {
+                "success": True,
+                "message": "Monthly statistics for 2024 fetched successfully",
+                "data": {
+                    "users": [2, 3, 5, 1, 6, 2, 0, 0, 3, 4, 2, 2],
+                    "items": [1, 2, 1, 0, 3, 1, 0, 0, 2, 1, 0, 1],
+                    "bookings": [15, 20, 18, 22, 30, 25, 10, 12, 17, 19, 13, 16],
+                    "revenue": [1250.0, 1500.5, 1800.0, 1400.0, 2100.0, 1750.0, 900.0, 950.0, 1600.0, 1700.0, 1200.0, 1300.0],
+                    "reviews": [4, 6, 5, 3, 7, 2, 0, 1, 5, 4, 2, 3],
+                    "tickets": [1, 0, 2, 1, 1, 0, 0, 1, 2, 1, 0, 1]
+                }
+            }
+        }
+    }
+
+
 def get_auth_schemas():
     """Get authentication-related schemas."""
     return {
@@ -832,4 +917,5 @@ def get_all_schemas():
     schemas.update(get_health_schemas())
     schemas.update(get_ticketing_schemas())
     schemas.update(get_booking_schemas())
+    schemas.update(get_statistics_schemas())
     return schemas
