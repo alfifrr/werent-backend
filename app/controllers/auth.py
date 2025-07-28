@@ -57,23 +57,24 @@ def signup_controller(data):
             phone=user_data.phone_number,
         )
 
+        # NOTE: Email verification is disabled for signup - use resend verification endpoint instead
         # Send verification email
-        email_service = EmailService()
-        email_sent = email_service.send_verification_email(
-            user_email=user.email,
-            user_name=user.full_name,
-            verification_uuid=user.uuid
-        )
+        # email_service = EmailService()
+        # email_sent = email_service.send_verification_email(
+        #     user_email=user.email,
+        #     user_name=user.full_name,
+        #     verification_uuid=user.uuid
+        # )
 
-        response_message = "User created successfully. Please check your email to verify your account."
-        if not email_sent:
-            response_message += " (Note: Verification email could not be sent)"
+        response_message = "User created successfully. Use resend verification endpoint to send verification email."
+        # if not email_sent:
+        #     response_message += " (Note: Verification email could not be sent)"
 
         return success_response(
             message=response_message,
             data={
                 'user': UserResponseSchema.model_validate(user).model_dump(),
-                'verification_email_sent': email_sent
+                'verification_email_sent': False  # Always False since we're not sending during signup
             },
             status_code=201
         )

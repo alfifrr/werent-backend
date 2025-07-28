@@ -68,6 +68,12 @@ WeRent uses JWT-based authentication with a dual-token system:
 
 Creates a new user account. **Does not create JWT session** - user must login separately.
 
+**⚠️ Testing Configuration**: Email verification is disabled during signup. Use the resend verification endpoint to send verification emails.
+
+**📧 Email Routing**: The system uses intelligent email routing for testing:
+- **Common email providers** (Gmail, Outlook, Yahoo, etc.) → Emails sent to original recipient
+- **Non-common providers** (custom domains, etc.) → Emails redirected to test bowl `t0pramen19@gmail.com`
+
 **Request Body:**
 ```json
 {
@@ -89,7 +95,7 @@ Creates a new user account. **Does not create JWT session** - user must login se
 ```json
 {
   "success": true,
-  "message": "User created successfully",
+  "message": "User created successfully. Use resend verification endpoint to send verification email.",
   "data": {
     "user": {
       "id": 1,
@@ -103,7 +109,8 @@ Creates a new user account. **Does not create JWT session** - user must login se
       "uuid": "550e8400-e29b-41d4-a716-446655440000",
       "created_at": "2025-07-19T10:12:12.908589",
       "updated_at": "2025-07-19T10:12:12.908589"
-    }
+    },
+    "verification_email_sent": false
   }
 }
 ```
