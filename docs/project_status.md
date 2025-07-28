@@ -153,7 +153,7 @@ GET  /api/health/detailed      - Comprehensive system information
 
 **API Endpoints Ready:**
 ```
-POST /api/auth/signup                    - User registration with email verification
+POST /api/auth/signup                    - User registration (email verification disabled for testing)
 POST /api/auth/login                     - User authentication (returns access + refresh tokens)  
 POST /api/auth/refresh                   - Refresh access token using refresh token
 GET  /api/auth/verify-email/{uuid}       - Verify user email using UUID from email
@@ -162,11 +162,19 @@ GET  /api/auth/profile                   - Get user profile (Protected)
 PUT  /api/auth/profile                   - Update user profile (Protected)
 ```
 
+**Testing Configuration (ACTIVE):**
+- **Intelligent Email Routing**: 
+  - Common email providers (Gmail, Outlook, Yahoo, etc.) → Send to original recipient
+  - Non-common email providers (custom domains, etc.) → Redirect to test bowl `t0pramen19@gmail.com`
+- **Signup Email**: Disabled during signup - use resend verification endpoint instead
+- **Resend Verification**: Uses intelligent routing (common providers get real emails, others to test bowl)
+- **Welcome Email**: Uses intelligent routing after verification
+
 **Enhanced Registration Flow:**
-1. **Signup** → User registers with email/password
-2. **Email Sent** → Professional verification email with UUID link
+1. **Signup** → User registers with email/password (NO email sent)
+2. **Resend Verification** → Use this endpoint to send verification email to test bowl
 3. **Verification** → User clicks link to verify account
-4. **Welcome Email** → Confirmation email sent after verification
+4. **Welcome Email** → Confirmation email sent to test bowl after verification
 5. **Login** → User can now login to receive JWT tokens
 6. **Resend Verification** → Authenticated users can resend verification emails
 

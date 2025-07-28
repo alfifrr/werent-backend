@@ -12,13 +12,15 @@ class PaymentService:
             user = User.query.get(user_id)
             if not user or not getattr(user, 'is_verified', False):
                 return None
+
         # Check all booking_ids exist and belong to user (if user_id provided)
         for bid in booking_id:
             booking = Booking.query.get(bid)
             if not booking:
                 return None
-            if user_id is not None and booking.user_id != user_id:
+            if user_id is not None and str(booking.user_id) != str(user_id):
                 return None
+
         payment = Payment(
             booking_id=booking_id,
             total_price=total_price,

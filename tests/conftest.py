@@ -6,7 +6,7 @@ Provides fixtures and setup for testing the Flask application.
 import pytest
 from app import create_app
 from app.extensions import db as db_ext
-from app.models import User, Item
+from app.models import User, Item, Payment, PaymentMethod, PaymentType
 from app.models.item import ItemType, Size, Gender
 import json
 import random
@@ -14,6 +14,21 @@ import string
 from app.models.ticketing import Ticketing
 from app.models.booking import Booking, BookingStatus
 from datetime import datetime, timedelta, UTC
+
+# Cleanup fixture to delete dependent models in correct order after each test
+import pytest
+from flask import has_app_context
+
+@pytest.fixture(autouse=True)
+def cleanup_db():
+    yield
+    # Only clean up if inside an app context
+    from app.extensions import db as db_ext
+    if has_app_context():
+        db_ext.session.query(Payment).delete()
+        db_ext.session.query(Booking).delete()
+        db_ext.session.query(User).delete()
+        db_ext.session.commit()
 
 
 @pytest.fixture
@@ -147,6 +162,28 @@ def booking_factory(db, item_factory, user_factory):
         db.session.add(booking)
         db_ext.session.commit()
         return booking
+    return _factory
+
+@pytest.fixture
+def payment_factory(db, booking_factory, user_factory):
+    def _factory(user=None, booking_ids=None, total_price=100.0, payment_method=PaymentMethod.CC, payment_type=PaymentType.RENT, **kwargs):
+        if user is None:
+            user = user_factory()
+        if booking_ids is None:
+            # Create at least one booking for the user
+            booking = booking_factory(user=user)
+            booking_ids = [booking.id]
+        payment = Payment(
+            booking_id=booking_ids,
+            total_price=total_price,
+            payment_method=payment_method,
+            payment_type=payment_type,
+            user_id=user.id,
+            **kwargs
+        )
+        db.session.add(payment)
+        db_ext.session.commit()
+        return payment
     return _factory
 
 @pytest.fixture
