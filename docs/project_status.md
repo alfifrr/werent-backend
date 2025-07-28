@@ -50,6 +50,7 @@
 - [x] Comprehensive Admin API Documentation
 - [x] Admin Endpoints Integration in Swagger UI
 - [x] **Simplified Admin Management** - Admin status changes via manual database operations
+- [x] **Admin Dashboard Statistics Endpoints** - Platform-wide and monthly statistics for admins (see API_DOCUMENTATION.md)
 
 ### 💳 Payment System
 - [x] Payment record creation and management

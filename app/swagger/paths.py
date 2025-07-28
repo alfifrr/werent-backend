@@ -617,6 +617,66 @@ def get_admin_paths():
     }
 
 
+def get_statistics_paths():
+    """Get admin statistics dashboard paths."""
+    return {
+        "/api/admin/statistics/": {
+            "get": {
+                "tags": ["Admin", "Statistics"],
+                "summary": "Get admin dashboard statistics",
+                "description": "Retrieve total and weekly statistics for users, items, bookings, revenue, reviews, and tickets. Admin access only.",
+                "security": [{"BearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "Admin statistics fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/AdminStatisticsResponse"}
+                            }
+                        }
+                    },
+                    "401": {"description": "Authentication required"},
+                    "403": {"description": "Admin access required"}
+                }
+            }
+        },
+        "/api/admin/statistics/monthly": {
+            "post": {
+                "tags": ["Admin", "Statistics"],
+                "summary": "Get monthly admin dashboard statistics",
+                "description": "Retrieve monthly statistics for users, items, bookings, revenue, reviews, and tickets for a given year. Admin access only.",
+                "security": [{"BearerAuth": []}],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "year": {"type": "integer", "example": 2024}
+                                },
+                                "required": ["year"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Monthly statistics fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/AdminMonthlyStatisticsResponse"}
+                            }
+                        }
+                    },
+                    "400": {"description": "Missing or invalid 'year' in request body"},
+                    "401": {"description": "Authentication required"},
+                    "403": {"description": "Admin access required"}
+                }
+            }
+        }
+    }
+
 def get_review_paths():
     """Get review and testimonial paths."""
     return {
@@ -1956,6 +2016,7 @@ def get_all_paths():
     paths.update(get_item_paths())
     paths.update(get_auth_paths())
     paths.update(get_admin_paths())
+    paths.update(get_statistics_paths())
     paths.update(get_review_paths())
     paths.update(get_payment_paths())
     paths.update(get_ticketing_paths())
