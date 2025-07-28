@@ -37,14 +37,23 @@ class User(db.Model):
     # Relationships
     items = db.relationship("Item", foreign_keys="Item.user_id", back_populates="user")
     bookings = db.relationship(
-    "Booking", foreign_keys="Booking.user_id", back_populates="user"
-)
+        "Booking",
+        foreign_keys="Booking.user_id",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
     payments = db.relationship(
-    "Payment", foreign_keys="Payment.user_id", back_populates="user"
-)
+        "Payment",
+        foreign_keys="Payment.user_id",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
     tickets = db.relationship(
-    "Ticketing", foreign_keys="Ticketing.user_id", back_populates="user"
-)
+        "Ticketing",
+        foreign_keys="Ticketing.user_id",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
     reviews = db.relationship(
     "Review", foreign_keys="Review.user_id", back_populates="user"
 )
