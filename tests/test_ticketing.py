@@ -1,7 +1,5 @@
 import pytest
-from flask import url_for
-from app.models.ticketing import Ticketing
-from app.schemas.ticketing_schema import CreateTicketRequest, AddMessageRequest, TicketResponse
+from app.schemas.ticketing_schema import CreateTicketRequest, AddMessageRequest
 from app.services.ticketing_service import TicketingService
 from app.models import User
 
@@ -32,7 +30,6 @@ def test_create_ticket_route(client, db, booking_factory, auth_headers):
 
 
 def test_get_ticket_route(client, user_token, auth_headers, ticket_factory):
-    from app.models import User
     user = User.query.filter_by(email='user@werent.com').first()
     assert user is not None, "Test user not found in DB."
     ticket = ticket_factory(user=user)
@@ -43,7 +40,6 @@ def test_get_ticket_route(client, user_token, auth_headers, ticket_factory):
 
 
 def test_add_message_route(client, user_token, auth_headers, ticket_factory):
-
     user = User.query.filter_by(email='user@werent.com').first()
     assert user is not None, "Test user not found in DB."
     ticket = ticket_factory(user=user)

@@ -37,7 +37,6 @@ def create_payment_controller(data, current_user_id):
             payment_data = PaymentCreate(**data)
         except ValidationError as e:
             return _format_validation_errors(e)
-
         # Create payment using service
         payment = PaymentService.create_payment(
             booking_id=payment_data.booking_id,
@@ -52,7 +51,7 @@ def create_payment_controller(data, current_user_id):
 
         return success_response(
             message="Payment created successfully",
-            data=PaymentOut.from_orm(payment).dict(),
+            data=PaymentOut.model_validate(payment).model_dump(),
             status_code=201
         )
 
@@ -69,14 +68,14 @@ def get_payment_controller(payment_id, current_user_id):
             return not_found_response("Payment not found")
 
         # Check if user owns the payment or is admin
-        if payment.user_id != current_user_id:
+        if str(payment.user_id) != str(current_user_id):
             user = User.query.get(current_user_id)
-            if not user or not getattr(user, 'is_admin', False):
+            # if user not payment owner and not admin, deny access
+            if not getattr(user, 'is_admin'):
                 return unauthorized_response("Access denied")
-
         return success_response(
             message="Payment retrieved successfully",
-            data=PaymentOut.from_orm(payment).dict()
+            data=PaymentOut.model_validate(payment).model_dump()
         )
 
     except Exception as e:
@@ -121,13 +120,14 @@ def update_payment_controller(payment_id, data, current_user_id):
             return not_found_response("Payment not found")
 
         # Check if user owns the payment or is admin
-        if payment.user_id != current_user_id:
+        if str(payment.user_id) != str(current_user_id):
             user = User.query.get(current_user_id)
-            if not user or not getattr(user, 'is_admin', False):
+            # if user not payment owner and not admin, deny access
+            if not getattr(user, "is_admin"):
                 return unauthorized_response("Access denied")
 
         # Update payment using service
-        updated_payment = PaymentService.update_payment(payment_id, **payment_data.dict(exclude_unset=True))
+        updated_payment = PaymentService.update_payment(payment_id, **payment_data.model_dump(exclude_unset=True))
         if not updated_payment:
             return error_response("Payment update failed", 400)
 
@@ -150,9 +150,10 @@ def delete_payment_controller(payment_id, current_user_id):
             return not_found_response("Payment not found")
 
         # Check if user owns the payment or is admin
-        if payment.user_id != current_user_id:
+        if str(payment.user_id) != str(current_user_id):
             user = User.query.get(current_user_id)
-            if not user or not getattr(user, 'is_admin', False):
+            # if user not payment owner and not admin, deny access
+            if not getattr(user, "is_admin"):
                 return unauthorized_response("Access denied")
 
         # Delete payment using service
@@ -173,13 +174,13 @@ def get_payments_by_user_controller(user_id, current_user_id):
     """Handle getting payments by user ID."""
     try:
         # Check if current user is requesting their own payments or is admin
-        if user_id != current_user_id:
+        if str(user_id) != str(current_user_id):
             user = User.query.get(current_user_id)
-            if not user or not getattr(user, 'is_admin', False):
+            if not getattr(user, 'is_admin'):
                 return unauthorized_response("Access denied")
 
         payments = PaymentService.get_payments_by_user_id(user_id)
-        payment_data = [PaymentOut.from_orm(p).dict() for p in payments]
+        payment_data = [PaymentOut.model_validate(p).model_dump() for p in payments]
 
         return success_response(
             message="User payments retrieved successfully",
