@@ -12,6 +12,64 @@ class EmailService:
     """Service class for handling email operations."""
 
     @staticmethod
+    def _is_common_email_provider(email):
+        """
+        Check if the email domain is from a common email service provider.
+        
+        Args:
+            email (str): Email address to check
+            
+        Returns:
+            bool: True if email is from a common provider, False otherwise
+        """
+        if not email or '@' not in email:
+            return False
+            
+        domain = email.lower().split('@')[1]
+        
+        # List of common email service providers
+        common_providers = {
+            'gmail.com', 'googlemail.com',
+            'outlook.com', 'hotmail.com', 'live.com', 'msn.com',
+            'yahoo.com', 'yahoo.co.uk', 'yahoo.ca', 'yahoo.co.in', 'yahoo.com.au',
+            'icloud.com', 'me.com', 'mac.com',
+            'protonmail.com', 'proton.me',
+            'aol.com',
+            'mail.com',
+            'yandex.com', 'yandex.ru',
+            'zoho.com',
+            'tutanota.com',
+            'fastmail.com'
+        }
+        
+        return domain in common_providers
+
+    @staticmethod
+    def _get_recipient_email(user_email):
+        """
+        Get the actual recipient email address for testing purposes.
+        If user email is not from a common provider, use test bowl instead.
+        
+        Args:
+            user_email (str): Original user email address
+            
+        Returns:
+            str: Email address to send to (either original or test bowl)
+        """
+        test_bowl = "t0pramen19@gmail.com"
+        
+        if EmailService._is_common_email_provider(user_email):
+            return user_email
+        else:
+            # Only log if we have app context (when called from Flask app)
+            try:
+                current_app.logger.info(f"Non-common email provider detected ({user_email}), using test bowl: {test_bowl}")
+            except RuntimeError:
+                # Outside app context - likely testing scenario
+                pass
+            return test_bowl
+
+    @staticmethod
     def send_verification_email(user_email, user_name, verification_uuid):
         """
         Send email verification email to user.
@@ -135,15 +193,21 @@ class EmailService:
             """
             
             # Create and send message
+            # Use intelligent recipient selection: common email providers get original email,
+            # non-common providers get redirected to test bowl for testing
+            recipient_email = EmailService._get_recipient_email(user_email)
             msg = Message(
                 subject=subject,
-                recipients=[user_email],
+                recipients=[recipient_email],
                 html=html_body,
                 body=text_body
             )
             
             mail.send(msg)
-            current_app.logger.info(f"Verification email sent successfully to {user_email}")
+            if recipient_email != user_email:
+                current_app.logger.info(f"Verification email sent to test bowl {recipient_email} (original: {user_email})")
+            else:
+                current_app.logger.info(f"Verification email sent successfully to {recipient_email}")
             return True
             
         except Exception as e:
@@ -270,15 +334,21 @@ class EmailService:
             © 2025 WeRent. All rights reserved.
             """
             
+            # Use intelligent recipient selection: common email providers get original email,
+            # non-common providers get redirected to test bowl for testing
+            recipient_email = EmailService._get_recipient_email(user_email)
             msg = Message(
                 subject=subject,
-                recipients=[user_email],
+                recipients=[recipient_email],
                 html=html_body,
                 body=text_body
             )
             
             mail.send(msg)
-            current_app.logger.info(f"Welcome email sent successfully to {user_email}")
+            if recipient_email != user_email:
+                current_app.logger.info(f"Welcome email sent to test bowl {recipient_email} (original: {user_email})")
+            else:
+                current_app.logger.info(f"Welcome email sent successfully to {recipient_email}")
             return True
             
         except Exception as e:
