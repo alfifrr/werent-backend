@@ -1,8 +1,8 @@
-"""add review_id to image and allow item_id to be nullable
+"""Initial migration for new Supabase database
 
-Revision ID: a082c8c16a75
+Revision ID: 04f23c4db7a1
 Revises: 
-Create Date: 2025-07-24 16:32:06.716917
+Create Date: 2025-07-27 21:14:38.257313
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a082c8c16a75'
+revision = '04f23c4db7a1'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,6 +29,7 @@ def upgrade():
     sa.Column('is_verified', sa.Boolean(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('uuid', sa.String(length=36), nullable=False),
+    sa.Column('profile_image', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
@@ -53,7 +54,7 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('product_code')
     )
@@ -73,8 +74,12 @@ def upgrade():
     sa.Column('start_date', sa.Date(), nullable=False),
     sa.Column('end_date', sa.Date(), nullable=False),
     sa.Column('total_price', sa.Float(), nullable=False),
-    sa.Column('status', sa.Enum('PENDING', 'PAID', 'CANCELLED', 'PASTDUE', 'RETURNED', name='bookingstatus'), nullable=False),
+    sa.Column('quantity', sa.Integer(), nullable=False),
+    sa.Column('status', sa.Enum('PENDING', 'PAID', 'CANCELLED', 'PASTDUE', 'RETURNED', 'COMPLETED', 'CONFIRMED', name='bookingstatus'), nullable=False),
     sa.Column('is_paid', sa.Boolean(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('expires_at', sa.DateTime(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('item_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['item_id'], ['items.id'], ),
@@ -94,7 +99,7 @@ def upgrade():
     )
     op.create_table('images',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('url', sa.String(length=500), nullable=False),
+    sa.Column('image_base64', sa.Text(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('item_id', sa.Integer(), nullable=True),
     sa.Column('review_id', sa.Integer(), nullable=True),

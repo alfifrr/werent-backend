@@ -37,9 +37,9 @@ class ItemService(BaseService):
         """Get all items (status filter removed)."""
         return Item.query.all()
 
-    def get_items_by_owner(self, owner_id):
+    def get_items_by_owner(self, user_id):
         """Get all items owned by a specific user."""
-        return Item.query.filter_by(owner_id=owner_id).all()
+        return Item.query.filter_by(user_id=user_id).all()
 
     def get_items_by_category(self, category):
         """Get items by category."""
@@ -155,10 +155,10 @@ class ItemService(BaseService):
         }
 
     def update_item_details(self, item_id, **kwargs):
-        """Update item details."""
+        """Update item details (image updates handled separately)."""
         item = self.get_by_id(item_id)
         if item:
-            # Only allow certain fields to be updated
+            # Only allow certain fields to be updated (exclude image_base64)
             allowed_fields = ['title', 'description', 'price_per_day', 'category']
             update_data = {k: v for k, v in kwargs.items() if k in allowed_fields}
             return self.update(item, **update_data)

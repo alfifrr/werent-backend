@@ -37,6 +37,10 @@ class UserService(BaseService):
         """Find user by email address."""
         return User.query.filter_by(email=email.lower().strip()).first()
 
+    def find_by_uuid(self, uuid):
+        """Find user by UUID."""
+        return User.query.filter_by(uuid=uuid).first()
+
     def verify_user(self, user_id):
         """Verify user account."""
         user = self.get_by_id(user_id)
@@ -66,15 +70,11 @@ class UserService(BaseService):
         user = self.get_by_id(user_id)
         if user:
             # Only allow certain fields to be updated
-            allowed_fields = ['first_name', 'last_name', 'phone']
+            allowed_fields = ['first_name', 'last_name', 'phone_number', 'profile_image']
             update_data = {}
             for k, v in kwargs.items():
                 if k in allowed_fields:
-                    # Map phone to phone_number for the model
-                    if k == 'phone':
-                        update_data['phone_number'] = v
-                    else:
-                        update_data[k] = v
+                    update_data[k] = v
             return self.update(user, **update_data)
         return None
 
@@ -149,3 +149,11 @@ class UserService(BaseService):
             'recent_bookings': [booking.to_dict() for booking in recent_bookings],
             'recent_reviews': [review.to_dict() for review in recent_reviews]
         }
+
+    def get_all_admins(self):
+        """Get all admin users."""
+        return User.query.filter_by(is_admin=True, is_active=True).all()
+
+    def get_admin_by_id(self, admin_id):
+        """Get admin user by ID."""
+        return User.query.filter_by(id=admin_id, is_admin=True, is_active=True).first()
