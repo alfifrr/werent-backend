@@ -4,8 +4,6 @@ from app.schemas.item_schema import ItemCreateSchema, ItemUpdateSchema
 from app.utils.responses import success_response, error_response, not_found_response, internal_error_response
 from app.models.item import Item
 from app import db
-from app.utils.validators import validate_base64_image
-from app.models.image import Image
 
 item_service = ItemService()
 
@@ -18,13 +16,28 @@ def list_items_controller():
         return internal_error_response(str(e))
 
 def create_item_controller(json_data):
+    """
+    Create a new item with optional images.
+    
+    Args:
+        json_data (dict): Dictionary containing item data including optional 'images' list
+        
+    Returns:
+        Response: JSON response with created item data or error message
+    """
     try:
+        # Validate input data using schema (includes image validation)
         schema = ItemCreateSchema(**json_data)
     except Exception as e:
         return error_response(f'Invalid input: {str(e)}', status_code=422)
 
     try:
         owner_id = get_jwt_identity()
+        
+        # Extract images from the validated data
+        images = getattr(schema, 'images', None)
+        
+        # Create the item with all provided data
         item = item_service.create_item(
             name=schema.name,
             type=schema.type,
@@ -36,22 +49,17 @@ def create_item_controller(json_data):
             product_code=schema.product_code,
             description=schema.description,
             price_per_day=schema.price_per_day,
-            user_id=owner_id
+            user_id=owner_id,
+            images=images  # Pass images to service layer for processing
         )
-        # Handle multiple images if provided
-        images = getattr(schema, 'images', None)
-        if images:
-            for img in images:
-                if not validate_base64_image(img):
-                    return error_response('Invalid image in images array: not a valid base64-encoded image', status_code=400)
-                # Store with data URL prefix if missing
-                if not img.startswith('data:image'):
-                    img = f'data:image/jpeg;base64,{img}'
-                image = Image(image_base64=img, item_id=item.id)
-                image.save()
-
-        return success_response('Item created successfully', item.to_dict(), status_code=201)
+        
+        # Get the full item data with images
+        item_data = item.to_dict()
+        item_data['images'] = [img.to_dict() for img in item.images] if hasattr(item, 'images') else []
+        
+        return success_response('Item created successfully', item_data, status_code=201)
     except Exception as e:
+        db.session.rollback()
         error_str = str(e)
         # Handle database constraint violations
         if 'UNIQUE constraint failed: items.product_code' in error_str:
@@ -71,42 +79,58 @@ def get_item_controller(item_id):
         return internal_error_response(str(e))
 
 def update_item_controller(item_id, json_data):
+    """
+    Update an existing item and its images.
+    
+    Args:
+        item_id (int): ID of the item to update
+        json_data (dict): Dictionary containing updated item data including optional 'images' list
+        
+    Returns:
+        Response: JSON response with updated item data or error message
+    """
     try:
+        # Validate input data using schema (includes image validation)
         schema = ItemUpdateSchema(**json_data)
     except Exception as e:
         return error_response(f'Invalid input: {str(e)}', status_code=422)
 
     try:
+        # Get the current user ID for ownership verification
+        current_user_id = get_jwt_identity()
+        
+        # Get the item to verify ownership
         item = db.session.get(Item, item_id)
         if not item:
             return not_found_response('Item')
-        # Update item fields except image_base64
-        for field, value in schema.model_dump(exclude_unset=True).items():
-            if value is not None and field not in ['images', 'user_id']:
-                setattr(item, field, value)
-        db.session.commit()
-        # Handle multiple images if provided
-        images = getattr(schema, 'images', None)
-        if images:
-            # Validate all images before DB ops
-            for img in images:
-                if not validate_base64_image(img):
-                    return error_response('Invalid image in images array: not a valid base64-encoded image', status_code=400)
-            else:
-                # Only proceed if all images are valid
-                # Remove all existing images for this item
-                existing_images = Image.find_by_item_id(item.id)
-                for img_obj in existing_images:
-                    img_obj.delete()
-                # Add new images
-                for img in images:
-                    # Store with data URL prefix if missing
-                    if not img.startswith('data:image'):
-                        img = f'data:image/jpeg;base64,{img}'
-                    image = Image(image_base64=img, item_id=item.id)
-                    image.save()
-
-        return success_response('Item updated successfully', item.to_dict())
+            
+        # Get current user to check admin status
+        from app.models.user import User
+        current_user = User.query.get(current_user_id)
+        
+        # Verify ownership or admin status
+        if item.user_id != current_user_id and not (current_user and current_user.is_admin):
+            return error_response('You do not have permission to update this item', status_code=403)
+        
+        # Prepare update data from the validated schema
+        update_data = schema.model_dump(exclude_unset=True)
+        
+        # Remove user_id from update data to prevent unauthorized changes
+        if 'user_id' in update_data:
+            del update_data['user_id']
+        
+        # Update the item using the service
+        updated_item = item_service.update_item(item_id, **update_data)
+        
+        if not updated_item:
+            return not_found_response('Item')
+            
+        # Get the full updated item data with images
+        item_data = updated_item.to_dict()
+        item_data['images'] = [img.to_dict() for img in updated_item.images] if hasattr(updated_item, 'images') else []
+        
+        return success_response('Item updated successfully', item_data)
+        
     except Exception as e:
         db.session.rollback()
         return internal_error_response(str(e))

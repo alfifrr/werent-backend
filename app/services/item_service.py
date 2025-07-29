@@ -3,9 +3,10 @@ Item service for business logic operations.
 Handles item management, availability, and item-related operations.
 """
 
-from datetime import datetime
 from app.services.base_service import BaseService
 from app.models.item import Item
+from app.models.image import Image
+from app.extensions import db
 
 
 class ItemService(BaseService):
@@ -15,8 +16,55 @@ class ItemService(BaseService):
         """Initialize ItemService."""
         super().__init__(Item)
 
-    def create_item(self, name, type, size, gender, brand, color, quantity, product_code, description, price_per_day, user_id):
-        """Create a new item with all required model fields."""
+    def save_item_images(self, item_id, images):
+        """
+        Save multiple images for an item.
+        
+        Args:
+            item_id (int): ID of the item to save images for
+            images (list): List of base64-encoded image strings
+            
+        Returns:
+            list: List of saved image objects
+        """
+        saved_images = []
+        for img in images:
+            # Ensure the image has the data URL prefix
+            if not img.startswith('data:image'):
+                img = f'data:image/jpeg;base64,{img}'
+                
+            # Create and save the image
+            image = Image(
+                image_base64=img,
+                item_id=item_id
+            )
+            db.session.add(image)
+            saved_images.append(image)
+            
+        db.session.commit()
+        return saved_images
+        
+    def create_item(self, name, type, size, gender, brand, color, quantity, product_code, description, price_per_day, user_id, images=None):
+        """
+        Create a new item with all required model fields and optional images.
+        
+        Args:
+            name (str): Item name
+            type (str): Item type/category
+            size (str): Item size
+            gender (str): Item gender
+            brand (str, optional): Item brand
+            color (str, optional): Item color
+            quantity (int): Available quantity
+            product_code (str): Unique product code
+            description (str): Item description
+            price_per_day (float): Price per day
+            user_id (int): ID of the user creating the item
+            images (list, optional): List of base64-encoded images
+            
+        Returns:
+            Item: The created item with images loaded
+        """
         item = Item(
             name=name,
             type=type,
@@ -30,7 +78,16 @@ class ItemService(BaseService):
             price_per_day=price_per_day,
             user_id=user_id
         )
+        
+        # Save the item first to get an ID
         self.save(item)
+        
+        # Save images if provided
+        if images:
+            self.save_item_images(item.id, images)
+            
+        # Refresh the item to include the images in the response
+        db.session.refresh(item)
         return item
 
     def get_available_items(self):
@@ -154,15 +211,47 @@ class ItemService(BaseService):
             'conflicting_bookings': [booking.to_dict() for booking in conflicting_bookings]
         }
 
-    def update_item_details(self, item_id, **kwargs):
-        """Update item details (image updates handled separately)."""
+    def update_item(self, item_id, **kwargs):
+        """
+        Update an item and optionally its images.
+        
+        Args:
+            item_id (int): ID of the item to update
+            **kwargs: Item fields to update, including optional 'images' list
+            
+        Returns:
+            Item: The updated item with images loaded, or None if not found
+        """
         item = self.get_by_id(item_id)
-        if item:
-            # Only allow certain fields to be updated (exclude image_base64)
-            allowed_fields = ['title', 'description', 'price_per_day', 'category']
-            update_data = {k: v for k, v in kwargs.items() if k in allowed_fields}
-            return self.update(item, **update_data)
-        return None
+        if not item:
+            return None
+            
+        # Handle image updates if provided
+        images = kwargs.pop('images', None)
+        if images is not None:
+            # Delete existing images
+            Image.query.filter_by(item_id=item_id).delete()
+            # Save new images
+            self.save_item_images(item_id, images)
+            
+        # Update other fields
+        allowed_fields = ['name', 'type', 'size', 'gender', 'brand', 'color', 
+                         'quantity', 'product_code', 'description', 'price_per_day']
+        update_data = {k: v for k, v in kwargs.items() if k in allowed_fields}
+        
+        updated_item = self.update(item, **update_data)
+        if updated_item:
+            # Refresh to include the updated images in the response
+            db.session.refresh(updated_item)
+        return updated_item
+        
+    def update_item_details(self, item_id, **kwargs):
+        """
+        Update item details (legacy method, consider using update_item instead).
+        
+        This is kept for backward compatibility but delegates to update_item.
+        """
+        return self.update_item(item_id, **kwargs)
 
     def get_categories_with_counts(self):
         """Get all categories with item counts."""

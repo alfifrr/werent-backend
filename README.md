@@ -387,4 +387,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**WeRent Backend API** - Built with ❤️ for the equipment rental community
+**WeRent Backend API** - Built with ❤️ for the clothing rental community

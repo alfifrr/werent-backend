@@ -19,17 +19,16 @@ def get_item_schemas():
                 "color": {"type": "string", "example": "Red"},
                 "quantity": {"type": "integer", "example": 3},
                 "product_code": {"type": "string", "example": "ZARA_DRESS_001"},
-                "description": {"type": "string", "example": "Lightweight summer dress."},
+                "description": {
+                    "type": "string",
+                    "example": "Lightweight summer dress.",
+                },
                 "price_per_day": {"type": "number", "example": 15.0},
                 "rating": {"type": "number", "example": 4.7},
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
                 "user_id": {"type": "integer", "example": 2},
-                "images": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "example": []
-                }
+                "images": {"type": "array", "items": {"type": "string"}, "example": []},
             },
         },
         "ItemCreateRequest": {
@@ -45,35 +44,85 @@ def get_item_schemas():
                 "quantity",
             ],
             "properties": {
-                "name": {"type": "string", "description": "Item name", "example": "Summer Dress"},
+                "name": {
+                    "type": "string",
+                    "description": "Item name",
+                    "example": "Summer Dress",
+                },
                 "type": {
-                    "type": "string", 
+                    "type": "string",
                     "description": "Item type",
-                    "enum": ["dress", "top", "bottom", "outerwear", "shoes", "accessory", "jewelry", "bag", "formal_wear", "costume", "other"],
-                    "example": "dress"
+                    "enum": [
+                        "dress",
+                        "top",
+                        "bottom",
+                        "outerwear",
+                        "shoes",
+                        "accessory",
+                        "jewelry",
+                        "bag",
+                        "formal_wear",
+                        "costume",
+                        "other",
+                    ],
+                    "example": "dress",
                 },
                 "size": {
                     "type": "string",
                     "description": "Item size",
                     "enum": ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size"],
-                    "example": "M"
+                    "example": "M",
                 },
                 "gender": {
                     "type": "string",
                     "description": "Target gender",
                     "enum": ["mens", "womens", "unisex", "kids"],
-                    "example": "womens"
+                    "example": "womens",
                 },
-                "brand": {"type": "string", "description": "Brand name", "example": "Zara"},
-                "color": {"type": "string", "description": "Item color", "example": "Red"},
-                "quantity": {"type": "integer", "description": "Available quantity", "minimum": 0, "example": 3},
+                "brand": {
+                    "type": "string",
+                    "description": "Brand name",
+                    "example": "Zara",
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Item color",
+                    "example": "Red",
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Available quantity",
+                    "minimum": 0,
+                    "example": 3,
+                },
                 "product_code": {
-                    "type": "string", 
+                    "type": "string",
                     "description": "Unique product code (must be unique across all items)",
-                    "example": "ZARA_DRESS_001"
+                    "example": "ZARA_DRESS_001",
                 },
-                "description": {"type": "string", "description": "Item description", "example": "Lightweight summer dress."},
-                "price_per_day": {"type": "number", "description": "Daily rental price", "minimum": 0, "example": 15.0},
+                "description": {
+                    "type": "string",
+                    "description": "Item description",
+                    "example": "Lightweight summer dress.",
+                },
+                "price_per_day": {
+                    "type": "number",
+                    "description": "Daily rental price",
+                    "minimum": 0,
+                    "example": 15.0,
+                },
+                "images": {
+                    "type": "array",
+                    "description": "List of base64-encoded images (raw or data URL prefixed)",
+                    "items": {
+                        "type": "string",
+                        "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...",
+                    },
+                    "example": [
+                        "iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # raw base64
+                        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # data URL base64
+                    ],
+                },
             },
             "example": {
                 "name": "Summer Dress",
@@ -86,40 +135,94 @@ def get_item_schemas():
                 "product_code": "ZARA_DRESS_001",
                 "description": "Lightweight summer dress.",
                 "price_per_day": 15.0,
+                "images": [
+                    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+                    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+                ],
             },
         },
         "ItemUpdateRequest": {
             "type": "object",
             "properties": {
-                "name": {"type": "string", "description": "Item name", "example": "Summer Dress Updated"},
+                "name": {
+                    "type": "string",
+                    "description": "Item name",
+                    "example": "Summer Dress Updated",
+                },
                 "type": {
-                    "type": "string", 
+                    "type": "string",
                     "description": "Item type",
-                    "enum": ["dress", "top", "bottom", "outerwear", "shoes", "accessory", "jewelry", "bag", "formal_wear", "costume", "other"],
-                    "example": "dress"
+                    "enum": [
+                        "dress",
+                        "top",
+                        "bottom",
+                        "outerwear",
+                        "shoes",
+                        "accessory",
+                        "jewelry",
+                        "bag",
+                        "formal_wear",
+                        "costume",
+                        "other",
+                    ],
+                    "example": "dress",
                 },
                 "size": {
                     "type": "string",
                     "description": "Item size",
                     "enum": ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size"],
-                    "example": "L"
+                    "example": "L",
                 },
                 "gender": {
                     "type": "string",
                     "description": "Target gender",
                     "enum": ["mens", "womens", "unisex", "kids"],
-                    "example": "womens"
+                    "example": "womens",
                 },
-                "brand": {"type": "string", "description": "Brand name", "example": "Zara"},
-                "color": {"type": "string", "description": "Item color", "example": "Blue"},
-                "quantity": {"type": "integer", "description": "Available quantity", "minimum": 0, "example": 5},
+                "brand": {
+                    "type": "string",
+                    "description": "Brand name",
+                    "example": "Zara",
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Item color",
+                    "example": "Blue",
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Available quantity",
+                    "minimum": 0,
+                    "example": 5,
+                },
                 "product_code": {
-                    "type": "string", 
+                    "type": "string",
                     "description": "Unique product code (must be unique across all items)",
-                    "example": "ZARA_DRESS_001_UPDATED"
+                    "example": "ZARA_DRESS_001_UPDATED",
                 },
-                "description": {"type": "string", "description": "Item description", "example": "Updated description for summer dress."},
-                "price_per_day": {"type": "number", "description": "Daily rental price", "minimum": 0, "example": 18.0},
+                "description": {
+                    "type": "string",
+                    "description": "Item description",
+                    "example": "Updated description for summer dress.",
+                },
+                "price_per_day": {
+                    "type": "number",
+                    "description": "Daily rental price",
+                    "minimum": 0,
+                    "example": 18.0,
+                },
+                "images": {
+                    "type": "array",
+                    "description": "List of base64-encoded images (raw or data URL prefixed). To remove all images, set to an empty array []. To update specific images, include all images that should remain, including any existing ones.",
+                    "items": {
+                        "type": "string",
+                        "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...",
+                    },
+                    "example": [
+                        "iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # raw base64
+                        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...",  # data URL base64
+                    ],
+                },
             },
             "example": {
                 "name": "Summer Dress Updated",
@@ -132,6 +235,10 @@ def get_item_schemas():
                 "product_code": "ZARA_DRESS_001_UPDATED",
                 "description": "Updated description for summer dress.",
                 "price_per_day": 18.0,
+                "images": [
+                    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+                    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+                ],
             },
         },
     }
@@ -241,14 +348,17 @@ def get_auth_schemas():
                     "type": "string",
                     "nullable": True,
                     "description": "Base64 encoded profile image data",
-                    "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+                    "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA...",
                 },
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
                 "is_active": {"type": "boolean", "example": True},
                 "is_admin": {"type": "boolean", "example": False},
                 "is_verified": {"type": "boolean", "example": False},
-                "uuid": {"type": "string", "example": "bc84edc9-04a2-4a4b-a219-f2b33903562d"},
+                "uuid": {
+                    "type": "string",
+                    "example": "bc84edc9-04a2-4a4b-a219-f2b33903562d",
+                },
             },
         },
         "SignupRequest": {
@@ -317,7 +427,7 @@ def get_auth_schemas():
                 "profile_image": {
                     "type": "string",
                     "description": "Base64 encoded image data with data URI prefix (e.g., data:image/jpeg;base64,...)",
-                    "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+                    "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
                 },
             },
         },
@@ -329,35 +439,37 @@ def get_auth_schemas():
                     "type": "string",
                     "format": "email",
                     "description": "Email address to send verification to",
-                    "example": "user@example.com"
+                    "example": "user@example.com",
                 }
-            }
+            },
         },
         "EmailVerificationResponse": {
             "type": "object",
             "properties": {
                 "success": {"type": "boolean", "example": True},
-                "message": {"type": "string", "example": "Email verified successfully! Welcome to WeRent."},
+                "message": {
+                    "type": "string",
+                    "example": "Email verified successfully! Welcome to WeRent.",
+                },
                 "data": {
                     "type": "object",
-                    "properties": {
-                        "verified": {"type": "boolean", "example": True}
-                    }
-                }
-            }
+                    "properties": {"verified": {"type": "boolean", "example": True}},
+                },
+            },
         },
         "ResendVerificationResponse": {
             "type": "object",
             "properties": {
                 "success": {"type": "boolean", "example": True},
-                "message": {"type": "string", "example": "Verification email sent successfully. Please check your inbox."},
+                "message": {
+                    "type": "string",
+                    "example": "Verification email sent successfully. Please check your inbox.",
+                },
                 "data": {
                     "type": "object",
-                    "properties": {
-                        "email_sent": {"type": "boolean", "example": True}
-                    }
-                }
-            }
+                    "properties": {"email_sent": {"type": "boolean", "example": True}},
+                },
+            },
         },
     }
 
@@ -370,8 +482,16 @@ def get_review_schemas():
             "properties": {
                 "id": {"type": "integer", "example": 1},
                 "user_id": {"type": "integer", "example": 1},
-                "item_id": {"type": "integer", "example": 1, "description": "ID of the item being reviewed"},
-                "service_id": {"type": "integer", "example": 1, "description": "ID of the service transaction"},
+                "item_id": {
+                    "type": "integer",
+                    "example": 1,
+                    "description": "ID of the item being reviewed",
+                },
+                "service_id": {
+                    "type": "integer",
+                    "example": 1,
+                    "description": "ID of the service transaction",
+                },
                 "rating": {
                     "type": "integer",
                     "minimum": 1,
@@ -381,6 +501,17 @@ def get_review_schemas():
                 "comment": {
                     "type": "string",
                     "example": "Excellent service, perfect condition!",
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "Array of image URLs or base64 encoded strings",
+                    },
+                    "example": [
+                        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+                        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+                    ],
                 },
                 "created_at": {"type": "string", "format": "date-time"},
                 "updated_at": {"type": "string", "format": "date-time"},
@@ -399,6 +530,17 @@ def get_review_schemas():
                 "comment": {
                     "type": "string",
                     "example": "Excellent service, perfect condition!",
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "Array of image URLs or base64 encoded strings",
+                    },
+                    "example": [
+                        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+                        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+                    ],
                 },
             },
         },
