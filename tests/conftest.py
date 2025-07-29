@@ -19,14 +19,30 @@ from datetime import datetime, timedelta, UTC
 import pytest
 from flask import has_app_context
 
+@pytest.fixture
+def test_images():
+    """Provide test base64 encoded images for testing."""
+    # 1x1 transparent PNG
+    return [
+        # Raw base64
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+        # Data URL
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+        # Different image (1x1 red pixel)
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+    ]
+
 @pytest.fixture(autouse=True)
 def cleanup_db():
     yield
     # Only clean up if inside an app context
     from app.extensions import db as db_ext
+    from app.models.image import Image
     if has_app_context():
+        db_ext.session.query(Image).delete()
         db_ext.session.query(Payment).delete()
         db_ext.session.query(Booking).delete()
+        db_ext.session.query(Item).delete()
         db_ext.session.query(User).delete()
         db_ext.session.commit()
 
