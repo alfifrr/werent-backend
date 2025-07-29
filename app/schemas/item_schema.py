@@ -4,8 +4,9 @@ Item schemas for request/response validation.
 
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
+from app.utils.validators import validate_base64_image
 
 
 class ItemCreateSchema(BaseSchema):
@@ -58,11 +59,19 @@ class ItemCreateSchema(BaseSchema):
     @classmethod
     def validate_price(cls, v):
         """Validate price format."""
-        if v <= 0:
-            raise ValueError('Price must be greater than 0')
-        if v > 10000:  # Max price limit
-            raise ValueError('Price cannot exceed 10,000 per day')
-        return round(v, 2)  # Round to 2 decimal places
+        if v is not None and v < 0:
+            raise ValueError('Price cannot be negative')
+        return v
+
+    @field_validator('images')
+    @classmethod
+    def validate_images(cls, v):
+        """Validate base64 encoded images."""
+        if v is not None:
+            for img in v:
+                if not validate_base64_image(img):
+                    raise ValueError('One or more images are not valid base64 images')
+        return v
 
 
 class ItemUpdateSchema(BaseSchema):
@@ -121,6 +130,16 @@ class ItemUpdateSchema(BaseSchema):
             if v > 10000:
                 raise ValueError('Price cannot exceed 10,000 per day')
             return round(v, 2)
+            
+    @field_validator('images')
+    @classmethod
+    def validate_images(cls, v):
+        """Validate base64 encoded images."""
+        if v is not None:
+            for img in v:
+                if not validate_base64_image(img):
+                    raise ValueError('One or more images are not valid base64 images')
+        return v
         return v
 
 
