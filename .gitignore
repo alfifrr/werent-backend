@@ -32,5 +32,3 @@ Thumbs.db
 .env
 .env.*
 
-# Coverage
-.coverage
