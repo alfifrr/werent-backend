@@ -121,55 +121,40 @@ class BookingService(BaseService):
 
     @staticmethod
     def update_booking(booking_id: int, user_id: Optional[int] = None, **kwargs) -> Optional[Booking]:
+        """
+        Update booking status only. All other fields are not allowed to be updated.
+        
+        Args:
+            booking_id: ID of the booking to update
+            user_id: Optional user ID to verify ownership
+            **kwargs: Should only contain 'status' field
+            
+        Returns:
+            Updated booking if successful, None otherwise
+        """
+        # Only allow status updates
+        if 'status' not in kwargs or len(kwargs) > 1:
+            return None
         booking = Booking.query.get(booking_id)
         if not booking:
             return None
-            
-        # If user_id is provided, verify user and check if booking belongs to them
+        # If user_id is provided, verify user exists and is verified
         if user_id is not None:
             user = User.query.get(user_id)
             if not user or not getattr(user, 'is_verified', False):
                 return None
-            if booking.user_id != user_id:
+            # Only check ownership if user is not an admin
+            if not getattr(user, 'is_admin', False) and booking.user_id != user_id:
                 return None
-                
-        # Convert date strings to date objects
-        for key, value in kwargs.items():
-            if key in ['start_date', 'end_date'] and isinstance(value, str):
-                try:
-                    value = date.fromisoformat(value)
-                except ValueError:
-                    continue  # skip invalid date
-            # Ensure start_date is not before booking creation date
-            if key == 'start_date' and value is not None:
-                created_date = booking.__dict__.get('created_at')
-                if created_date:
-                    if hasattr(created_date, 'date'):
-                        created_date = created_date.date()
-                    if value < created_date:
-                        return None  # Invalid: start_date before booking creation
-            # Ensure end_date is not before start_date
-            if key == 'end_date' and value is not None:
-                start_date = kwargs.get('start_date', booking.start_date)
-                if isinstance(start_date, str):
-                    try:
-                        start_date = date.fromisoformat(start_date)
-                    except ValueError:
-                        continue
-                if value < start_date:
-                    return None  # Invalid: end_date before start_date
-            if hasattr(booking, key) and value is not None:
-                setattr(booking, key, value)
-        # Recalculate total_price if start_date, end_date, or quantity changed
-        if 'start_date' in kwargs or 'end_date' in kwargs or 'quantity' in kwargs:
-            start_date = booking.start_date
-            end_date = booking.end_date
-            quantity = booking.quantity
-            if start_date and end_date and booking.item and quantity:
-                duration = (end_date - start_date).days + 1
-                booking.total_price = booking.item.price_per_day * duration * quantity
-        db.session.commit()
-        return booking
+
+        # Only update the status field
+        new_status = kwargs.get('status')
+        if new_status and hasattr(booking, 'status'):
+            booking.status = new_status
+            db.session.commit()
+            return booking
+
+        return None
 
     @staticmethod
     def get_all_bookings() -> List[Booking]:

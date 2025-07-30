@@ -389,7 +389,7 @@ def get_auth_schemas():
                     "maxLength": 50,
                     "example": "Doe",
                 },
-                "phone": {
+                "phone_number": {
                     "type": "string",
                     "example": "+1234567890",
                     "description": "Phone number (optional)",
@@ -972,6 +972,21 @@ def get_booking_schemas():
             "example": {
                 "start_date": "2024-08-02",
                 "end_date": "2024-08-06",
+                "status": "confirmed"
+            }
+        },
+        "BookingStatusUpdate": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": ["pending", "confirmed", "completed", "cancelled", "pastdue", "returned"],
+                    "description": "New booking status. Follows this flow:\n1. PENDING (when booking created)\n2. PAID (changed after payment creation)\n3. CONFIRMED (Manually changed by admin in admin dashboard)\n4. RETURNED (Manually changed by renter in user dashboard)\n5. COMPLETED (manually changed by admin in admin dashboard)\n\nOwners can cancel bookings at any time. Admins can cancel from PENDING or CONFIRMED to CANCELLED.",
+                    "example": "confirmed"
+                }
+            },
+            "example": {
                 "status": "confirmed"
             }
         },
