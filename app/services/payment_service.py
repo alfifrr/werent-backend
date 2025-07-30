@@ -21,16 +21,32 @@ class PaymentService:
             if user_id is not None and str(booking.user_id) != str(user_id):
                 return None
 
-        payment = Payment(
-            booking_id=booking_id,
-            total_price=total_price,
-            payment_method=payment_method,
-            payment_type=payment_type,
-            user_id=user_id
-        )
-        db.session.add(payment)
-        db.session.commit()
-        return payment
+        try:
+            # Create payment record
+            payment = Payment(
+                booking_id=booking_id,
+                total_price=total_price,
+                payment_method=payment_method,
+                payment_type=payment_type,
+                user_id=user_id
+            )
+            db.session.add(payment)
+            
+            # Update all associated bookings to PAID status
+            for bid in booking_id:
+                booking = Booking.query.get(bid)
+                if booking:
+                    booking.status = 'PAID'
+                    booking.is_paid = True
+                    db.session.add(booking)
+            
+            db.session.commit()
+            return payment
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating payment: {str(e)}")
+            return None
 
     @staticmethod
     def get_payment(payment_id: int) -> Optional[Payment]:

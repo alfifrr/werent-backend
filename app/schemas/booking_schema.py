@@ -83,27 +83,21 @@ class BookingCreateSchema(BaseSchema):
 
 
 class BookingUpdateSchema(BaseSchema):
-    """Schema for updating booking dates."""
+    """Schema for updating booking status.
+    
+    This schema is used to update only the status of a booking.
+    Date changes are not allowed through this endpoint.
+    """
+    status: str = Field(..., description="New booking status (PENDING, CONFIRMED, CANCELLED, COMPLETED, PAID, PASTDUE, RETURNED)")
 
-    start_date: Optional[date] = Field(None, description="New start date")
-    end_date: Optional[date] = Field(None, description="New end date")
-
-    @field_validator('start_date')
+    @field_validator('status')
     @classmethod
-    def validate_start_date(cls, v):
-        """Validate start date is not in the past."""
-        if v is not None and v < date.today():
-            raise ValueError('Start date cannot be in the past')
-        return v
-
-    @field_validator('end_date')
-    @classmethod
-    def validate_end_date(cls, v, values):
-        """Validate end date is after start date."""
-        if v is not None and 'start_date' in values.data and values.data['start_date'] is not None:
-            if v <= values.data['start_date']:
-                raise ValueError('End date must be after start date')
-        return v
+    def validate_status(cls, v):
+        """Validate status value is one of the allowed values."""
+        valid_statuses = [status.value for status in BookingStatus]
+        if v.upper() not in valid_statuses:
+            raise ValueError(f'Status must be one of: {", ".join(valid_statuses)}')
+        return v.upper()
 
 
 class BookingStatusUpdateSchema(BaseSchema):

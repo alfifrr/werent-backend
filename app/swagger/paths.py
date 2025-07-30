@@ -349,7 +349,7 @@ def get_auth_paths():
             "put": {
                 "tags": ["Authentication"],
                 "summary": "Update user profile",
-                "description": "Update the authenticated user's profile information.",
+                "description": "Update the authenticated user's profile information. If the profile image is an empty string or None, it will delete any pre-existing profile image.",
                 "security": [{"BearerAuth": []}],
                 "requestBody": {
                     "required": True,
@@ -1676,7 +1676,7 @@ def get_booking_paths():
             "put": {
                 "tags": ["Booking"],
                 "summary": "Update booking (owner or admin only)",
-                "description": "Update booking details. Only the booking owner or admin can modify.",
+                "description": "Update booking details. Only the booking owner or admin can modify. The booking status will follow this flow: \n1. PENDING (when booking created) \n2. PAID (changed after payment creation) \n3. CONFIRMED (Manually changed by admin in admin dashboard) \n4. RETURNED (Manually changed by renter in user dashboard) \n5. COMPLETED (manually changed by admin in admin dashboard) \n\nThe booking can also be cancelled at any time by the booking owner, in which case the booking status will be changed to CANCELLED. \n\nThe booking can also be cancelled by the admin in the admin dashboard from PENDING to CANCELLED or from CONFIRMED to CANCELLED.",
                 "security": [{"BearerAuth": []}],
                 "parameters": [
                     {"name": "booking_id", "in": "path", "required": True, "schema": {"type": "integer"}}
@@ -1685,7 +1685,7 @@ def get_booking_paths():
                     "required": True,
                     "content": {
                         "application/json": {
-                            "schema": {"$ref": "#/components/schemas/BookingCreateRequest"}
+                            "schema": {"$ref": "#/components/schemas/BookingStatusUpdate"}
                         }
                     },
                 },

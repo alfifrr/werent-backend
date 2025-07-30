@@ -21,15 +21,15 @@ from flask import has_app_context
 
 @pytest.fixture
 def test_images():
-    """Provide test base64 encoded images for testing."""
-    # 1x1 transparent PNG
+    """Provide test base64 encoded images in data URI format for testing."""
+    # All test images are in data:image/png;base64,{data} format
     return [
-        # Raw base64
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
-        # Data URL
+        # 1x1 transparent PNG
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
-        # Different image (1x1 red pixel)
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+        # Same image with different formatting
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Kk2cAAAAASUVORK5CYII=",
+        # 1x1 red pixel
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
     ]
 
 @pytest.fixture(autouse=True)
