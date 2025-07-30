@@ -6,26 +6,46 @@ from app.models.user import User
 
 class TestPaymentRoutes:
     def test_create_payment_success(self, client, db, user_factory, booking_factory, auth_headers):
+        from app.models.booking import Booking
+        
+        # Setup test user
         user = User.query.filter_by(email="user@werent.com").first()
         assert user is not None, "Test user not found in DB."
+        
         # Ensure user is verified
         if not user.is_verified:
             user.is_verified = True
             user.save() if hasattr(user, 'save') else db.session.commit()
-        booking = booking_factory(user=user)
+            
+        # Create a booking with initial status
+        booking = booking_factory(user=user, status="PENDING", is_paid=False)
+        db.session.commit()
+        
+        # Prepare payment payload
         payload = {
             "booking_id": [booking.id],
             "total_price": 123.45,
             "payment_method": "CC",
             "payment_type": "RENT"
         }
+        
+        # Make payment request
         response = client.post("/payments/", json=payload, headers=auth_headers)
+        
+        # Debug if needed
         if response.status_code != 201:
             print(response.get_json(), "DEBUG"*10)
+            
+        # Verify response
         assert response.status_code == 201
         data = response.get_json()["data"]
         assert data["total_price"] == 123.45
         assert data["payment_method"] == "CC"
+        
+        # Verify booking status was updated
+        db.session.refresh(booking)
+        assert booking.status.value == "PAID"  # Compare with enum value
+        assert booking.is_paid is True
 
     def test_create_payment_fail_unverified_user(self, client, db, user_factory, booking_factory, make_auth_headers):
         user = user_factory(is_verified=False)
