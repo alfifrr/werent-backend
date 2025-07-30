@@ -245,11 +245,13 @@ class BookingService(BaseService):
 
         return self.save(booking)
 
-    def get_bookings_by_item(self, item_id):
+    @staticmethod
+    def get_bookings_by_item(item_id):
         """Get all bookings for a specific item."""
         return Booking.query.filter_by(item_id=item_id).order_by(Booking.created_at.desc()).all()
 
-    def get_bookings_by_status(self, status):
+    @staticmethod
+    def get_bookings_by_status(status):
         """Get all bookings with a specific status."""
         # Accept both Enum and string
         if isinstance(status, str):
