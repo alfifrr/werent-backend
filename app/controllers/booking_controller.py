@@ -210,65 +210,77 @@ def get_bookings_by_user_controller(user_id, current_user_id):
 
 
 def update_booking_controller(booking_id, data, current_user_id):
-    """Handle booking update."""
+    """
+    Handle booking status update.
+    
+    This endpoint only allows updating the booking status, not the dates.
+    Users can only cancel their own bookings (if status is PENDING or CONFIRMED).
+    Admins can update to any status.
+    """
     try:
-        if not data:
-            return error_response("JSON payload required", 400)
+        if not data or 'status' not in data:
+            return error_response("Status field is required in the payload", 400)
 
         # Convert JWT identity to int
         current_user_id = _get_user_id_from_jwt(current_user_id)
         if current_user_id is None:
             return unauthorized_response("Invalid user authentication")
 
-        # Check if booking exists
+        # Get the booking
         booking = BookingService.get_booking(booking_id)
         if not booking:
             return not_found_response("Booking not found")
 
+        # Get current status, handling both enum and string statuses
+        current_status = booking.status.value if hasattr(booking.status, 'value') else str(booking.status).upper()
+        new_status = data['status'].upper()
+
         # Check if user owns the booking or is admin
-        if booking.user_id != current_user_id and not _is_admin(current_user_id):
+        is_owner = booking.user_id == current_user_id
+        is_admin = _is_admin(current_user_id)
+        
+        if not is_owner and not is_admin:
             return unauthorized_response("Access denied")
 
-        # Implement nuanced status update controls based on business rules
-        if 'status' in data:
-            new_status = data['status'].upper()
-            # Handle enum values by getting the string value
-            current_status = booking.status.value if hasattr(booking.status, 'value') else str(booking.status)
-            
-            # Define allowed user status transitions
-            user_allowed_transitions = {
-                'PENDING': ['CANCELLED'],  # Users can cancel pending bookings
-                'CONFIRMED': ['CANCELLED']  # Users can cancel confirmed bookings (may incur fees)
-            }
-            
-            # Admin can change any status
-            if _is_admin(current_user_id):
-                pass  # Admin has full control
-            # Regular users have limited status change privileges
-            elif current_status in user_allowed_transitions and new_status in user_allowed_transitions[current_status]:
-                pass  # User is allowed this transition
-            else:
+        # Define allowed status transitions
+        user_allowed_transitions = {
+            'PENDING': ['CANCELLED'],
+            'CONFIRMED': ['CANCELLED', 'RETURNED']
+        }
+        
+        # Admin can change any status, but we still validate it's a valid status
+        if not is_admin:
+            # For non-admin users, check if the status transition is allowed
+            if current_status not in user_allowed_transitions:
                 return error_response(
-                    f"Status change from {current_status} to {new_status} requires admin privileges. "
-                    f"Users can only cancel PENDING or CONFIRMED bookings.",
+                    f"Cannot update status from {current_status}",
+                    400
+                )
+                
+            if new_status not in user_allowed_transitions[current_status]:
+                return error_response(
+                    f"Status change from {current_status} to {new_status} is not allowed. "
+                    f"You can only cancel PENDING or CONFIRMED bookings.",
                     403
                 )
 
+        # Update only the status field
+        update_data = {'status': new_status}
+        
         # Update booking using service
-        user_id_for_check = current_user_id if not _is_admin(current_user_id) else None
-        updated_booking = BookingService.update_booking(booking_id, user_id_for_check, **data)
+        updated_booking = BookingService.update_booking(booking_id, current_user_id, **update_data)
         
         if not updated_booking:
-            return error_response("Booking update failed", 400)
+            return error_response("Failed to update booking status", 400)
 
         return success_response(
-            message="Booking updated successfully",
+            message="Booking status updated successfully",
             data=BookingOut.from_orm(updated_booking).dict()
         )
 
     except Exception as e:
         db.session.rollback()
-        return internal_error_response()
+        return internal_error_response(str(e))
 
 
 def cancel_booking_controller(booking_id, current_user_id):
@@ -531,61 +543,6 @@ def get_booking_history_controller(current_user_id, limit=20):
         return internal_error_response()
 
 
-def get_bookings_by_item_controller(item_id, current_user_id):
-    """Handle getting bookings by item ID."""
-    try:
-        # Note: Currently returns all bookings for the item
-        # You might want to add authorization check to ensure user owns the item
-        booking_service = BookingService()
-        bookings = booking_service.get_bookings_by_item(item_id)
-        booking_data = [BookingOut.from_orm(b).dict() for b in bookings]
-
-        return success_response(
-            message="Item bookings retrieved successfully",
-            data=booking_data
-        )
-
-    except Exception as e:
-        return internal_error_response()
-
-
-def get_booking_duration_controller(booking_id, current_user_id):
-    """Handle getting booking duration."""
-    try:
-        # Check if user is admin for access control
-        user_id_for_check = current_user_id if not _is_admin(current_user_id) else None
-        booking = BookingService.get_booking(booking_id, user_id_for_check)
-        
-        if not booking:
-            return not_found_response("Booking not found or access denied")
-
-        booking_service = BookingService()
-        duration = booking_service.calculate_duration_days(booking_id)
-
-        return success_response(
-            message="Booking duration calculated successfully",
-            data={"duration_days": duration}
-        )
-
-    except Exception as e:
-        return internal_error_response()
-
-
-def get_revenue_controller(current_user_id):
-    """Handle getting revenue statistics for current user's items."""
-    try:
-        booking_service = BookingService()
-        total_revenue = booking_service.calculate_total_revenue(current_user_id)
-
-        return success_response(
-            message="Revenue calculated successfully",
-            data={"total_revenue": total_revenue}
-        )
-
-    except Exception as e:
-        return internal_error_response()
-
-
 def get_booking_statistics_controller(start_date_str, end_date_str, current_user_id):
     """Handle getting booking statistics."""
     try:
@@ -692,7 +649,12 @@ def get_booking_duration_controller(booking_id, current_user_id):
 
 
 def get_revenue_controller(current_user_id, owner_id=None):
-    """Handle getting revenue data."""
+    """Handle getting revenue data.
+    
+    Args:
+        current_user_id: The ID of the current user (from JWT)
+        owner_id: Optional owner ID to get revenue for (admin only)
+    """
     try:
         # Convert JWT identity to int
         current_user_id = _get_user_id_from_jwt(current_user_id)
