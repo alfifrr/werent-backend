@@ -31,9 +31,12 @@ class Review(db.Model):
 
     def to_dict(self):
         """Convert review object to dictionary for JSON serialization."""
+        user_full_name = f"{self.user.first_name} {self.user.last_name}" if self.user else None
+        
         return {
             'id': self.id,
             'user_id': self.user_id,
+            'user_full_name': user_full_name,
             'item_id': self.item_id,
             'review_message': self.review_message,
             'rating': self.rating,

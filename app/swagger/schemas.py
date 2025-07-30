@@ -482,6 +482,7 @@ def get_review_schemas():
             "properties": {
                 "id": {"type": "integer", "example": 1},
                 "user_id": {"type": "integer", "example": 1},
+                "user_full_name": {"type": "string", "example": "John Doe"},
                 "item_id": {
                     "type": "integer",
                     "example": 1,
