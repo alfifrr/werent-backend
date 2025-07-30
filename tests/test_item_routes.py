@@ -5,7 +5,6 @@ Covers CRUD operations, permissions, and authentication.
 pytest tests/test_item_routes.py -v -s --cov=. --cov-report term-missing
 """
 import json
-from app.models.image import Image
 
 
 class TestItemRoutes:

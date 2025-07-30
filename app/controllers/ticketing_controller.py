@@ -3,21 +3,16 @@ Controller for ticketing endpoints.
 Follows the same pattern as auth.py for consistent response handling.
 """
 
-from flask import request
 from pydantic import ValidationError
 from app.services.ticketing_service import TicketingService
 from app.schemas.ticketing_schema import (
     CreateTicketRequest,
     AddMessageRequest,
-    TicketResponse,
-    TicketListResponse,
-    TicketStatsResponse
 )
 from app.utils import (
     success_response,
     error_response,
     validation_error_response,
-    not_found_response,
     internal_error_response,
     forbidden_response,
 )
@@ -270,6 +265,7 @@ def get_ticket_controller(ticket_id, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_ticket_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -317,6 +313,7 @@ def add_message_controller(ticket_id, data):
     except ValueError as e:
         return error_response(str(e), 400)
     except Exception as e:
+        print(f"Error in add_message_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -364,6 +361,7 @@ def resolve_ticket_controller(ticket_id, current_user_id):
             return error_response("Failed to resolve ticket", 400)
 
     except Exception as e:
+        print(f"Error in resolve_ticket_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -409,6 +407,7 @@ def reopen_ticket_controller(ticket_id, current_user_id):
             return error_response("Failed to reopen ticket", 400)
 
     except Exception as e:
+        print(f"Error in reopen_ticket_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -453,6 +452,7 @@ def get_user_tickets_controller(user_id, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_user_tickets_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -489,6 +489,7 @@ def get_open_tickets_controller(current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_open_tickets_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -525,6 +526,7 @@ def get_resolved_tickets_controller(current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_resolved_tickets_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -554,4 +556,5 @@ def get_ticket_stats_controller(current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_ticket_stats_controller: {str(e)}")
         return internal_error_response()

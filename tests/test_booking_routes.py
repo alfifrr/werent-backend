@@ -5,13 +5,9 @@ Covers all /bookings endpoints with comprehensive test coverage.
 Run with: pytest tests/test_booking_routes.py -v -s --cov=app.routes.booking --cov-report term-missing
 """
 
-import pytest
-import json
-from datetime import datetime, date, timedelta
-from unittest.mock import patch
+from datetime import datetime, timedelta
 from app.models.booking import BookingStatus
-from app.models.user import User
-from app.models.item import Item
+
 
 
 class TestBookingRoutes:
@@ -26,7 +22,7 @@ class TestBookingRoutes:
         
         # Create bookings for both users
         user_booking = booking_factory(user=user, status=BookingStatus.CONFIRMED)
-        other_booking = booking_factory(user=other_user, status=BookingStatus.PENDING)
+        booking_factory(user=other_user, status=BookingStatus.PENDING)
         
         headers = make_auth_headers(user)
         resp = client.get('/bookings/', headers=headers)
@@ -44,8 +40,8 @@ class TestBookingRoutes:
         user1 = user_factory(email='user1@test.com', is_verified=True)
         user2 = user_factory(email='user2@test.com', is_verified=True)
         
-        booking1 = booking_factory(user=user1)
-        booking2 = booking_factory(user=user2)
+        booking_factory(user=user1)
+        booking_factory(user=user2)
         
         headers = make_auth_headers(admin)
         resp = client.get('/bookings/', headers=headers)
@@ -148,7 +144,7 @@ class TestBookingRoutes:
         # Book all available quantity
         start_date = datetime.now().date() + timedelta(days=1)
         end_date = datetime.now().date() + timedelta(days=3)
-        existing_booking = booking_factory(
+        booking_factory(
             user=user1, 
             item=item, 
             start_date=start_date,
@@ -732,7 +728,7 @@ class TestBookingRoutes:
         item = item_factory(user=owner, price_per_day=100.0)
 
         # Create completed booking for revenue calculation
-        booking = booking_factory(
+        booking_factory(
             user=renter,
             item=item,
             status=BookingStatus.COMPLETED,

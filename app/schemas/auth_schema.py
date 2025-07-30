@@ -3,7 +3,7 @@ Authentication schemas for request/response validation.
 """
 
 from typing import Optional
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import EmailStr, Field, field_validator
 from app.schemas.base_schema import BaseSchema
 from app.schemas.user_schema import UserResponseSchema
 

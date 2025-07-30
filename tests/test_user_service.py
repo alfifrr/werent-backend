@@ -94,8 +94,7 @@ def test_update_profile_image_validation(service, user):
     assert updated.profile_image is None
     
     # Test that setting profile_image to None changes the existing image to None
-    updated = service.update_profile(user.id, profile_image='some_image')
-    current_image = updated.profile_image
+    service.update_profile(user.id, profile_image='some_image')
     updated = service.update_profile(user.id, profile_image=None)
     assert updated is not None
     assert updated.profile_image is None

@@ -3,7 +3,7 @@ Image schemas for request/response validation.
 """
 
 from typing import Optional, List
-from pydantic import BaseModel, Field, HttpUrl, field_validator
+from pydantic import Field, HttpUrl, field_validator
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
 
 

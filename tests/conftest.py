@@ -16,7 +16,6 @@ from app.models.booking import Booking, BookingStatus
 from datetime import datetime, timedelta, UTC
 
 # Cleanup fixture to delete dependent models in correct order after each test
-import pytest
 from flask import has_app_context
 
 @pytest.fixture

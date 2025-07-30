@@ -3,10 +3,9 @@ User service for business logic operations.
 Handles user authentication, profile management, and user-related operations.
 """
 
-from datetime import datetime
 from app.services.base_service import BaseService
 from app.models.user import User
-from app.extensions import bcrypt, db
+from app.extensions import db
 
 
 class UserService(BaseService):

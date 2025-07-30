@@ -1,7 +1,6 @@
-from datetime import datetime
-from flask_jwt_extended import get_jwt_identity
+from datetime import date, datetime
 from pydantic import ValidationError
-from app.models import Booking, User, Item
+from app.models import Booking, User
 from app.extensions import db
 from app.services.booking_service import BookingService
 from app.services.user_service import UserService
@@ -14,8 +13,6 @@ from app.utils import (
     unauthorized_response,
     internal_error_response
 )
-from typing import List, Optional
-from datetime import date, datetime
 
 
 def _get_user_id_from_jwt(jwt_identity):
@@ -92,6 +89,7 @@ def create_booking_controller(data, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in create_booking_controller: {str(e)}")
         db.session.rollback()
         return internal_error_response()
 
@@ -128,6 +126,7 @@ def get_all_bookings_controller(current_user_id):
             message=message
         )
     except Exception as e:
+        print(f"Error in get_all_bookings_controller: {str(e)}")
         return internal_error_response(
             message="Failed to retrieve bookings"
         )
@@ -169,6 +168,7 @@ def get_booking_controller(booking_id, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_booking_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -206,6 +206,7 @@ def get_bookings_by_user_controller(user_id, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_bookings_by_user_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -279,6 +280,7 @@ def update_booking_controller(booking_id, data, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in update_booking_controller: {str(e)}")
         db.session.rollback()
         return internal_error_response(str(e))
 
@@ -365,6 +367,7 @@ def cancel_booking_controller(booking_id, current_user_id):
     except ValueError as e:
         return error_response(f"Invalid booking ID: {str(e)}", 400)
     except Exception as e:
+        print(f"Error in cancel_booking_controller: {str(e)}")
         db.session.rollback()
         return internal_error_response()
 
@@ -428,8 +431,8 @@ def check_availability_controller(item_id, start_date, end_date, quantity=None):
             print(f"Service error: {service_error}")
             return error_response("Failed to check availability", 500)
 
-    except Exception as e:
-        print(f"Availability check error: {e}")  # Debug log
+    except Exception as e:  
+        print(f"Availability check error: {e}")
         return internal_error_response()
 
 
@@ -506,6 +509,7 @@ def get_bookings_by_status_controller(status, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_bookings_by_status_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -540,6 +544,7 @@ def get_booking_history_controller(current_user_id, limit=20):
         )
 
     except Exception as e:
+        print(f"Error in get_booking_history_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -579,6 +584,7 @@ def get_booking_statistics_controller(start_date_str, end_date_str, current_user
         )
 
     except Exception as e:
+        print(f"Error in get_booking_statistics_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -603,6 +609,7 @@ def get_bookings_by_item_controller(item_id, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_bookings_by_item_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -645,6 +652,7 @@ def get_booking_duration_controller(booking_id, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_booking_duration_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -675,4 +683,5 @@ def get_revenue_controller(current_user_id, owner_id=None):
         )
 
     except Exception as e:
+        print(f"Error in get_revenue_controller: {str(e)}")
         return internal_error_response()

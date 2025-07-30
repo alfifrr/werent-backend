@@ -165,4 +165,5 @@ def validate_base64_image(image_str: str) -> bool:
             img.load()  # Will raise if not an image
         return True
     except Exception as e:
+        print(f"Error validating base64 image: {str(e)}")
         return False

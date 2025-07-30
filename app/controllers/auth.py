@@ -4,7 +4,6 @@ from flask_jwt_extended import (
     get_jwt_identity,
 )
 from pydantic import ValidationError
-from app.models import User
 from app.extensions import db
 from app.services import UserService
 from app.services.email_service import EmailService
@@ -81,7 +80,7 @@ def signup_controller(data):
 
     except Exception as e:
         db.session.rollback()
-        # Optionally log the exception here
+        print(f"Error in signup_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -128,7 +127,7 @@ def login_controller(data):
         )
 
     except Exception as e:
-        # Optionally log the exception here
+        print(f"Error in login_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -148,6 +147,7 @@ def get_profile_controller(current_user_id):
     except ValueError:
         return error_response("Invalid user ID in token", 400)
     except Exception as e:
+        print(f"Error in get_profile_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -200,7 +200,7 @@ def update_profile_controller(current_user_id, data):
         return error_response("Invalid user ID in token", 400)
     except Exception as e:
         db.session.rollback()
-        # Optionally log the exception here
+        print(f"Error in update_profile_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -227,6 +227,7 @@ def refresh_controller(current_user_id):
     except ValueError:
         return error_response("Invalid user ID in token", 400)
     except Exception as e:
+        print(f"Error in refresh_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -267,6 +268,7 @@ def verify_email_controller(uuid):
 
     except Exception as e:
         db.session.rollback()
+        print(f"Error in verify_email_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -313,4 +315,5 @@ def resend_verification_controller():
             return error_response("Failed to send verification email. Please try again later.", 500)
 
     except Exception as e:
+        print(f"Error in resend_verification_controller: {str(e)}")
         return internal_error_response()
