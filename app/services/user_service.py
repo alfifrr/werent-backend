@@ -6,7 +6,7 @@ Handles user authentication, profile management, and user-related operations.
 from datetime import datetime
 from app.services.base_service import BaseService
 from app.models.user import User
-from app.extensions import bcrypt
+from app.extensions import bcrypt, db
 
 
 class UserService(BaseService):
@@ -66,17 +66,57 @@ class UserService(BaseService):
         return None
 
     def update_profile(self, user_id, **kwargs):
-        """Update user profile information."""
+        """Update user profile information.
+        
+        Args:
+            user_id: ID of the user to update
+            **kwargs: Fields to update, including optional profile_image
+            
+        Returns:
+            Updated user object or None if update failed
+            
+        Raises:
+            ValueError: If profile_image validation fails
+        """
         user = self.get_by_id(user_id)
-        if user:
+        if not user:
+            return None
+            
+        try:
             # Only allow certain fields to be updated
             allowed_fields = ['first_name', 'last_name', 'phone_number', 'profile_image']
             update_data = {}
-            for k, v in kwargs.items():
-                if k in allowed_fields:
-                    update_data[k] = v
-            return self.update(user, **update_data)
-        return None
+            
+            # Process each field in the update
+            for field, value in kwargs.items():
+                if field in allowed_fields:
+                    # Handle profile image specifically
+                    if field == 'profile_image':
+                        # If value is None or empty string, delete the image
+                        if value is None or value == '':
+                            user.profile_image = None
+                        else:
+                            user.profile_image = value
+                    else:
+                        # For other fields, update only if value is not None
+                        if value is not None:
+                            update_data[field] = value
+            
+            # Update the user with the new data
+            if update_data:
+                user = self.update(user, **update_data)
+            else:
+                # If only profile_image was updated, save the user
+                db.session.add(user)
+                db.session.commit()
+                
+            return user
+            
+        except Exception as e:
+            db.session.rollback()
+            # Optionally log the error
+            print(f"Error updating user profile: {str(e)}")
+            return None
 
     def calculate_user_rating(self, user_id):
         """Calculate and update user's average rating based on their items' reviews."""

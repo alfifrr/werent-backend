@@ -349,7 +349,7 @@ def get_auth_paths():
             "put": {
                 "tags": ["Authentication"],
                 "summary": "Update user profile",
-                "description": "Update the authenticated user's profile information.",
+                "description": "Update the authenticated user's profile information. If the profile image is an empty string or None, it will delete any pre-existing profile image.",
                 "security": [{"BearerAuth": []}],
                 "requestBody": {
                     "required": True,

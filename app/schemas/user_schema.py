@@ -74,40 +74,31 @@ class UserUpdateSchema(BaseSchema):
     @field_validator("profile_image")
     @classmethod
     def validate_profile_image(cls, v):
-        """Validate Base64 profile image format and size."""
+        """Validate Base64 profile image format and size using the shared validator."""
         if v is not None:
-            import re
-            import base64
+            from app.utils.validators import validate_base64_image
             
             # Check data URI format
             if not v.startswith('data:image/'):
                 raise ValueError("Profile image must be a valid data URI (data:image/...)")
             
-            # Extract MIME type and base64 data
-            match = re.match(r'data:image/(jpeg|jpg|png|gif);base64,(.+)', v)
+            # Extract MIME type
+            import re
+            match = re.match(r'data:image/(jpeg|jpg|png|gif);base64,', v)
             if not match:
                 raise ValueError("Invalid image format. Supported: JPEG, PNG, GIF")
             
-            mime_type, base64_data = match.groups()
-            
-            # Validate base64 encoding
-            try:
-                decoded_data = base64.b64decode(base64_data)
-            except Exception:
-                raise ValueError("Invalid base64 encoding")
+            # Validate the image using the shared validator
+            if not validate_base64_image(v):
+                raise ValueError("Invalid or corrupted image file")
             
             # Check file size (limit to 2MB)
+            base64_data = v.split(',', 1)[-1]
+            import base64
+            decoded_data = base64.b64decode(base64_data, validate=True)
             max_size = 2 * 1024 * 1024  # 2MB
             if len(decoded_data) > max_size:
                 raise ValueError("Image size must be less than 2MB")
-            
-            # Basic file header validation
-            if mime_type in ['jpeg', 'jpg'] and not decoded_data.startswith(b'\xff\xd8'):
-                raise ValueError("Invalid JPEG file format")
-            elif mime_type == 'png' and not decoded_data.startswith(b'\x89PNG'):
-                raise ValueError("Invalid PNG file format")
-            elif mime_type == 'gif' and not decoded_data.startswith(b'GIF8'):
-                raise ValueError("Invalid GIF file format")
         
         return v
 
