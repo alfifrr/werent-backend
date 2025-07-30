@@ -2,7 +2,7 @@
 
 > **Equipment Rental Platform Backend Service**
 
-A modern, secure, and scalable Flask-based backend API for an equipment rental platform. Built with best practices, modular architecture, comprehensive authentication system, and interactive API documentation.
+A modern, secure, and scalable Flask-based backend API for an equipment rental platform. Built with best practices, modular architecture, comprehensive authentication system, and interactive API documentation using OpenAPI 3.0.
 
 ### Architecture Pattern
 This project follows the MVC (Model-View-Controller) pattern:
@@ -10,6 +10,7 @@ This project follows the MVC (Model-View-Controller) pattern:
 - **Views (Routes)**: HTTP endpoints/blueprints; handle request/response and delegate to controllers
 - **Controllers**: Business logic; orchestrate between routes, models, and services
 - **Services**: Reusable business logic and data access
+- **Utils**: Shared utility functions and helpers
 
 Business logic should be implemented in controllers, not directly in route functions.
 
@@ -25,22 +26,37 @@ Business logic should be implemented in controllers, not directly in route funct
 - Python 3.9+
 - UV package manager
 - SQLite (development) / PostgreSQL (production)
+- Git
 
-### Installation
-```bash
-# Clone the repository
-git clone <repository-url>
-cd werent-backend
+### Setup
 
-# Activate virtual environment
-source .venv/bin/activate
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd werent-backend
+   ```
 
-# Install dependencies
-uv sync
+2. **Set up virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-# Run the application
-uv run python main.py
-```
+3. **Install dependencies**
+   ```bash
+   uv sync
+   ```
+
+4. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+5. **Initialize database**
+   ```bash
+   uv run flask db upgrade
+   ```
 
 ### Running the Application
 ```bash
@@ -54,7 +70,6 @@ python main.py
 # The API will be available at:
 # - API: http://localhost:5000
 # - Interactive Docs: http://localhost:5000/docs/
-# - ReDoc: http://localhost:5000/redoc/
 ```
 
 ## 📋 Features
@@ -68,36 +83,53 @@ python main.py
   - Password hashing with bcrypt
   - Field validation (email, password strength, phone)
   - Error handling with detailed responses
+  - Role-based access control (Admin/User)
 
-- **📚 Interactive API Documentation**
+- **📦 Item Management**
+  - CRUD operations for rental items
+  - Image upload and management
+  - Category and tag system
+  - Search and filtering capabilities
+  - Availability tracking
+
+- **📅 Booking System**
+  - Rental period management
+  - Availability checking
+  - Booking status tracking
+  - Price calculation
+
+- **📚 Comprehensive API Documentation**
   - OpenAPI 3.0 specification
-  - Swagger UI interface at `/docs/`
+  - Interactive Swagger UI at `/docs/`
   - ReDoc interface at `/redoc/`
-  - Comprehensive error response examples
-  - Request/response schemas with validation
+  - Detailed request/response schemas
+  - Authentication examples
+  - Error response documentation
 
 - **🏗️ Modern Architecture**
   - Application factory pattern
   - Blueprint-based modular routing
   - Pydantic v2 for data validation
+  - Dependency injection
   - Standardized API responses
   - Comprehensive input validation
-  - Error handling and logging
+  - Structured logging
   - Database migrations with Alembic
 
-- **🗄️ Database Management**
-  - SQLAlchemy ORM with enhanced models
-  - Database migrations ready
-  - User model with proper field structure
-  - Active/inactive user states
-  - UUID support for users
+- **🛡️ Security**
+  - JWT authentication
+  - Password hashing with bcrypt
+  - Input sanitization
+  - Rate limiting
+  - CORS configuration
 
 ### 🚧 In Development
-- Equipment/Item management system
-- Rental and cart functionality
+- Advanced search functionality
 - Review and rating system
-- Admin dashboard
+- Admin dashboard analytics
 - Payment integration
+- Notification system
+- Advanced filtering and sorting
 
 ## 📁 Project Structure
 
@@ -159,8 +191,34 @@ werent-backend/
 |--------|----------|-------------|---------------|
 | `POST` | `/api/auth/signup` | User registration | ❌ |
 | `POST` | `/api/auth/login` | User authentication | ❌ |
+| `POST` | `/api/auth/refresh` | Refresh access token | ✅ |
 | `GET` | `/api/auth/profile` | Get user profile | ✅ |
 | `PUT` | `/api/auth/profile` | Update user profile | ✅ |
+
+### Items
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/api/items` | List all items | ❌ |
+| `GET` | `/api/items/{item_id}` | Get item details | ❌ |
+| `POST` | `/api/items` | Create new item | ✅ (Admin) |
+| `PUT` | `/api/items/{item_id}` | Update item | ✅ (Admin) |
+| `DELETE` | `/api/items/{item_id}` | Delete item | ✅ (Admin) |
+
+### Bookings
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/api/bookings` | List user's bookings | ✅ |
+| `POST` | `/api/bookings` | Create new booking | ✅ |
+| `GET` | `/api/bookings/{booking_id}` | Get booking details | ✅ |
+| `PUT` | `/api/bookings/{booking_id}` | Update booking | ✅ |
+| `DELETE` | `/api/bookings/{booking_id}` | Cancel booking | ✅ |
+
+### Admin
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/api/admin/users` | List all users | ✅ (Admin) |
+| `GET` | `/api/admin/stats` | System statistics | ✅ (Admin) |
+| `PUT` | `/api/admin/users/{user_id}` | Update user status | ✅ (Admin) |
 
 ### General
 | Method | Endpoint | Description |
@@ -176,22 +234,29 @@ werent-backend/
 
 ### Code Quality Tools
 ```bash
-# Format code
+# Format code with Black
 black app/ tests/
 
-# Check style
+# Check code style with flake8
 flake8 app/ tests/
 
 # Run tests
 pytest
 
-# Run tests with coverage
+# Run tests with coverage report
 pytest --cov=app --cov-report=html
+
+# Run security checks
+bandit -r app/
+
+# Check for outdated dependencies
+uv pip list --outdated
 ```
 
 ### Database Commands
 ```bash
 # Initialize database (automatic on first run)
+uv run flask db upgrade
 uv run python main.py
 
 # Run database migrations
