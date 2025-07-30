@@ -1,5 +1,6 @@
 import pytest
 from app.models.user import User
+from app.models.review import Review
 
 # pytest tests/test_review_routes.py -v -s --cov=. --cov-report term-missing
 
@@ -153,15 +154,13 @@ def test_review_statistics_service(db, item_with_owner, another_user, review_pay
     stats = service.get_review_statistics(item_id=item.id)
     assert stats["total_reviews"] == 0
     # Add review
-    review = service.create_review(item.id, user.id, 5, "Excellent!", images=None)
+    service.create_review(item.id, user.id, 5, "Excellent!", images=None)
     stats2 = service.get_review_statistics(item_id=item.id)
     assert stats2["total_reviews"] == 1
     assert stats2["average_rating"] == 5.0
 
 
 def test_review_model_to_dict(db, item_with_owner, another_user):
-    from app.models.review import Review
-    from app.models.image import Image
     item, _ = item_with_owner
     user = another_user
     review = Review(item_id=item.id, user_id=user.id, rating=4, review_message="Nice", images=[])

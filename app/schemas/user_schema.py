@@ -4,7 +4,7 @@ User schemas for request/response validation.
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import EmailStr, Field, field_validator
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
 
 

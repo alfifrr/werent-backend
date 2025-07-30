@@ -101,37 +101,37 @@ def get_monthly_statistics(year):
         end = datetime(year, month, last_day, 23, 59, 59, tzinfo=UTC)
         # Users
         users = db.query(func.count(User.id)).filter(
-            getattr(User, 'created_at', None) != None,
+            getattr(User, 'created_at', None) is not None,
             User.created_at >= start,
             User.created_at <= end
         ).scalar() if hasattr(User, 'created_at') else None
         # Items
         items = db.query(func.count(Item.id)).filter(
-            getattr(Item, 'created_at', None) != None,
+            getattr(Item, 'created_at', None) is not None,
             Item.created_at >= start,
             Item.created_at <= end
         ).scalar() if hasattr(Item, 'created_at') else None
         # Bookings
         bookings = db.query(func.count(Booking.id)).filter(
-            getattr(Booking, 'created_at', None) != None,
+            getattr(Booking, 'created_at', None) is not None,
             Booking.created_at >= start,
             Booking.created_at <= end
         ).scalar() if hasattr(Booking, 'created_at') else None
         # Revenue
         revenue = db.query(func.coalesce(func.sum(Payment.total_price), 0)).filter(
-            getattr(Payment, 'payment_date', None) != None,
+            getattr(Payment, 'payment_date', None) is not None,
             Payment.payment_date >= start,
             Payment.payment_date <= end
         ).scalar() if hasattr(Payment, 'payment_date') else None
         # Reviews
         reviews = db.query(func.count(Review.id)).filter(
-            getattr(Review, 'created_at', None) != None,
+            getattr(Review, 'created_at', None) is not None,
             Review.created_at >= start,
             Review.created_at <= end
         ).scalar() if hasattr(Review, 'created_at') else None
         # Tickets
         tickets = db.query(func.count(Ticketing.id)).filter(
-            getattr(Ticketing, 'created_at', None) != None,
+            getattr(Ticketing, 'created_at', None) is not None,
             Ticketing.created_at >= start,
             Ticketing.created_at <= end
         ).scalar() if hasattr(Ticketing, 'created_at') else None

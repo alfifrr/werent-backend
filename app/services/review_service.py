@@ -3,12 +3,12 @@ Review service for business logic operations.
 Handles reviews and ratings for items and users.
 """
 
-from datetime import datetime
 from app.services.base_service import BaseService
 from app.models.review import Review
 from app.services.item_service import ItemService
 from app.services.user_service import UserService
 from app.models.image import Image
+from app.models.booking import Booking
 
 
 class ReviewService(BaseService):
@@ -220,9 +220,6 @@ class ReviewService(BaseService):
 
     def can_user_review_item(self, user_id, item_id):
         """Check if user can review an item (has completed booking, hasn't reviewed yet)."""
-        from app.models.booking import Booking
-        from app.models.item import Item
-        from app.services.item_service import ItemService
 
         # Check if user has completed a booking for this item
         completed_booking = Booking.query.filter_by(

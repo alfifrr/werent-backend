@@ -2,7 +2,7 @@
 Booking schemas for request/response validation.
 """
 
-from datetime import datetime, date
+from datetime import date
 from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema

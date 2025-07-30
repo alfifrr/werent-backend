@@ -3,8 +3,7 @@ Simplified Swagger UI integration for WeRent Backend API.
 Uses modular approach with separate files for configuration, schemas, and paths.
 """
 
-import os
-from flask import Blueprint, render_template_string, jsonify
+from flask import Blueprint, jsonify
 
 from .server_config import get_server_urls, get_api_info, get_security_schemes, get_tags
 from .schemas import get_all_schemas

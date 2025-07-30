@@ -1,11 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from app.services.base_service import BaseService
 from app.models.booking import Booking, BookingStatus
 from app.models.item import Item
 from app.models.user import User
 from app.extensions import db
 from typing import List, Optional
-from datetime import date
 
 
 class BookingService(BaseService):
@@ -85,7 +84,6 @@ class BookingService(BaseService):
         )
         
         # Set expiration for PENDING booking (30 minutes from creation)
-        from datetime import datetime, timedelta
         booking.expires_at = datetime.utcnow() + timedelta(minutes=30)
         
         db.session.add(booking)
@@ -319,12 +317,3 @@ class BookingService(BaseService):
             'total_revenue': sum(b.total_price for b in bookings if b.status and (b.status.value.upper() if hasattr(b.status, 'value') else str(b.status).upper()) == 'COMPLETED')
         }
 
-    @staticmethod
-    def get_bookings_by_status(status: BookingStatus) -> List[Booking]:
-        """Get bookings by status."""
-        return Booking.query.filter_by(status=status).all()
-
-    @staticmethod
-    def get_bookings_by_item(item_id: int) -> List[Booking]:
-        """Get all bookings for a specific item."""
-        return Booking.query.filter_by(item_id=item_id).all()
