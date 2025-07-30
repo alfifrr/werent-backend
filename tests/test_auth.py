@@ -107,28 +107,99 @@ def test_get_profile_unauthorized(client, db):
     resp = client.get('/api/auth/profile')
     assert resp.status_code == 401
 
-def test_update_profile_success(client, db, user_factory, make_auth_headers):
-    user = user_factory(email='update@werent.com')
+def test_update_profile_success(client, db, user_factory, make_auth_headers, test_images):
+    user = user_factory()
     headers = make_auth_headers(user)
-    update = {'first_name': 'Updated', 'phone_number': '0812999999'}
-    resp = client.put('/api/auth/profile', headers=headers, json=update)
-    assert resp.status_code == 200
+    
+    # Test updating regular fields
+    update_data = {'first_name': 'Updated', 'phone_number': '0812999999'}
+    resp = client.put('/api/auth/profile', json=update_data, headers=headers)
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.get_json()}"
     data = resp.get_json()
     assert data['success']
     assert data['data']['user']['first_name'] == 'Updated'
     assert data['data']['user']['phone_number'] == '0812999999'
+    
+    # Test updating with a new profile image (raw base64)
+    update_data = {'profile_image': test_images[0]}
+    resp = client.put('/api/auth/profile', json=update_data, headers=headers)
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.get_json()}"
+    data = resp.get_json()
+    assert data['success']
+    assert data['data']['user']['profile_image'] == test_images[0]
+    
+    # Test updating with a new profile image (data URL)
+    update_data = {'profile_image': test_images[1]}
+    resp = client.put('/api/auth/profile', json=update_data, headers=headers)
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.get_json()}"
+    data = resp.get_json()
+    assert data['success']
+    assert data['data']['user']['profile_image'] == test_images[1]
+    
+    # Test that setting profile_image to None changes the existing image to None
+    update_data = {'profile_image': None}
+    resp = client.put('/api/auth/profile', json=update_data, headers=headers)
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.get_json()}"
+    data = resp.get_json()
+    assert data['success']
+    # Profile image should be None when set to None
+    assert data['data']['user']['profile_image'] is None
+    
+    # Test deleting profile image by setting to empty string
+    # First set an image
+    client.put('/api/auth/profile', json={'profile_image': test_images[0]}, headers=headers)
+    # Then delete it with empty string
+    resp = client.put('/api/auth/profile', json={'profile_image': ''}, headers=headers)
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.get_json()}"
+    data = resp.get_json()
+    assert data['success']
+    # Empty string in the request should clear the image (set to None in response)
+    # The controller converts empty string to None for profile_image
+    assert data['data']['user']['profile_image'] is None
+    
+    # Test deleting profile image with empty request body
+    # First set an image
+    client.put('/api/auth/profile', json={'profile_image': test_images[0]}, headers=headers)
+    # Then send empty body
+    resp = client.put('/api/auth/profile', json={}, headers=headers)
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.get_json()}"
+    data = resp.get_json()
+    assert data['success']
+    # Profile image should be None with empty body
+    assert data['data']['user']['profile_image'] is None
 
-def test_update_profile_invalid(client, db, user_factory, make_auth_headers):
-    user = user_factory(email='badupdate@werent.com')
+def test_update_profile_invalid(client, db, user_factory, make_auth_headers, test_images):
+    user = user_factory()
     headers = make_auth_headers(user)
-    update = {'first_name': ''}
-    resp = client.put('/api/auth/profile', headers=headers, json=update)
-    assert resp.status_code in (400, 422)
+    
+    # Test with invalid phone number
+    resp = client.put('/api/auth/profile', json={'phone_number': '123'}, headers=headers)
+    assert resp.status_code == 422  # Pydantic returns 422 for validation errors
     data = resp.get_json()
     assert not data['success']
-    field_errors = data.get('details', {}).get('field_errors', {})
-    print('DEBUG field_errors:', field_errors)
-    assert any('at least 1 character' in msg for msgs in field_errors.values() for msg in (msgs if isinstance(msgs, list) else [msgs]))
+    assert 'phone_number' in str(data['details'])
+    
+    # Test with invalid image format
+    invalid_images = [
+        'not_an_image',
+        'data:image/jpeg;base64,invalid_base64',
+        'data:text/plain;base64,SGVsbG8gV29ybGQ=',  # Not an image
+        'data:image/unsupported;base64,SGVsbG8gV29ybGQ=',  # Unsupported format
+    ]
+    
+    for img in invalid_images:
+        resp = client.put('/api/auth/profile', json={'profile_image': img}, headers=headers)
+        assert resp.status_code == 422, f"Expected 422 for invalid image: {img}"
+        data = resp.get_json()
+        assert not data['success']
+        assert 'profile_image' in str(data['details']), f"Expected profile_image error in response: {data}"
+    
+    # Test with empty first name
+    resp = client.put('/api/auth/profile', json={'first_name': ''}, headers=headers)
+    assert resp.status_code == 422  # Pydantic returns 422 for validation errors
+    data = resp.get_json()
+    assert not data['success']
+    assert 'first_name' in str(data['details'])
 
 def test_update_profile_unauthorized(client, db):
     resp = client.put('/api/auth/profile', json={'first_name': 'ShouldFail'})

@@ -152,7 +152,15 @@ def get_profile_controller(current_user_id):
 
 
 def update_profile_controller(current_user_id, data):
-    """Handle profile update with validation using UserUpdateSchema."""
+    """Handle profile update with validation using UserUpdateSchema.
+    
+    Args:
+        current_user_id: ID of the current user
+        data: Dictionary containing the update data, may include profile_image
+        
+    Returns:
+        Response with updated user data or error message
+    """
     try:
         user_service = UserService()
         user = user_service.get_by_id(current_user_id)
@@ -160,8 +168,13 @@ def update_profile_controller(current_user_id, data):
         if not user:
             return not_found_response("User")
 
+        # If no data is provided, treat as delete image request
         if not data:
-            return error_response("JSON payload required", 400)
+            data = {"profile_image": None}
+        
+        # If profile_image is explicitly set to empty string, treat as delete
+        if "profile_image" in data and data["profile_image"] == "":
+            data["profile_image"] = None
 
         # Validate using Pydantic schema
         try:
@@ -169,12 +182,14 @@ def update_profile_controller(current_user_id, data):
         except ValidationError as e:
             return _format_validation_errors(e)
 
-        # Update user using service
-        # Convert update_data to dict and ensure phone_number is used
+        # Convert update_data to dict and update user using service
         update_dict = update_data.model_dump(exclude_unset=True)
         updated_user = user_service.update_profile(
             user_id=current_user_id, **update_dict
         )
+
+        if not updated_user:
+            return error_response("Failed to update profile", 400)
 
         return success_response(
             message="Profile updated successfully",
