@@ -20,8 +20,33 @@ class PaymentBase(BaseModel):
     payment_type: PaymentType = PaymentType.RENT
     user_id: Optional[int] = None
 
-class PaymentCreate(PaymentBase):
-    pass
+class PaymentCreate(BaseModel):
+    """Schema for creating a new payment."""
+    booking_id: List[int] = Field(
+        ...,
+        description="List of booking IDs associated with this payment",
+        example=[1, 2, 3],
+        min_length=1
+    )
+    total_price: float = Field(
+        ...,
+        gt=0,
+        description="Total amount to be paid",
+        example=150000.0
+    )
+    payment_method: PaymentMethod = Field(
+        ...,
+        description="Method used for the payment"
+    )
+    payment_type: PaymentType = Field(
+        default=PaymentType.RENT,
+        description="Type of payment (RENT for rental payments, FINE for late fees)"
+    )
+    user_id: Optional[int] = Field(
+        default=None,
+        description="ID of the user making the payment. Typically set by the system.",
+        exclude=True  # This field is typically set by the system, not the client
+    )
 
 class PaymentUpdate(BaseModel):
     total_price: Optional[float] = None
