@@ -2,9 +2,8 @@
 Review schemas for request/response validation.
 """
 
-from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 from app.schemas.base_schema import BaseSchema, TimestampMixin, ResponseSchema
 from app.utils.validators import validate_base64_image
 

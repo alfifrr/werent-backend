@@ -6,7 +6,6 @@ from app.models.user import User
 
 class TestPaymentRoutes:
     def test_create_payment_success(self, client, db, user_factory, booking_factory, auth_headers):
-        from app.models.booking import Booking
         
         # Setup test user
         user = User.query.filter_by(email="user@werent.com").first()
@@ -204,7 +203,7 @@ class TestPaymentRoutes:
             owner.save() if hasattr(owner, 'save') else db.session.commit()
         other = user_factory()
         db.session.commit()
-        payment = payment_factory(user=owner)
+        payment_factory(user=owner)
         headers = make_auth_headers(other)
         response = client.get(f"/payments/user/{owner.id}", headers=headers)
         assert response.status_code == 401 or response.status_code == 403

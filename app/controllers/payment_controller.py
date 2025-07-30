@@ -1,6 +1,5 @@
-from flask_jwt_extended import get_jwt_identity
 from pydantic import ValidationError
-from app.models import Payment, User, Booking
+from app.models import User
 from app.extensions import db
 from app.services.payment_service import PaymentService
 from app.schemas.payment_schema import PaymentCreate, PaymentUpdate, PaymentOut
@@ -12,7 +11,6 @@ from app.utils import (
     unauthorized_response,
     internal_error_response,
 )
-from typing import List, Optional
 
 
 def _format_validation_errors(e: ValidationError):
@@ -56,6 +54,7 @@ def create_payment_controller(data, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in create_payment_controller: {str(e)}")
         db.session.rollback()
         return internal_error_response()
 
@@ -79,6 +78,7 @@ def get_payment_controller(payment_id, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_payment_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -99,6 +99,7 @@ def get_all_payments_controller(current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_all_payments_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -138,6 +139,7 @@ def update_payment_controller(payment_id, data, current_user_id):
 
     except Exception as e:
         db.session.rollback()
+        print(f"Error in update_payment_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -167,6 +169,7 @@ def delete_payment_controller(payment_id, current_user_id):
 
     except Exception as e:
         db.session.rollback()
+        print(f"Error in delete_payment_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -188,4 +191,5 @@ def get_payments_by_user_controller(user_id, current_user_id):
         )
 
     except Exception as e:
+        print(f"Error in get_payments_by_user_controller: {str(e)}")
         return internal_error_response() 

@@ -4,7 +4,7 @@ Handles admin-specific read-only operations.
 Admin status changes are handled via manual database operations.
 """
 
-from flask import Blueprint, request
+from flask import Blueprint
 from flask_jwt_extended import jwt_required
 from app.utils.admin_required import admin_required
 from app.controllers.admin import (

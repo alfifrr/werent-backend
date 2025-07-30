@@ -5,22 +5,7 @@ Updated to use Pydantic schemas with @field_validator.
 """
 
 from flask import Blueprint, request
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
-from pydantic import ValidationError
-
-from app.models import User
-from app.extensions import db
-from app.services import UserService
-from app.schemas import (
-    UserCreateSchema, LoginSchema, UserUpdateSchema,
-    UserResponseSchema, LoginResponseSchema, TokenResponseSchema,
-    ValidationErrorSchema, NotFoundErrorSchema, UnauthorizedErrorSchema
-)
-from app.utils import (
-    validate_email, validate_password, validate_name, validate_phone,
-    sanitize_string, success_response, error_response, validation_error_response,
-    not_found_response, unauthorized_response, internal_error_response
-)
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.controllers.auth import signup_controller, login_controller, get_profile_controller, update_profile_controller, refresh_controller, verify_email_controller, resend_verification_controller
 
 # Create authentication blueprint

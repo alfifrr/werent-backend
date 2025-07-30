@@ -4,9 +4,6 @@ Used for monitoring and deployment verification.
 """
 
 from flask import Blueprint, jsonify
-from app.extensions import db
-from datetime import datetime
-import os
 from app.controllers.health import health_check_controller, detailed_health_check_controller
 
 health_bp = Blueprint('health', __name__)

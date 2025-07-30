@@ -3,7 +3,6 @@ Pydantic schemas for ticketing endpoints validation and serialization.
 Following clean code principles with clear, beginner-friendly validation.
 """
 
-from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 

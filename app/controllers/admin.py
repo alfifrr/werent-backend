@@ -6,12 +6,10 @@ Admin status changes are managed via manual database operations.
 
 from flask_jwt_extended import get_jwt_identity
 from pydantic import ValidationError
-from app.models import User
-from app.extensions import db
 from app.services import UserService
 from app.schemas.user_schema import UserResponseSchema
 from app.utils import (
-    success_response, error_response, validation_error_response,
+    success_response, validation_error_response,
     not_found_response, unauthorized_response, internal_error_response,
     forbidden_response
 )
@@ -71,6 +69,7 @@ def get_all_admins_controller():
         )
 
     except Exception as e:
+        print(f"Error in get_all_admins_controller: {str(e)}")
         return internal_error_response()
 
 
@@ -94,4 +93,5 @@ def get_admin_by_id_controller(admin_id):
         )
 
     except Exception as e:
+        print(f"Error in get_all_admins_controller: {str(e)}")
         return internal_error_response()
