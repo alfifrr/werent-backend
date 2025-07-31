@@ -64,8 +64,8 @@ def refresh():
     from flask_jwt_extended import decode_token, verify_jwt_in_request
     from jwt.exceptions import InvalidTokenError
     
-    # Try to get refresh token from request body first
-    data = request.get_json()
+    # Try to get refresh token from request body first (only if JSON content is present)
+    data = request.get_json(silent=True)
     if data and 'refresh_token' in data:
         try:
             # Manually decode and verify the refresh token from request body
@@ -83,7 +83,7 @@ def refresh():
             current_user_id = int(get_jwt_identity())
             return refresh_controller(current_user_id)
         except Exception as e:
-            return {"success": False, "error": "Missing or invalid Authorization header"}, 401
+            return {"success": False, "error": "Invalid or missing refresh token"}, 401
 
 
 @auth_bp.route('/verify-email/<uuid>', methods=['GET'])
