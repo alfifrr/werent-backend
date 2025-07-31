@@ -56,13 +56,34 @@ def update_profile():
 
 
 @auth_bp.route('/refresh', methods=['POST'])
-@jwt_required(refresh=True)
 def refresh():
     """
     Refresh access token endpoint.
+    Supports refresh token via Authorization header or request body.
     """
-    current_user_id = int(get_jwt_identity())
-    return refresh_controller(current_user_id)
+    from flask_jwt_extended import decode_token, verify_jwt_in_request
+    from jwt.exceptions import InvalidTokenError
+    
+    # Try to get refresh token from request body first
+    data = request.get_json()
+    if data and 'refresh_token' in data:
+        try:
+            # Manually decode and verify the refresh token from request body
+            token_data = decode_token(data['refresh_token'])
+            if token_data['type'] != 'refresh':
+                return {"success": False, "error": "Invalid token type"}, 401
+            current_user_id = int(token_data['sub'])
+            return refresh_controller(current_user_id)
+        except (InvalidTokenError, KeyError, ValueError) as e:
+            return {"success": False, "error": "Invalid refresh token"}, 401
+    else:
+        # Fall back to Authorization header method
+        try:
+            verify_jwt_in_request(refresh=True)
+            current_user_id = int(get_jwt_identity())
+            return refresh_controller(current_user_id)
+        except Exception as e:
+            return {"success": False, "error": "Missing or invalid Authorization header"}, 401
 
 
 @auth_bp.route('/verify-email/<uuid>', methods=['GET'])
