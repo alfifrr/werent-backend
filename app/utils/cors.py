@@ -30,9 +30,18 @@ def setup_cors(app):
     ]
     
     # Add production frontend URL from environment variable
-    frontend_url = os.environ.get('FRONTEND_URL')
+    frontend_url = os.environ.get('FRONTEND_URL', '').strip()
     if frontend_url:
-        ALLOWED_ORIGINS.append(frontend_url)
+        # Ensure URL has no trailing slash
+        frontend_url = frontend_url.rstrip('/')
+        # Add both with and without www if applicable
+        if frontend_url.startswith('https://www.'):
+            ALLOWED_ORIGINS.extend([
+                frontend_url,
+                frontend_url.replace('www.', '')
+            ])
+        elif frontend_url.startswith('http'):
+            ALLOWED_ORIGINS.append(frontend_url)
     
     # Add common production patterns
     if app.config.get('FLASK_ENV') == 'production':
@@ -41,9 +50,21 @@ def setup_cors(app):
             "https://werent-frontend.vercel.app",
             "https://werent.com",
             "https://www.werent.com",
-            "https://werent-backend-api.onrender.com",
         ]
-        ALLOWED_ORIGINS.extend(production_origins)
+        # Only add if not already in ALLOWED_ORIGINS
+        for origin in production_origins:
+            if origin not in ALLOWED_ORIGINS:
+                ALLOWED_ORIGINS.append(origin)
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    ALLOWED_ORIGINS = [x for x in ALLOWED_ORIGINS if not (x in seen or seen.add(x))]
+    
+    # Debug output
+    print("\n🔧 CORS Configuration:")
+    print(f"- Environment: {app.config.get('FLASK_ENV', 'development')}")
+    print(f"- Frontend URL from ENV: {frontend_url}")
+    print(f"- Allowed Origins: {ALLOWED_ORIGINS}\n")
     
     @app.after_request
     def add_cors_headers(response):
@@ -59,6 +80,13 @@ def setup_cors(app):
         if origin and origin in ALLOWED_ORIGINS:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
+            # Debug logging
+            app.logger.debug(f"CORS: Allowed request from origin: {origin}")
+        elif origin:
+            app.logger.warning(f"CORS: Blocked request from origin: {origin}. Not in allowed origins.")
+            app.logger.debug(f"Allowed origins: {ALLOWED_ORIGINS}")
+        else:
+            app.logger.debug("CORS: Request with no origin header")
         
         # Specify allowed HTTP methods
         response.headers["Access-Control-Allow-Methods"] = (
