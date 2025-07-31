@@ -507,6 +507,75 @@ def get_auth_paths():
                 }
             }
         },
+        "/api/auth/refresh": {
+            "post": {
+                "tags": ["Authentication"],
+                "summary": "Refresh access token",
+                "description": "Get a new access token using a valid refresh token.\n\n**Purpose:**\n- Allows users to obtain a new access token when their current one expires\n- Prevents the need to re-login when access token expires\n- Maintains user session security with short-lived access tokens\n\n**Two Methods Supported:**\n\n**Method 1: Authorization Header (Recommended)**\n```\nPOST /api/auth/refresh\nAuthorization: Bearer <refresh_token>\n```\n\n**Method 2: Request Body**\n```\nPOST /api/auth/refresh\nContent-Type: application/json\n\n{\n  \"refresh_token\": \"<refresh_token>\"\n}\n```\n\n**Process:**\n1. Client sends refresh token using either method above\n2. Server validates the refresh token\n3. If valid, server issues a new access token\n4. Original refresh token remains valid until its expiration\n\n**Security Considerations:**\n- Refresh tokens have longer lifespan (30 days)\n- Access tokens have short lifespan (15 minutes)\n- Refresh tokens can be revoked server-side if needed\n\n**Error Scenarios:**\n- Invalid refresh token\n- Expired refresh token\n- Revoked refresh token\n- User account deactivated",
+                "security": [],
+                "requestBody": {
+                    "description": "Method 2: Send refresh token in request body (alternative to Authorization header)",
+                    "required": False,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "refresh_token": {
+                                        "type": "string",
+                                        "description": "JWT refresh token obtained from login",
+                                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1MzkyODY2MCwianRpIjoiODcyMDhkMjgtNDU3MS00YTYzLTkyYWQtYzdhNjUyNjVmMDc0IiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiIxIiwibmJmIjoxNzUzOTI4NjYwLCJjc3JmIjoiNTJhMWY1NjktY2E1Ni00YTBkLWE1NTAtNzg5OTYwOGQ1YzFlIiwiZXhwIjoxNzU2NTIwNjYwfQ.LDvURVLfWFRb61QTCdjhSEBJlbuPnipvMmomaacMUoE"
+                                    }
+                                },
+                                "required": ["refresh_token"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Access token refreshed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RefreshTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid refresh token format",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid, expired or revoked refresh token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
     }
 
 

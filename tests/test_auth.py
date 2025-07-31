@@ -272,3 +272,17 @@ def test_resend_verification_already_verified(client, db, user_factory, make_aut
 def test_resend_verification_unauthorized(client, db):
     resp = client.post('/api/auth/resend-verification')
     assert resp.status_code == 401
+
+def test_refresh_token_request_body(client, db, user_factory):
+    """Test refresh token sent in request body instead of Authorization header"""
+    user = user_factory(email='refresh_body@werent.com')
+    # Login to get refresh token
+    login_resp = client.post('/api/auth/login', json={'email': user.email, 'password': 'TestPass123'})
+    tokens = login_resp.get_json()['data']
+    
+    # Send refresh token in request body
+    resp = client.post('/api/auth/refresh', json={'refresh_token': tokens['refresh_token']})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data['success']
+    assert 'access_token' in data['data']
