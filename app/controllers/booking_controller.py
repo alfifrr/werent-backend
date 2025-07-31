@@ -121,8 +121,15 @@ def get_all_bookings_controller(current_user_id):
             bookings = BookingService.get_user_bookings(current_user_id)
             message = "Your bookings retrieved successfully"
         
+        # Convert bookings to dict and add item_name
+        bookings_data = []
+        for booking in bookings:
+            booking_dict = BookingOut.model_validate(booking).model_dump()
+            booking_dict['item_name'] = booking.item.name
+            bookings_data.append(booking_dict)
+        
         return success_response(
-            data=[booking.to_dict() for booking in bookings],
+            data=bookings_data,
             message=message
         )
     except Exception as e:
@@ -198,7 +205,13 @@ def get_bookings_by_user_controller(user_id, current_user_id):
             else:
                 return error_response(error_msg, 400)
 
-        booking_data = [BookingOut.from_orm(b).dict() for b in bookings]
+        # Convert bookings to dict and include item_name
+        booking_data = []
+        for booking in bookings:
+            booking_dict = BookingOut.model_validate(booking).model_dump()
+            # Add item_name from the relationship
+            booking_dict['item_name'] = booking.item.name if booking.item else None
+            booking_data.append(booking_dict)
 
         return success_response(
             message="User bookings retrieved successfully",

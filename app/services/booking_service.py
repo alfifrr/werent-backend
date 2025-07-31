@@ -4,6 +4,7 @@ from app.models.booking import Booking, BookingStatus
 from app.models.item import Item
 from app.models.user import User
 from app.extensions import db
+from sqlalchemy.orm import joinedload
 from typing import List, Optional
 
 
@@ -92,13 +93,14 @@ class BookingService(BaseService):
 
     @staticmethod
     def get_user_bookings(user_id: int) -> List[Booking]:
+        from sqlalchemy.orm import joinedload
         # Check user exists and is verified
         user = User.query.get(user_id)
         if not user:
             raise ValueError("User not found")
         if not getattr(user, 'is_verified', False):
             raise ValueError("Email verification required to access bookings")
-        return Booking.query.filter_by(user_id=user_id).all()
+        return Booking.query.options(joinedload(Booking.item)).filter_by(user_id=user_id).all()
 
     @staticmethod
     def get_booking(booking_id: int, user_id: Optional[int] = None) -> Optional[Booking]:
@@ -157,7 +159,7 @@ class BookingService(BaseService):
     @staticmethod
     def get_all_bookings() -> List[Booking]:
         """Get all bookings in the system with pagination."""
-        return Booking.query.order_by(Booking.created_at.desc()).all()
+        return Booking.query.options(joinedload(Booking.item)).order_by(Booking.created_at.desc()).all()
 
     def is_available_for_dates(self, item_id, start_date, end_date):
         """Check if item is available for the specified date range."""
