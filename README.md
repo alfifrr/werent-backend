@@ -18,7 +18,7 @@ Business logic should be implemented in controllers, not directly in route funct
 [![Flask](https://img.shields.io/badge/Flask-3.1+-green.svg)](https://flask.palletsprojects.com)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-orange.svg)](https://sqlalchemy.org)
 [![JWT](https://img.shields.io/badge/JWT-Authentication-red.svg)](https://jwt.io)
-[![Swagger](https://img.shields.io/badge/API-Swagger%20Docs-brightgreen.svg)](http://localhost:5000/docs/)
+[![Swagger](https://img.shields.io/badge/API-Swagger%20Docs-brightgreen.svg)](https://werent-backend-api.onrender.com/docs/#/)
 
 ## 🚀 Quick Start
 
@@ -123,14 +123,6 @@ python main.py
   - Rate limiting
   - CORS configuration
 
-### 🚧 In Development
-- Advanced search functionality
-- Review and rating system
-- Admin dashboard analytics
-- Payment integration
-- Notification system
-- Advanced filtering and sorting
-
 ## 📁 Project Structure
 
 ```
@@ -228,7 +220,7 @@ werent-backend/
 | `GET` | `/docs/` | Interactive API documentation (Swagger UI) |
 | `GET` | `/redoc/` | Alternative API documentation (ReDoc) |
 
-> **📚 Complete API documentation:** Visit [http://localhost:5000/docs/](http://localhost:5000/docs/) when running the server
+> **📚 Complete API documentation:** Visit [https://werent-backend-api.onrender.com/docs/#/](https://werent-backend-api.onrender.com/docs/) 
 
 ## 🛠️ Development
 
@@ -310,11 +302,9 @@ SMTP_PASSWORD=your-app-password
 
 ## 📖 Documentation
 
-- **[Interactive API Docs](http://localhost:5000/docs/)** - Swagger UI with live testing capability
-- **[Alternative API Docs](http://localhost:5000/redoc/)** - ReDoc interface for API reference
+- **[Interactive API Docs](https://werent-backend-api.onrender.com/docs/)** - Swagger UI with live testing capability
 - **[docs/api_documentation.md](docs/api_documentation.md)** - Complete API reference with examples
 - **[docs/project_status.md](docs/project_status.md)** - Current status, roadmap, and development progress
-- **[docs/deployment.md](docs/deployment.md)** - Deployment guides for various platforms
 - **[docs/dev_notes.md](docs/dev_notes.md)** - Development notes and recent updates
 
 ## 🧪 Testing
@@ -349,28 +339,6 @@ pytest tests/test_auth.py::TestAuth::test_signup_success
 - Environment-based configuration
 - Docker containerization ready
 - SSL/HTTPS configuration
-
-## 🗺️ Roadmap
-
-### Phase 2: Equipment Management (Next)
-- Equipment catalog with categories
-- Inventory management
-- Search and filtering
-- Image upload handling
-
-### Phase 3: Rental System
-- Shopping cart functionality
-- Checkout and payment processing
-- Rental history and management
-- Return processing
-
-### Phase 4: Advanced Features
-- Review and rating system
-- Admin dashboard
-- Email notifications
-- Advanced reporting
-
-> **📋 Detailed roadmap:** See [docs/project_status.md](docs/project_status.md)
 
 ## 🌳 Branching Strategy
 
