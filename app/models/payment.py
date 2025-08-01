@@ -3,14 +3,14 @@ from datetime import datetime
 from app.extensions import db
 
 
-class PaymentMethod(enum.Enum):
+class PaymentMethod(str, enum.Enum):
     CC = "CC"
     QRIS = "QRIS"
     TRANSFER = "TRANSFER"
     CASH = "Cash"
 
 
-class PaymentType(enum.Enum):
+class PaymentType(str, enum.Enum):
     RENT = "RENT"
     FINE = "FINE"
 
