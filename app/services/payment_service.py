@@ -37,7 +37,10 @@ class PaymentService:
                 booking = Booking.query.get(bid)
                 if booking:
                     # For FINE payments, set status to RETURNED but keep is_paid as True
-                    if payment_type == PaymentType.FINE:
+                    # Check both enum value and string value to handle different enum types
+                    if (payment_type == PaymentType.FINE or 
+                        (hasattr(payment_type, 'value') and payment_type.value == 'FINE') or
+                        str(payment_type) == 'FINE'):
                         booking.status = 'RETURNED'
                     else:
                         booking.status = 'PAID'
