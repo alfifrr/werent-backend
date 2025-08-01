@@ -3,12 +3,15 @@ Review service for business logic operations.
 Handles reviews and ratings for items and users.
 """
 
+from ast import Str
 from app.services.base_service import BaseService
 from app.models.review import Review
 from app.services.item_service import ItemService
 from app.services.user_service import UserService
 from app.models.image import Image
 from app.models.booking import Booking
+from app.extensions import db
+from app.models.item import Item
 
 
 class ReviewService(BaseService):
@@ -55,28 +58,45 @@ class ReviewService(BaseService):
         review.review_message = comment.strip() if comment else None
         review.images = []
 
-        # Save review first to get ID
-        saved_review = self.save(review)
+        # Save review first to get ID and commit it to the database
+        db.session.add(review)
+        db.session.flush()  # Flush to get the review ID without committing the transaction
 
         # Handle images
         if images:
             for img_b64 in images:
-                image = Image(image_base64=img_b64, review_id=saved_review.id)
-                image.save()
-                saved_review.images.append(image)
-            self.save(saved_review)
-
-        # Update item owner's average rating
+                image = Image(image_base64=img_b64, review_id=review.id)
+                db.session.add(image)
+                if not review.images:
+                    review.images = []
+                review.images.append(image)
+        
+        # Commit the review and its images
+        db.session.commit()
+        
+        # Now refresh the item to get the latest reviews
+        db.session.refresh(item)
+        
+        # Update item's rating and owner's average rating
+        item.update_rating()
         self.update_owner_rating(item.user_id)
+        
+        # Get the saved review with relationships loaded
+        saved_review = self.get_by_id(review.id)
 
         return saved_review
 
     def update_review(self, review_id, user_id, rating=None, comment=None, images=None):
         """Update an existing review, including images if provided."""
         review = self.get_by_id(review_id)
+        if not review:
+            raise ValueError("Review not found")
 
         if not self.is_valid_rating(rating):
             raise ValueError("Rating must be between 1 and 5")
+            
+        # Store the old rating to check if it changed
+        old_rating = review.rating
         review.rating = rating
 
         if comment is not None:
@@ -86,36 +106,65 @@ class ReviewService(BaseService):
         if images is not None:
             # Delete old images
             for img in list(review.images):
-                img.delete()
+                db.session.delete(img)
             review.images = []
             # Add new images
             for img_b64 in images:
                 image = Image(image_base64=img_b64, review_id=review.id)
-                image.save()
+                db.session.add(image)
                 review.images.append(image)
-
-        saved_review = self.save(review)
-
-        # Update item owner's average rating
-        self.update_owner_rating(review.item.user_id)
-
+        
+        # Save changes
+        db.session.add(review)
+        db.session.commit()
+        
+        # Only update ratings if the rating actually changed
+        if old_rating != rating:
+            # Refresh the item to get the latest reviews
+            db.session.refresh(review.item)
+            # Update item's rating and owner's average rating
+            review.item.update_rating()
+            self.update_owner_rating(review.item.user_id)
+        
+        # Get the saved review with relationships loaded
+        saved_review = self.get_by_id(review.id)
         return saved_review
 
     def delete_review(self, review_id, user_id):
-        """Delete a review (only by the user who wrote it)."""
-        review = self.get_by_id(review_id)
+        """Delete a review and update the item's rating."""
+        # Get the review with its item relationship loaded
+        review = (
+            db.session.query(Review)
+            .options(db.joinedload(Review.item))
+            .filter_by(id=review_id)
+            .first()
+        )
+        
         if not review:
             return None
 
-        if review.user_id != user_id:
+        if str(review.user_id) != str(user_id):
             raise ValueError("You can only delete your own reviews")
 
-        user_id_owner = review.item.user_id
-        self.delete(review)
-
-        # Update item owner's average rating after deletion
-        self.update_owner_rating(user_id_owner)
-
+        # Store the item and owner ID before deletion
+        item = review.item
+        owner_id = item.user_id
+        
+        # Delete the review and its images
+        for img in list(review.images):
+            db.session.delete(img)
+        db.session.delete(review)
+        db.session.commit()
+        
+        # Get a fresh copy of the item to ensure we have the latest state
+        fresh_item = db.session.get(Item, item.id)
+        
+        # Update the item's rating
+        fresh_item.update_rating()
+        
+        # Update the owner's average rating
+        self.update_owner_rating(owner_id)
+        
         return True
 
     def get_reviews_by_item(self, item_id, limit=None):
@@ -169,7 +218,6 @@ class ReviewService(BaseService):
     def update_owner_rating(self, owner_id):
         """Update the average rating for an item owner."""
         from sqlalchemy import func
-        from app.models.item import Item
         from app.services.user_service import UserService
 
         # Get average rating from all reviews of items owned by this user

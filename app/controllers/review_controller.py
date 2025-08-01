@@ -71,15 +71,17 @@ def update_review_controller(review_id, json_data):
 def delete_review_controller(review_id):
     try:
         user_id = get_jwt_identity()
-        review = db.session.get(Review, review_id)
-        if not review:
+        review_service = ReviewService()
+        
+        # Let the service handle the deletion and rating updates
+        success = review_service.delete_review(review_id, user_id)
+        
+        if success is None:
             return not_found_response('Review')
-        # both in string to compare
-        if str(review.user_id) != str(user_id):
-            return error_response('You can only delete your own reviews', status_code=403)
-        db.session.delete(review)
-        db.session.commit()
+            
         return success_response('Review deleted successfully')
+    except ValueError as e:
+        return error_response(str(e), status_code=403)
     except Exception as e:
         db.session.rollback()
         return internal_error_response(str(e))
