@@ -499,7 +499,7 @@ def get_review_schemas():
                     "maximum": 5,
                     "example": 5,
                 },
-                "comment": {
+                "review_message": {
                     "type": "string",
                     "example": "Excellent service, perfect condition!",
                 },
@@ -528,7 +528,7 @@ def get_review_schemas():
                     "maximum": 5,
                     "example": 5,
                 },
-                "comment": {
+                "review_message": {
                     "type": "string",
                     "example": "Excellent service, perfect condition!",
                 },
