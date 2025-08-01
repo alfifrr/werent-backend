@@ -1904,6 +1904,46 @@ def get_booking_paths():
                 },
             },
         },
+        "/bookings/{booking_id}/finish": {
+            "put": {
+                "tags": ["Booking"],
+                "summary": "Finish booking",
+                "description": "Finish a booking by changing status from CONFIRMED to RETURNED. Users can only finish their own CONFIRMED bookings, admins can finish any CONFIRMED booking.",
+                "security": [{"BearerAuth": []}],
+                "parameters": [
+                    {"name": "booking_id", "in": "path", "required": True, "schema": {"type": "integer"}, "description": "ID of the booking to finish"}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking finished successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {"type": "boolean", "example": True},
+                                        "message": {"type": "string", "example": "Booking finished successfully"},
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "booking": {"$ref": "#/components/schemas/Booking"},
+                                                "finished_at": {"type": "string", "format": "date-time", "example": "2025-08-01T09:24:32.875708"},
+                                                "previous_status": {"type": "string", "example": "CONFIRMED"},
+                                                "new_status": {"type": "string", "example": "RETURNED"}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    },
+                    "400": {"description": "Cannot finish booking - invalid status or booking already returned"},
+                    "401": {"description": "Authentication required"},
+                    "403": {"description": "Access denied - not booking owner or admin"},
+                    "404": {"description": "Booking not found"},
+                },
+            },
+        },
         "/bookings/status/{status}": {
             "get": {
                 "tags": ["Booking"],

@@ -385,6 +385,75 @@ def cancel_booking_controller(booking_id, current_user_id):
         return internal_error_response()
 
 
+def finish_booking_controller(booking_id, current_user_id):
+    """
+    Dedicated endpoint to finish a booking by changing status from CONFIRMED to RETURNED.
+    
+    Business Rules:
+    - Users can only finish their own CONFIRMED bookings
+    - Admins can finish any CONFIRMED booking
+    - Only CONFIRMED bookings can be finished
+    - Provides clear, single-purpose action for rental completion
+    """
+    try:
+        # Convert JWT string to integer
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+        
+        # Get booking and verify it exists
+        booking = BookingService.get_booking(booking_id, 
+                                           None if _is_admin(current_user_id) else current_user_id)
+        
+        if not booking:
+            return error_response("Booking not found", 404)
+        
+        # Check current status
+        current_status = booking.status.value if hasattr(booking.status, 'value') else str(booking.status)
+        
+        # Only CONFIRMED bookings can be finished
+        if current_status != 'CONFIRMED':
+            if current_status == 'RETURNED':
+                return error_response("Booking is already returned", 400)
+            elif current_status == 'PENDING':
+                return error_response("Cannot finish pending booking. Booking must be confirmed first.", 400)
+            elif current_status == 'PAID':
+                return error_response("Cannot finish paid booking. Booking must be confirmed first.", 400)
+            elif current_status == 'CANCELLED':
+                return error_response("Cannot finish cancelled booking", 400)
+            elif current_status == 'COMPLETED':
+                return error_response("Booking is already completed", 400)
+            elif current_status == 'PASTDUE':
+                return error_response("Cannot finish overdue booking. Please contact support.", 400)
+            else:
+                return error_response(f"Cannot finish booking with status {current_status}. Only CONFIRMED bookings can be finished.", 400)
+        
+        # Perform the status change using the existing update service
+        finished_booking = BookingService.update_booking(
+            booking_id, 
+            None if _is_admin(current_user_id) else current_user_id,
+            status='RETURNED'
+        )
+        
+        if not finished_booking:
+            return error_response("Failed to finish booking", 400)
+        
+        # Return success response
+        return success_response(
+            message="Booking finished successfully",
+            data={
+                'booking': BookingOut.from_orm(finished_booking).dict(),
+                'finished_at': datetime.utcnow().isoformat(),
+                'previous_status': 'CONFIRMED',
+                'new_status': 'RETURNED'
+            }
+        )
+
+    except Exception as e:
+        print(f"Error in finish_booking_controller: {str(e)}")
+        db.session.rollback()
+        return internal_error_response()
+
+
 def check_availability_controller(item_id, start_date, end_date, quantity=None):
     """Handle comprehensive availability check with quantity information."""
     try:

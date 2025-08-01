@@ -7,6 +7,7 @@ from app.controllers.booking_controller import (
     get_bookings_by_user_controller,
     update_booking_controller,
     cancel_booking_controller,
+    finish_booking_controller,
     check_availability_controller,
     get_availability_calendar_controller,
     get_bookings_by_status_controller,
@@ -80,6 +81,13 @@ def update_booking(booking_id):
 def cancel_booking(booking_id):
     current_user_id = get_jwt_identity()
     return cancel_booking_controller(booking_id, current_user_id)
+
+@booking_bp.route('/<int:booking_id>/finish', methods=['PUT'])
+@jwt_required()
+def finish_booking(booking_id):
+    """Finish a booking by changing status from CONFIRMED to RETURNED"""
+    current_user_id = get_jwt_identity()
+    return finish_booking_controller(booking_id, current_user_id)
 
 # Get bookings by status
 @booking_bp.route('/status/<status>', methods=['GET'])
