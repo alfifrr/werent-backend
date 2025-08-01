@@ -668,7 +668,7 @@ def get_payment_schemas():
                 "booking_id": {"type": "array", "items": {"type": "integer"}, "example": [1, 2]},
                 "total_price": {"type": "number", "example": 100.0},
                 "payment_method": {"type": "string", "enum": ["CC", "QRIS", "TRANSFER", "Cash"], "example": "CC"},
-                "payment_type": {"type": "string", "enum": ["RENT", "FINE"], "example": "RENT"},
+                "payment_type": {"type": "string", "enum": ["RENT", "FINE"], "example": "RENT", "description": "Payment type: RENT sets booking status to PAID, FINE sets booking status to RETURNED"},
                 "payment_date": {"type": "string", "format": "date-time", "example": "2024-05-01T12:00:00Z"},
                 "user_id": {"type": "integer", "example": 1},
             },
@@ -680,7 +680,7 @@ def get_payment_schemas():
                 "booking_id": {"type": "array", "items": {"type": "integer"}},
                 "total_price": {"type": "number"},
                 "payment_method": {"type": "string", "enum": ["CC", "QRIS", "TRANSFER", "Cash"]},
-                "payment_type": {"type": "string", "enum": ["RENT", "FINE"]},
+                "payment_type": {"type": "string", "enum": ["RENT", "FINE"], "description": "Payment type: RENT sets booking status to PAID, FINE sets booking status to RETURNED"},
                 "user_id": {"type": "integer"},
             },
             "example": {
@@ -697,7 +697,7 @@ def get_payment_schemas():
                 "booking_id": {"type": "array", "items": {"type": "integer"}},
                 "total_price": {"type": "number"},
                 "payment_method": {"type": "string", "enum": ["CC", "QRIS", "TRANSFER", "Cash"]},
-                "payment_type": {"type": "string", "enum": ["RENT", "FINE"]},
+                "payment_type": {"type": "string", "enum": ["RENT", "FINE"], "description": "Payment type: RENT sets booking status to PAID, FINE sets booking status to RETURNED"},
                 "user_id": {"type": "integer"},
             },
             "example": {

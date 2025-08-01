@@ -952,6 +952,7 @@ def get_payment_paths():
             "post": {
                 "tags": ["Payment"],
                 "summary": "Create a new payment",
+                "description": "Create a payment record. Payment type affects booking status: RENT payments set status to PAID, FINE payments set status to RETURNED (both keep is_paid=true).",
                 "security": [{"BearerAuth": []}],
                 "requestBody": {
                     "required": True,

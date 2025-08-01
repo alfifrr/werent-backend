@@ -32,11 +32,15 @@ class PaymentService:
             )
             db.session.add(payment)
             
-            # Update all associated bookings to PAID status
+            # Update all associated bookings based on payment type
             for bid in booking_id:
                 booking = Booking.query.get(bid)
                 if booking:
-                    booking.status = 'PAID'
+                    # For FINE payments, set status to RETURNED but keep is_paid as True
+                    if payment_type == PaymentType.FINE:
+                        booking.status = 'RETURNED'
+                    else:
+                        booking.status = 'PAID'
                     booking.is_paid = True
                     db.session.add(booking)
             
@@ -78,4 +82,4 @@ class PaymentService:
 
     @staticmethod
     def get_payments_by_user_id(user_id: int) -> list[Payment]:
-        return Payment.query.filter_by(user_id=user_id).all() 
+        return Payment.query.filter_by(user_id=user_id).all()
